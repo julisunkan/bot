@@ -179,10 +179,13 @@ def create_bot():
             conn.commit()
             conn.close()
         
-        # Add default commands for the bot
+        # Add default commands for the bot (including built-in commands that are now editable)
         default_commands = [
             ('start', 'text', f'👋 Welcome to {bot_name}!\n\nI\'m here to help you. Use /help to see available commands.'),
-            ('help', 'text', '📋 Available Commands:\n\n/start - Start the bot\n/about - Learn about this bot\n/features - See bot features\n/contact - Contact support\n/settings - Configure your preferences\n/feedback - Send us feedback\n/stats - View your statistics\n/news - Latest updates\n/faq - Frequently asked questions\n/help - Show this message'),
+            ('help', 'text', '📋 Available Commands:\n\n/start - Start the bot\n/menu - Interactive command menu\n/profile - View your profile\n/donate - Support the developer\n/about - Learn about this bot\n/features - See bot features\n/contact - Contact support\n/settings - Configure your preferences\n/feedback - Send us feedback\n/stats - View your statistics\n/news - Latest updates\n/faq - Frequently asked questions'),
+            ('menu', 'text', '🎯 Menu\n\nClick any button below to execute a command, or type a command manually.'),
+            ('profile', 'text', '👤 Your Profile\n\n🆔 User ID: {user_id}\n👤 Name: {name}\n📱 Username: @{username}\n🌐 Language: {language}\n\n💬 Chat ID: {chat_id}'),
+            ('donate', 'text', f'💝 Support the Developer\n\nThank you for using this bot! Your support helps keep it running.\n\n💳 Donation Options:\n\n🔹 Bitcoin (BTC)\nbc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\n\n🔹 Ethereum (ETH)\n0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb\n\n🔹 TON\nUQD-fake-address-for-demo\n\n🔹 USDT (TRC20)\nTFake1234567890Address\n\n💙 Every contribution is appreciated!\n\nCreated with ❤️ using BotForge Pro'),
             ('about', 'text', f'ℹ️ About {bot_name}\n\nThis bot was created using BotForge Pro - the ultimate Telegram bot creator platform.\n\nVersion: 1.0\nCreated: {datetime.now().strftime("%B %Y")}\n\nPowered by BotForge Pro 🚀'),
             ('features', 'text', '✨ Bot Features:\n\n• 🤖 Automated responses\n• 💬 Interactive commands\n• 📊 Analytics tracking\n• 🔔 Notifications\n• 🎯 Custom workflows\n• 🌐 Multi-language support\n\nMore features coming soon!'),
             ('contact', 'text', '📧 Contact Us\n\nNeed help? Reach out to us:\n\n📱 Support: @support\n📧 Email: support@example.com\n🌐 Website: https://example.com\n\nWe typically respond within 24 hours!'),
@@ -597,82 +600,46 @@ Click "Start Mining" to launch the game! 👇'''
             db.increment_bot_messages(bot_id)
             return jsonify({'ok': True})
         
-        # Handle built-in advanced commands
-        if command == 'profile' or command == 'me':
-            user_id = user_info.get('id', 'Unknown')
-            username = user_info.get('username', 'Not set')
-            first_name = user_info.get('first_name', 'Unknown')
-            last_name = user_info.get('last_name', '')
-            is_bot = user_info.get('is_bot', False)
-            language_code = user_info.get('language_code', 'Unknown')
-            
-            profile_text = f"""👤 Your Profile
-
-🆔 User ID: {user_id}
-👤 Name: {first_name} {last_name}
-📱 Username: @{username}
-🌐 Language: {language_code}
-🤖 Bot Account: {'Yes' if is_bot else 'No'}
-
-💬 Chat ID: {chat_id}"""
-            
-            telegram_api.send_message(chat_id, profile_text)
-            db.increment_bot_messages(bot_id)
-            return jsonify({'ok': True})
-        
-        elif command == 'menu':
-            # Send interactive menu with all commands
-            commands = db.get_bot_commands(bot_id)
-            
-            # Create inline keyboard with command buttons
-            keyboard_buttons = []
-            for i, cmd in enumerate(commands[:20]):  # Max 20 commands in menu
-                keyboard_buttons.append([{
-                    'text': f"/{cmd['command']}",
-                    'callback_data': f"cmd_{cmd['id']}"
-                }])
-            
-            keyboard = {'inline_keyboard': keyboard_buttons}
-            
-            menu_text = f"🎯 Available Commands\n\nClick any button below to execute a command:"
-            telegram_api.send_message(chat_id, menu_text, reply_markup=keyboard)
-            db.increment_bot_messages(bot_id)
-            return jsonify({'ok': True})
-        
-        elif command == 'donate':
-            # Donation information
-            donate_text = f"""💝 Support the Developer
-
-Thank you for using this bot! Your support helps keep it running.
-
-💳 Donation Options:
-
-🔹 Bitcoin (BTC)
-bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
-
-🔹 Ethereum (ETH)
-0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
-
-🔹 TON
-UQD-fake-address-for-demo
-
-🔹 USDT (TRC20)
-TFake1234567890Address
-
-💙 Every contribution is appreciated!
-
-Created with ❤️ using BotForge Pro"""
-            
-            telegram_api.send_message(chat_id, donate_text)
-            db.increment_bot_messages(bot_id)
-            return jsonify({'ok': True})
-        
         # Find matching command
         commands = db.get_bot_commands(bot_id)
         response_sent = False
         
         for cmd in commands:
             if cmd['command'].lower() == command:
+                # Special handling for menu command - show interactive buttons
+                if cmd['command'].lower() == 'menu':
+                    keyboard_buttons = []
+                    for i, menu_cmd in enumerate(commands[:20]):  # Max 20 commands in menu
+                        keyboard_buttons.append([{
+                            'text': f"/{menu_cmd['command']}",
+                            'callback_data': f"cmd_{menu_cmd['id']}"
+                        }])
+                    
+                    keyboard = {'inline_keyboard': keyboard_buttons}
+                    telegram_api.send_message(chat_id, cmd['response_content'], reply_markup=keyboard)
+                    response_sent = True
+                    db.increment_bot_messages(bot_id)
+                    break
+                
+                # Special handling for profile command - replace placeholders
+                if cmd['command'].lower() == 'profile':
+                    user_id = user_info.get('id', 'Unknown')
+                    username = user_info.get('username', 'Not set')
+                    first_name = user_info.get('first_name', 'Unknown')
+                    last_name = user_info.get('last_name', '')
+                    language_code = user_info.get('language_code', 'Unknown')
+                    
+                    profile_text = cmd['response_content'].replace('{user_id}', str(user_id))
+                    profile_text = profile_text.replace('{username}', username)
+                    profile_text = profile_text.replace('{name}', f"{first_name} {last_name}")
+                    profile_text = profile_text.replace('{language}', language_code)
+                    profile_text = profile_text.replace('{chat_id}', str(chat_id))
+                    
+                    telegram_api.send_message(chat_id, profile_text)
+                    response_sent = True
+                    db.increment_bot_messages(bot_id)
+                    break
+                
                 # Check if this is a URL type command
                 if cmd['response_type'] == 'url' and cmd.get('url_link'):
                     # Create inline keyboard with web app button
@@ -697,13 +664,8 @@ Created with ❤️ using BotForge Pro"""
                 break
         
         if not response_sent and command:
-            # Send default help message with built-in commands
+            # Send default help message
             help_text = "📋 Available Commands:\n\n"
-            help_text += "🔧 Built-in:\n"
-            help_text += "/menu - Interactive command menu\n"
-            help_text += "/profile - View your profile\n"
-            help_text += "/donate - Support the developer\n\n"
-            help_text += "⚙️ Custom Commands:\n"
             for cmd in commands:
                 help_text += f"/{cmd['command']}\n"
             telegram_api.send_message(chat_id, help_text or "No commands configured yet.")
