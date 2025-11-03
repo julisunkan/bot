@@ -142,9 +142,9 @@ def create_bot():
         if not bot_name:
             return render_template('create_bot.html', error='Bot name is required')
         
-        # Only require token for telegram bots
-        if bot_type == 'telegram' and not bot_token:
-            return render_template('create_bot.html', error='Bot token is required for Telegram bots')
+        # Require bot token for all bot types
+        if not bot_token:
+            return render_template('create_bot.html', error='Bot token is required. Get one from @BotFather on Telegram.')
         
         user = db.get_user(session['user_id'])
         user_bots = db.get_user_bots(session['user_id'])
@@ -152,17 +152,15 @@ def create_bot():
         if user['plan'] == 'free' and len(user_bots) >= 1:
             return render_template('create_bot.html', error='Free plan allows only 1 bot. Upgrade to Pro for unlimited bots.')
         
-        # Verify telegram bot token if provided
-        bot_username = None
-        if bot_type == 'telegram':
-            telegram_api = TelegramAPI()
-            verification = telegram_api.verify_token(bot_token)
-            
-            if not verification['valid']:
-                return render_template('create_bot.html', error='Invalid Telegram bot token')
-            
-            # Get bot username for the link
-            bot_username = verification.get('bot_info', {}).get('username')
+        # Verify bot token with BotFather for all bot types
+        telegram_api = TelegramAPI()
+        verification = telegram_api.verify_token(bot_token)
+        
+        if not verification['valid']:
+            return render_template('create_bot.html', error='Invalid Telegram bot token. Please get a valid token from @BotFather.')
+        
+        # Get bot username for the link
+        bot_username = verification.get('bot_info', {}).get('username')
         
         bot_config = json.dumps({
             'commands': [],

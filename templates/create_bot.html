@@ -54,8 +54,8 @@
                             
                             <div class="mb-4" id="tokenField">
                                 <label for="bot_token" class="form-label">Bot Token</label>
-                                <input type="text" class="form-control form-control-lg" id="bot_token" name="bot_token" placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
-                                <div class="form-text text-white-50">The token provided by @BotFather</div>
+                                <input type="text" class="form-control form-control-lg" id="bot_token" name="bot_token" required placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+                                <div class="form-text text-white-50">The token provided by @BotFather (required for all bot types)</div>
                             </div>
                             
                             <div class="d-grid gap-2">
@@ -91,23 +91,4 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-document.getElementById('bot_type').addEventListener('change', function() {
-    const tokenField = document.getElementById('tokenField');
-    const tokenInput = document.getElementById('bot_token');
-    
-    if (this.value === 'telegram') {
-        tokenField.style.display = 'block';
-        tokenInput.required = true;
-    } else {
-        tokenField.style.display = 'none';
-        tokenInput.required = false;
-        tokenInput.value = '';
-    }
-});
-
-// Initialize on page load
-document.getElementById('bot_type').dispatchEvent(new Event('change'));
-</script>
 {% endblock %}
