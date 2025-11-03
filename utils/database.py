@@ -67,6 +67,20 @@ class Database:
             cursor.execute("ALTER TABLE bots ADD COLUMN bot_type TEXT DEFAULT 'telegram'")
             conn.commit()
         
+        # Migration: Add is_active column if it doesn't exist
+        try:
+            cursor.execute("SELECT is_active FROM bots LIMIT 1")
+        except sqlite3.OperationalError:
+            cursor.execute("ALTER TABLE bots ADD COLUMN is_active INTEGER DEFAULT 0")
+            conn.commit()
+        
+        # Migration: Add webhook_url column if it doesn't exist
+        try:
+            cursor.execute("SELECT webhook_url FROM bots LIMIT 1")
+        except sqlite3.OperationalError:
+            cursor.execute("ALTER TABLE bots ADD COLUMN webhook_url TEXT")
+            conn.commit()
+        
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS templates (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
