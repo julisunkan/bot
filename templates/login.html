@@ -1,63 +1,86 @@
+
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center align-items-center min-vh-100">
-        <div class="col-md-6 col-lg-4">
-            <div class="card shadow">
-                <div class="card-body p-5">
+<div class="landing-page-v2 min-vh-100 d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="fade-in-up">
                     <div class="text-center mb-4">
-                        <h2>
-                            <i class="bi bi-robot text-primary"></i>
-                            {% if mode == 'register' %}Register{% else %}Login{% endif %}
+                        <div class="hero-badge mb-3">
+                            <i class="bi bi-robot"></i> BotForge Pro
+                        </div>
+                        <h2 class="gradient-text display-4 fw-bold">
+                            {% if mode == 'register' %}Join Us{% else %}Welcome Back{% endif %}
                         </h2>
+                        <p class="hero-subtitle mt-3">
+                            {% if mode == 'register' %}
+                            Create your account and start building powerful Telegram bots
+                            {% else %}
+                            Sign in to manage your bots and templates
+                            {% endif %}
+                        </p>
                     </div>
                     
                     {% if error %}
                     <div class="alert alert-danger">{{ error }}</div>
                     {% endif %}
                     
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                    <div class="feature-card p-4">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control form-control-lg" id="username" name="username" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control form-control-lg" id="password" name="password" required>
+                                {% if mode == 'register' %}
+                                <div class="form-text text-white-50 mt-2">Minimum 6 characters</div>
+                                {% endif %}
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary-gradient btn-lg">
+                                    {% if mode == 'register' %}
+                                    <i class="bi bi-person-plus"></i> Create Account
+                                    {% else %}
+                                    <i class="bi bi-box-arrow-in-right"></i> Sign In
+                                    {% endif %}
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
                             {% if mode == 'register' %}
-                            <div class="form-text">Minimum 6 characters</div>
+                            <p class="mb-0">Already have an account? <a href="{{ url_for('login') }}" class="text-white fw-bold">Sign In</a></p>
+                            {% else %}
+                            <p class="mb-0">Don't have an account? <a href="{{ url_for('register') }}" class="text-white fw-bold">Register</a></p>
                             {% endif %}
                         </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                {% if mode == 'register' %}
-                                <i class="bi bi-person-plus"></i> Create Account
-                                {% else %}
-                                <i class="bi bi-box-arrow-in-right"></i> Login
-                                {% endif %}
-                            </button>
+                        
+                        <hr class="my-4" style="border-color: rgba(255,255,255,0.2);">
+                        
+                        <div class="text-center">
+                            <a href="{{ url_for('generate_account') }}" class="btn btn-outline-light">
+                                <i class="bi bi-lightning-fill"></i> Quick Start Demo
+                            </a>
                         </div>
-                    </form>
-                    
-                    <div class="text-center mt-3">
-                        {% if mode == 'register' %}
-                        <a href="{{ url_for('login') }}">Already have an account? Login</a>
-                        {% else %}
-                        <a href="{{ url_for('register') }}">Don't have an account? Register</a>
-                        {% endif %}
-                    </div>
-                    
-                    <hr class="my-4">
-                    
-                    <div class="text-center">
-                        <a href="{{ url_for('generate_account') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-lightning-fill"></i> Quick Start (Generate Account)
-                        </a>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    
+    <!-- Floating Elements -->
+    <div class="floating-element floating-1">
+        <i class="bi bi-telegram"></i>
+    </div>
+    <div class="floating-element floating-2">
+        <i class="bi bi-stars"></i>
+    </div>
+    <div class="floating-element floating-3">
+        <i class="bi bi-lightning-charge"></i>
     </div>
 </div>
 {% endblock %}

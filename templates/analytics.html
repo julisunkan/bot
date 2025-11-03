@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}Analytics - BotForge Pro{% endblock %}
@@ -7,53 +8,54 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col">
-            <h2><i class="bi bi-graph-up"></i> Analytics Dashboard</h2>
-            <p class="text-muted">Track your bot performance and cryptocurrency market data</p>
+<div class="landing-page-v2 min-vh-100">
+    <div class="container-fluid px-3 py-4">
+        <div class="row mb-4 fade-in-up">
+            <div class="col">
+                <h2 class="gradient-text display-5 fw-bold"><i class="bi bi-graph-up"></i> Analytics Dashboard</h2>
+                <p class="hero-subtitle">Track your bot performance and cryptocurrency market data</p>
+            </div>
         </div>
-    </div>
 
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="text-muted">Total Bots</h6>
-                    <h2>{{ analytics.total_bots }}</h2>
+        <div class="row mb-4 g-3">
+            <div class="col-md-4 fade-in-up" style="animation-delay: 0.1s;">
+                <div class="feature-card">
+                    <div class="feature-icon bg-gradient-blue mb-3">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <h6 class="text-white-50">Total Bots</h6>
+                    <h2 class="gradient-text">{{ analytics.total_bots }}</h2>
                     <small class="text-success"><i class="bi bi-arrow-up"></i> Active</small>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="text-muted">Total Messages</h6>
-                    <h2>{{ analytics.total_messages }}</h2>
+            <div class="col-md-4 fade-in-up" style="animation-delay: 0.2s;">
+                <div class="feature-card">
+                    <div class="feature-icon bg-gradient-purple mb-3">
+                        <i class="bi bi-chat-dots"></i>
+                    </div>
+                    <h6 class="text-white-50">Total Messages</h6>
+                    <h2 class="gradient-text">{{ analytics.total_messages }}</h2>
                     <small class="text-info"><i class="bi bi-chat-dots"></i> All time</small>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h6 class="text-muted">Plan</h6>
-                    <h2>{{ user.plan|capitalize }}</h2>
-                    <small class="text-muted">Current subscription</small>
+            <div class="col-md-4 fade-in-up" style="animation-delay: 0.3s;">
+                <div class="feature-card">
+                    <div class="feature-icon bg-gradient-green mb-3">
+                        <i class="bi bi-star"></i>
+                    </div>
+                    <h6 class="text-white-50">Plan</h6>
+                    <h2 class="gradient-text">{{ user.plan|capitalize }}</h2>
+                    <small class="text-white-50">Current subscription</small>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-currency-bitcoin"></i> Cryptocurrency Prices</h5>
-                </div>
-                <div class="card-body">
+        <div class="row mb-4 fade-in-up" style="animation-delay: 0.4s;">
+            <div class="col-md-12">
+                <div class="feature-card">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-currency-bitcoin"></i> Cryptocurrency Prices</h5>
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table table-dark table-hover">
                             <thead>
                                 <tr>
                                     <th>Coin</th>
@@ -64,9 +66,7 @@
                             <tbody>
                                 {% for price in crypto_prices %}
                                 <tr>
-                                    <td>
-                                        <strong>{{ price.coin|upper }}</strong>
-                                    </td>
+                                    <td><strong>{{ price.coin|upper }}</strong></td>
                                     <td>${{ "{:,.2f}".format(price.price) }}</td>
                                     <td>
                                         <span class="badge bg-{{ price.change_24h > 0 and 'success' or 'danger' }}">
@@ -81,22 +81,18 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    {% if trending %}
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-fire"></i> Trending Cryptocurrencies</h5>
-                </div>
-                <div class="card-body">
+        {% if trending %}
+        <div class="row mb-4 fade-in-up" style="animation-delay: 0.5s;">
+            <div class="col-md-12">
+                <div class="feature-card">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-fire"></i> Trending Cryptocurrencies</h5>
                     <div class="row">
                         {% for coin in trending %}
                         <div class="col-md-4 mb-3">
-                            <div class="alert alert-info mb-0">
+                            <div class="p-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
                                 <strong>{{ coin.name }}</strong> ({{ coin.symbol|upper }})<br>
-                                <small>Rank #{{ coin.market_cap_rank or 'N/A' }}</small>
+                                <small class="text-white-50">Rank #{{ coin.market_cap_rank or 'N/A' }}</small>
                             </div>
                         </div>
                         {% endfor %}
@@ -104,32 +100,28 @@
                 </div>
             </div>
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    {% if global_stats %}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-globe"></i> Global Crypto Market Stats</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <h6>Active Cryptocurrencies</h6>
-                            <h4>{{ "{:,}".format(global_stats.active_cryptocurrencies) }}</h4>
+        {% if global_stats %}
+        <div class="row fade-in-up" style="animation-delay: 0.6s;">
+            <div class="col-md-12">
+                <div class="feature-card">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-globe"></i> Global Crypto Market Stats</h5>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <h6 class="text-white-50">Active Cryptocurrencies</h6>
+                            <h4 class="gradient-text">{{ "{:,}".format(global_stats.active_cryptocurrencies) }}</h4>
                         </div>
-                        <div class="col-md-3">
-                            <h6>Total Market Cap</h6>
-                            <h4>${{ "{:,.0f}".format(global_stats.total_market_cap_usd / 1000000000) }}B</h4>
+                        <div class="col-md-3 mb-3">
+                            <h6 class="text-white-50">Total Market Cap</h6>
+                            <h4 class="gradient-text">${{ "{:,.0f}".format(global_stats.total_market_cap_usd / 1000000000) }}B</h4>
                         </div>
-                        <div class="col-md-3">
-                            <h6>24h Volume</h6>
-                            <h4>${{ "{:,.0f}".format(global_stats.total_volume_usd / 1000000000) }}B</h4>
+                        <div class="col-md-3 mb-3">
+                            <h6 class="text-white-50">24h Volume</h6>
+                            <h4 class="gradient-text">${{ "{:,.0f}".format(global_stats.total_volume_usd / 1000000000) }}B</h4>
                         </div>
-                        <div class="col-md-3">
-                            <h6>Market Cap Change (24h)</h6>
+                        <div class="col-md-3 mb-3">
+                            <h6 class="text-white-50">Market Cap Change (24h)</h6>
                             <h4>
                                 <span class="badge bg-{{ global_stats.market_cap_change_24h > 0 and 'success' or 'danger' }}">
                                     {{ "{:+.2f}".format(global_stats.market_cap_change_24h) }}%
@@ -140,7 +132,15 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
-    {% endif %}
+    
+    <!-- Floating Elements -->
+    <div class="floating-element floating-1">
+        <i class="bi bi-graph-up"></i>
+    </div>
+    <div class="floating-element floating-2">
+        <i class="bi bi-stars"></i>
+    </div>
 </div>
 {% endblock %}

@@ -1,74 +1,65 @@
+
 {% extends "base.html" %}
 
 {% block title %}Settings - BotForge Pro{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4">
-        <div class="col">
-            <h2><i class="bi bi-gear"></i> Settings</h2>
-            <p class="text-muted">Manage your account and preferences</p>
+<div class="landing-page-v2 min-vh-100">
+    <div class="container px-3 py-4">
+        <div class="row mb-4 fade-in-up">
+            <div class="col">
+                <h2 class="gradient-text display-5 fw-bold"><i class="bi bi-gear"></i> Settings</h2>
+                <p class="hero-subtitle">Manage your account and preferences</p>
+            </div>
         </div>
-    </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-person"></i> Account Information</h5>
-                </div>
-                <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.1s;">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-person"></i> Account Information</h5>
                     <div class="mb-3">
                         <label class="form-label">Username</label>
-                        <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                        <input type="text" class="form-control" value="{{ user.username }}" readonly style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">User ID</label>
-                        <input type="text" class="form-control" value="{{ user.id }}" readonly>
+                        <input type="text" class="form-control" value="{{ user.id }}" readonly style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Plan</label>
-                        <input type="text" class="form-control" value="{{ user.plan|capitalize }}" readonly>
+                        <input type="text" class="form-control" value="{{ user.plan|capitalize }}" readonly style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Referral Code</label>
                         <div class="input-group">
-                            <input type="text" class="form-control" value="{{ user.referral_code }}" readonly>
-                            <button class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ user.referral_code }}')">
+                            <input type="text" class="form-control" value="{{ user.referral_code }}" readonly style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                            <button class="btn btn-outline-light" onclick="navigator.clipboard.writeText('{{ user.referral_code }}')">
                                 <i class="bi bi-clipboard"></i> Copy
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-wallet2"></i> Web3 Settings</h5>
-                </div>
-                <div class="card-body">
+                <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.2s;">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-wallet2"></i> Web3 Settings</h5>
                     <form method="POST">
                         <div class="mb-3">
                             <label for="wallet_address" class="form-label">Wallet Address</label>
                             <input type="text" class="form-control" id="wallet_address" name="wallet_address" 
                                    value="{{ user.wallet_address or '' }}" 
-                                   placeholder="0x...">
-                            <div class="form-text">Connect your crypto wallet address</div>
+                                   placeholder="0x..." style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                            <div class="form-text text-white-50">Connect your crypto wallet address</div>
                         </div>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary-gradient">
                             <i class="bi bi-check"></i> Save Changes
                         </button>
                     </form>
                 </div>
-            </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-robot"></i> AI Integration</h5>
-                </div>
-                <div class="card-body">
+                <div class="feature-card fade-in-up" style="animation-delay: 0.3s;">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-robot"></i> AI Integration</h5>
                     <p>
-                        <strong>Status:</strong> 
+                        <strong class="text-white">Status:</strong> 
                         {% if ai_available %}
                         <span class="badge bg-success">Active</span>
                         {% else %}
@@ -76,53 +67,45 @@
                         {% endif %}
                     </p>
                     {% if not ai_available %}
-                    <div class="alert alert-info">
+                    <div class="alert" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
                         <i class="bi bi-info-circle"></i>
                         To enable AI features, please add your Gemini API key as an environment variable.
                     </div>
                     {% endif %}
-                    <p class="mb-0">
+                    <p class="mb-0 text-white-50">
                         AI-powered features include automatic response generation, intent detection, and smart command suggestions.
                     </p>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-palette"></i> Theme</h5>
-                </div>
-                <div class="card-body">
-                    <p>Current theme: <span id="currentTheme">Light</span></p>
-                    <button class="btn btn-outline-primary w-100" id="themeTogglePage">
+            <div class="col-md-4">
+                <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.4s;">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-palette"></i> Theme</h5>
+                    <p class="text-white-50">Current theme: <span id="currentTheme">Dark</span></p>
+                    <button class="btn btn-outline-light w-100" id="themeTogglePage">
                         <i class="bi bi-moon-stars"></i> Toggle Theme
                     </button>
                 </div>
-            </div>
 
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-star"></i> Upgrade Plan</h5>
-                </div>
-                <div class="card-body">
+                <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.5s;">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-star"></i> Upgrade Plan</h5>
                     {% if user.plan == 'free' %}
-                    <h6>Free Plan</h6>
-                    <ul>
+                    <h6 class="text-white">Free Plan</h6>
+                    <ul class="text-white-50">
                         <li>1 bot maximum</li>
                         <li>Basic templates</li>
                         <li>Standard analytics</li>
                     </ul>
-                    <hr>
-                    <h6>Pro Plan</h6>
-                    <ul>
+                    <hr style="border-color: rgba(255,255,255,0.2);">
+                    <h6 class="text-white">Pro Plan</h6>
+                    <ul class="text-white-50">
                         <li>Unlimited bots</li>
                         <li>All templates</li>
                         <li>Advanced analytics</li>
                         <li>Web3 features</li>
                         <li>Priority support</li>
                     </ul>
-                    <button class="btn btn-success w-100" disabled>
+                    <button class="btn btn-primary-gradient w-100" disabled>
                         <i class="bi bi-star-fill"></i> Upgrade to Pro (Coming Soon)
                     </button>
                     {% else %}
@@ -131,25 +114,29 @@
                     </div>
                     {% endif %}
                 </div>
-            </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Help & Support</h5>
-                </div>
-                <div class="card-body">
-                    <p>Need help? Check out these resources:</p>
+                <div class="feature-card fade-in-up" style="animation-delay: 0.6s;">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-info-circle"></i> Help & Support</h5>
+                    <p class="text-white-50">Need help? Check out these resources:</p>
                     <div class="d-grid gap-2">
-                        <a href="#" class="btn btn-outline-primary btn-sm">
+                        <a href="#" class="btn btn-outline-light btn-sm">
                             <i class="bi bi-book"></i> Documentation
                         </a>
-                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                        <a href="#" class="btn btn-outline-light btn-sm">
                             <i class="bi bi-chat"></i> Support
                         </a>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    
+    <!-- Floating Elements -->
+    <div class="floating-element floating-1">
+        <i class="bi bi-gear"></i>
+    </div>
+    <div class="floating-element floating-2">
+        <i class="bi bi-stars"></i>
     </div>
 </div>
 {% endblock %}

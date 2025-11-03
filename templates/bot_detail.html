@@ -1,37 +1,38 @@
+
 {% extends "base.html" %}
 
 {% block title %}{{ bot.bot_name }} - BotForge Pro{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col">
-            <h2><i class="bi bi-robot"></i> {{ bot.bot_name }}</h2>
-            <p class="text-muted">Bot ID: {{ bot.id }} | Created: {{ bot.created_at }}</p>
+<div class="landing-page-v2 min-vh-100">
+    <div class="container-fluid px-3 py-4">
+        <div class="row mb-4 fade-in-up">
+            <div class="col">
+                <h2 class="gradient-text display-5 fw-bold"><i class="bi bi-robot"></i> {{ bot.bot_name }}</h2>
+                <p class="hero-subtitle">Bot ID: {{ bot.id }} | Created: {{ bot.created_at }}</p>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('export_bot', bot_id=bot.id) }}" class="btn btn-outline-light me-2">
+                    <i class="bi bi-download"></i> Export
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
         </div>
-        <div class="col-auto">
-            <a href="{{ url_for('export_bot', bot_id=bot.id) }}" class="btn btn-outline-primary">
-                <i class="bi bi-download"></i> Export Config
-            </a>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-            </a>
-        </div>
-    </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-terminal"></i> Bot Commands</h5>
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCommandModal">
-                        <i class="bi bi-plus"></i> Add Command
-                    </button>
-                </div>
-                <div class="card-body">
+        <div class="row">
+            <div class="col-md-8 fade-in-up" style="animation-delay: 0.1s;">
+                <div class="feature-card mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="gradient-text mb-0"><i class="bi bi-terminal"></i> Bot Commands</h5>
+                        <button class="btn btn-primary-gradient" data-bs-toggle="modal" data-bs-target="#addCommandModal">
+                            <i class="bi bi-plus"></i> Add Command
+                        </button>
+                    </div>
                     {% if commands %}
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table table-dark table-hover">
                             <thead>
                                 <tr>
                                     <th>Command</th>
@@ -51,38 +52,30 @@
                         </table>
                     </div>
                     {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-terminal display-4 text-muted"></i>
-                        <p class="mt-3">No commands yet. Add your first command!</p>
+                    <div class="text-center py-5">
+                        <i class="bi bi-terminal display-1 text-white-50"></i>
+                        <p class="mt-3 text-white-50">No commands yet. Add your first command!</p>
                     </div>
                     {% endif %}
                 </div>
             </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Bot Information</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Name:</strong> {{ bot.bot_name }}</p>
-                    <p><strong>Commands:</strong> {{ commands|length }}</p>
-                    <p><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
-                    <p class="mb-0"><strong>Created:</strong><br>{{ bot.created_at }}</p>
-                </div>
-            </div>
             
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Quick Actions</h5>
+            <div class="col-md-4">
+                <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.2s;">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-info-circle"></i> Bot Information</h5>
+                    <p><strong class="text-white">Name:</strong> <span class="text-white-50">{{ bot.bot_name }}</span></p>
+                    <p><strong class="text-white">Commands:</strong> <span class="text-white-50">{{ commands|length }}</span></p>
+                    <p><strong class="text-white">Status:</strong> <span class="badge bg-success">Active</span></p>
+                    <p class="mb-0"><strong class="text-white">Created:</strong><br><span class="text-white-50">{{ bot.created_at }}</span></p>
                 </div>
-                <div class="card-body">
+                
+                <div class="feature-card fade-in-up" style="animation-delay: 0.3s;">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-lightbulb"></i> Quick Actions</h5>
                     <div class="d-grid gap-2">
-                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addCommandModal">
+                        <button class="btn btn-primary-gradient" data-bs-toggle="modal" data-bs-target="#addCommandModal">
                             <i class="bi bi-plus"></i> Add Command
                         </button>
-                        <a href="{{ url_for('export_bot', bot_id=bot.id) }}" class="btn btn-outline-info">
+                        <a href="{{ url_for('export_bot', bot_id=bot.id) }}" class="btn btn-outline-light">
                             <i class="bi bi-download"></i> Export Bot
                         </a>
                         <form method="POST" action="{{ url_for('delete_bot', bot_id=bot.id) }}" style="display:inline;">
@@ -95,27 +88,35 @@
             </div>
         </div>
     </div>
+    
+    <!-- Floating Elements -->
+    <div class="floating-element floating-1">
+        <i class="bi bi-robot"></i>
+    </div>
+    <div class="floating-element floating-2">
+        <i class="bi bi-stars"></i>
+    </div>
 </div>
 
 <div class="modal fade" id="addCommandModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add Command</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-content" style="background: #2d3139; color: white;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title gradient-text"><i class="bi bi-plus-circle"></i> Add Command</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="addCommandForm">
                     <div class="mb-3">
                         <label for="command" class="form-label">Command Name</label>
                         <div class="input-group">
-                            <span class="input-group-text">/</span>
-                            <input type="text" class="form-control" id="command" name="command" required placeholder="start">
+                            <span class="input-group-text" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: white;">/</span>
+                            <input type="text" class="form-control" id="command" name="command" required placeholder="start" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="response_type" class="form-label">Response Type</label>
-                        <select class="form-select" id="response_type" name="response_type">
+                        <select class="form-select" id="response_type" name="response_type" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
                             <option value="text">Text</option>
                             <option value="image">Image</option>
                             <option value="button">Button</option>
@@ -123,16 +124,16 @@
                     </div>
                     <div class="mb-3">
                         <label for="response_content" class="form-label">Response Content</label>
-                        <textarea class="form-control" id="response_content" name="response_content" rows="4" required></textarea>
+                        <textarea class="form-control" id="response_content" name="response_content" rows="4" required style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;"></textarea>
                     </div>
-                    <button type="button" class="btn btn-info" id="aiGenerateBtn">
+                    <button type="button" class="btn btn-outline-light" id="aiGenerateBtn">
                         <i class="bi bi-magic"></i> AI Generate Response
                     </button>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveCommandBtn">
+            <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary-gradient" id="saveCommandBtn">
                     <i class="bi bi-check"></i> Save Command
                 </button>
             </div>

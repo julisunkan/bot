@@ -1,118 +1,120 @@
+
 {% extends "base.html" %}
 
 {% block title %}Marketplace - BotForge Pro{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col">
-            <h2><i class="bi bi-shop"></i> Bot Template Marketplace</h2>
-            <p class="text-muted">Browse and clone pre-built bot templates</p>
+<div class="landing-page-v2 min-vh-100">
+    <div class="container-fluid px-3 py-4">
+        <div class="row mb-4 fade-in-up">
+            <div class="col">
+                <h2 class="gradient-text display-5 fw-bold"><i class="bi bi-shop"></i> Template Marketplace</h2>
+                <p class="hero-subtitle">Browse and clone pre-built bot templates</p>
+            </div>
         </div>
-    </div>
 
-    <div class="row">
-        {% for template in templates %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        {% if template.category == 'crypto' %}
-                        <i class="bi bi-currency-bitcoin text-warning"></i>
-                        {% elif template.category == 'web3' %}
-                        <i class="bi bi-globe text-info"></i>
-                        {% elif template.category == 'ai' %}
-                        <i class="bi bi-robot text-primary"></i>
-                        {% elif template.category == 'marketing' %}
-                        <i class="bi bi-megaphone text-success"></i>
-                        {% else %}
-                        <i class="bi bi-box text-secondary"></i>
-                        {% endif %}
-                        {{ template.title }}
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="card-text">{{ template.description }}</p>
+        <div class="row">
+            {% for template in templates %}
+            <div class="col-md-6 col-lg-4 mb-4 fade-in-up" style="animation-delay: {{ loop.index0 * 0.1 }}s;">
+                <div class="feature-card h-100">
+                    <div class="mb-3">
+                        <h5 class="gradient-text mb-0">
+                            {% if template.category == 'crypto' %}
+                            <i class="bi bi-currency-bitcoin"></i>
+                            {% elif template.category == 'web3' %}
+                            <i class="bi bi-globe"></i>
+                            {% elif template.category == 'ai' %}
+                            <i class="bi bi-robot"></i>
+                            {% elif template.category == 'marketing' %}
+                            <i class="bi bi-megaphone"></i>
+                            {% else %}
+                            <i class="bi bi-box"></i>
+                            {% endif %}
+                            {{ template.title }}
+                        </h5>
+                    </div>
+                    <p class="text-white-50">{{ template.description }}</p>
                     
                     {% if template.preview and template.preview.commands %}
                     <div class="mb-3">
-                        <h6>Included Commands:</h6>
+                        <h6 class="text-white">Included Commands:</h6>
                         <div class="d-flex flex-wrap gap-1">
                             {% for cmd in template.preview.commands[:5] %}
-                            <span class="badge bg-secondary">/{{ cmd.command }}</span>
+                            <span class="badge" style="background: rgba(255,255,255,0.2);">/{{ cmd.command }}</span>
                             {% endfor %}
                         </div>
                     </div>
                     {% endif %}
                     
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <small class="text-muted">
-                                <i class="bi bi-download"></i> {{ template.downloads }} downloads
-                            </small>
-                        </div>
-                        <div>
-                            <span class="badge bg-{{ template.category == 'crypto' and 'warning' or 'primary' }}">
-                                {{ template.category }}
-                            </span>
-                        </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-white-50">
+                            <i class="bi bi-download"></i> {{ template.downloads }} downloads
+                        </small>
+                        <span class="badge bg-primary">{{ template.category }}</span>
                     </div>
-                </div>
-                <div class="card-footer">
+                    
                     <div class="d-grid gap-2">
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#preview{{ template.id }}">
+                        <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#preview{{ template.id }}">
                             <i class="bi bi-eye"></i> Preview
                         </button>
-                        <a href="{{ url_for('clone_template', template_id=template.id) }}" class="btn btn-outline-success">
+                        <a href="{{ url_for('clone_template', template_id=template.id) }}" class="btn btn-primary-gradient">
                             <i class="bi bi-clipboard"></i> Clone Template
                         </a>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="modal fade" id="preview{{ template.id }}" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ template.title }} - Preview</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>{{ template.description }}</p>
-                        
-                        {% if template.preview and template.preview.commands %}
-                        <h6>Commands:</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Command</th>
-                                        <th>Response</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for cmd in template.preview.commands %}
-                                    <tr>
-                                        <td><code>/{{ cmd.command }}</code></td>
-                                        <td>{{ cmd.response_content[:80] }}...</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+            
+            <div class="modal fade" id="preview{{ template.id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content" style="background: #2d3139; color: white;">
+                        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <h5 class="modal-title gradient-text">{{ template.title }} - Preview</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
-                        {% endif %}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <a href="{{ url_for('clone_template', template_id=template.id) }}" class="btn btn-primary">
-                            <i class="bi bi-clipboard"></i> Clone This Template
-                        </a>
+                        <div class="modal-body">
+                            <p>{{ template.description }}</p>
+                            
+                            {% if template.preview and template.preview.commands %}
+                            <h6>Commands:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-dark">
+                                    <thead>
+                                        <tr>
+                                            <th>Command</th>
+                                            <th>Response</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cmd in template.preview.commands %}
+                                        <tr>
+                                            <td><code>/{{ cmd.command }}</code></td>
+                                            <td>{{ cmd.response_content[:80] }}...</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                            <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+                            <a href="{{ url_for('clone_template', template_id=template.id) }}" class="btn btn-primary-gradient">
+                                <i class="bi bi-clipboard"></i> Clone This Template
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+    </div>
+    
+    <!-- Floating Elements -->
+    <div class="floating-element floating-1">
+        <i class="bi bi-shop"></i>
+    </div>
+    <div class="floating-element floating-2">
+        <i class="bi bi-stars"></i>
     </div>
 </div>
 {% endblock %}
