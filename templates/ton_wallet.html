@@ -1,0 +1,165 @@
+
+{% extends "base.html" %}
+
+{% block title %}TON Wallet Settings - Advanced Bots Creator{% endblock %}
+
+{% block content %}
+<div class="landing-page-v2 min-vh-100">
+    <div class="container px-3 py-4">
+        <div class="row mb-4 fade-in-up">
+            <div class="col">
+                <h2 class="gradient-text display-5 fw-bold"><i class="bi bi-wallet-fill text-warning"></i> TON Wallet Settings</h2>
+                <p class="hero-subtitle">Configure your TON wallet for receiving payments from mining bots</p>
+                <a href="{{ url_for('settings') }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back to Settings
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="feature-card mb-4 fade-in-up">
+                    <div class="alert alert-info mb-4" style="background: rgba(13, 110, 253, 0.15); border: 1px solid rgba(13, 110, 253, 0.4); color: #66b3ff;">
+                        <i class="bi bi-info-circle-fill"></i> <strong>Important:</strong> This TON wallet will receive all payments from your mining bots including:
+                        <ul class="mb-0 mt-2">
+                            <li>💰 Shop purchases (when players buy coins)</li>
+                            <li>💳 Deposits (when players add funds)</li>
+                            <li>🎁 All cryptocurrency transactions</li>
+                        </ul>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('ton_wallet_settings') }}">
+                        <div class="mb-4">
+                            <label for="ton_wallet_address" class="form-label fw-bold">
+                                <i class="bi bi-wallet-fill text-warning"></i> Your TON Wallet Address
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="ton_wallet_address" name="ton_wallet_address" 
+                                   value="{{ user.wallet_address or '' }}" 
+                                   placeholder="EQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+                                   maxlength="48"
+                                   required
+                                   style="background: rgba(255,255,255,0.1); border: 2px solid rgba(255, 193, 7, 0.5); color: white; font-family: monospace; font-size: 14px;">
+                            <div class="form-text text-white-50 mt-2">
+                                <strong>Format Requirements:</strong>
+                                <ul class="mb-0 mt-1">
+                                    <li>Must be exactly 48 characters long</li>
+                                    <li>Must start with <code>EQ</code> or <code>UQ</code></li>
+                                    <li>Example: <code>EQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="card" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3);">
+                                <div class="card-body">
+                                    <h6 class="text-warning"><i class="bi bi-shield-check"></i> Connected Mining Bots</h6>
+                                    {% if mining_bots %}
+                                    <p class="text-white-50 mb-2">This wallet will be automatically configured for:</p>
+                                    <ul class="mb-0 text-white">
+                                        {% for bot in mining_bots %}
+                                        <li>
+                                            <i class="bi bi-coin"></i> {{ bot.bot_name }}
+                                            {% if bot.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                            {% endif %}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    <p class="text-white-50 mb-0">No mining bots created yet. Create one to start accepting payments!</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-gradient btn-lg w-100">
+                            <i class="bi bi-check-circle"></i> Save TON Wallet & Update All Bots
+                        </button>
+                    </form>
+                </div>
+
+                {% if user.wallet_address %}
+                <div class="feature-card fade-in-up" style="animation-delay: 0.1s;">
+                    <h5 class="gradient-text mb-3"><i class="bi bi-graph-up"></i> Wallet Statistics</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card" style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3);">
+                                <div class="card-body">
+                                    <h6 class="text-success"><i class="bi bi-cash-stack"></i> Total Expected Payments</h6>
+                                    <h3 class="text-white mb-0">{{ total_payments_count }}</h3>
+                                    <small class="text-white-50">Pending transactions</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card" style="background: rgba(13, 110, 253, 0.1); border: 1px solid rgba(13, 110, 253, 0.3);">
+                                <div class="card-body">
+                                    <h6 class="text-info"><i class="bi bi-people"></i> Active Players</h6>
+                                    <h3 class="text-white mb-0">{{ total_players }}</h3>
+                                    <small class="text-white-50">Across all mining bots</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-4">
+                <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.2s;">
+                    <h5 class="gradient-text mb-3"><i class="bi bi-question-circle"></i> How to Get a TON Wallet</h5>
+                    <p class="text-white-50">You need a TON wallet to receive payments. Here are the recommended options:</p>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-warning"><i class="bi bi-app"></i> Tonkeeper (Recommended)</h6>
+                        <p class="text-white-50 small mb-2">Most popular TON wallet with full features</p>
+                        <a href="https://tonkeeper.com" target="_blank" class="btn btn-warning btn-sm w-100">
+                            <i class="bi bi-download"></i> Download Tonkeeper
+                        </a>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-info"><i class="bi bi-telegram"></i> Telegram Wallet</h6>
+                        <p class="text-white-50 small mb-2">Built into Telegram, easy to use</p>
+                        <a href="https://t.me/wallet" target="_blank" class="btn btn-info btn-sm w-100">
+                            <i class="bi bi-telegram"></i> Open @wallet Bot
+                        </a>
+                    </div>
+
+                    <div class="alert alert-warning mt-3" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); font-size: 0.85rem;">
+                        <i class="bi bi-shield-exclamation"></i> <strong>Security Tips:</strong>
+                        <ul class="mb-0 mt-1 small">
+                            <li>Never share your seed phrase</li>
+                            <li>Double-check the address before saving</li>
+                            <li>Keep your wallet app updated</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="feature-card fade-in-up" style="animation-delay: 0.3s;">
+                    <h5 class="gradient-text mb-3"><i class="bi bi-info-circle"></i> How It Works</h5>
+                    <ol class="text-white-50 small">
+                        <li class="mb-2">Players buy coins or deposit funds in your mining bot</li>
+                        <li class="mb-2">Payment link is generated with your TON wallet</li>
+                        <li class="mb-2">Players complete payment via their TON wallet</li>
+                        <li class="mb-2">Funds are sent directly to your wallet address</li>
+                    </ol>
+                    <div class="alert alert-success mt-3" style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); font-size: 0.85rem;">
+                        <i class="bi bi-check-circle"></i> <strong>No middleman!</strong> You receive payments directly.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Elements -->
+    <div class="floating-element floating-1">
+        <i class="bi bi-wallet2"></i>
+    </div>
+    <div class="floating-element floating-2">
+        <i class="bi bi-currency-bitcoin"></i>
+    </div>
+</div>
+{% endblock %}

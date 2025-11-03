@@ -616,35 +616,12 @@ def settings():
     user = db.get_user(session['user_id'])
     
     if request.method == 'POST':
-        ton_wallet_address = request.form.get('ton_wallet_address', '').strip()
         wallet_address = request.form.get('wallet_address', '').strip()
-        
-        # Validate TON wallet if provided
-        if ton_wallet_address and not ((ton_wallet_address.startswith('UQ') or ton_wallet_address.startswith('EQ')) and len(ton_wallet_address) == 48):
-            flash('Invalid TON wallet address format. Must start with UQ or EQ and be 48 characters.', 'danger')
-            return redirect(url_for('settings'))
         
         conn = db.get_connection()
         cursor = conn.cursor()
-        
-        # Update TON wallet if provided
-        if ton_wallet_address:
-            cursor.execute('UPDATE users SET wallet_address = ? WHERE id = ?', (ton_wallet_address, session['user_id']))
-            
-            # Also update all mining bots owned by this user to use this wallet
-            cursor.execute('SELECT id, bot_config FROM bots WHERE user_id = ? AND bot_type = ?', (session['user_id'], 'mining'))
-            mining_bots = cursor.fetchall()
-            
-            for bot in mining_bots:
-                bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
-                bot_config['owner_ton_wallet'] = ton_wallet_address
-                cursor.execute('UPDATE bots SET bot_config = ? WHERE id = ?', (json.dumps(bot_config), bot['id']))
-            
-            flash('TON wallet address saved and applied to all your mining bots!', 'success')
-        elif wallet_address:
-            cursor.execute('UPDATE users SET wallet_address = ? WHERE id = ?', (wallet_address, session['user_id']))
-            flash('Wallet address updated successfully!', 'success')
-        
+        cursor.execute('UPDATE users SET wallet_address = ? WHERE id = ?', (wallet_address, session['user_id']))
+        flash('Wallet address updated successfully!', 'success')
         conn.commit()
         conn.close()
         
@@ -653,6 +630,80 @@ def settings():
     ai_available = ai_assistant.is_available()
     
     return render_template('settings.html', user=user, ai_available=ai_available)
+
+@app.route('/ton-wallet', methods=['GET', 'POST'])
+@login_required
+def ton_wallet_settings():
+    user = db.get_user(session['user_id'])
+    
+    if request.method == 'POST':
+        ton_wallet_address = request.form.get('ton_wallet_address', '').strip()
+        
+        # Validate TON wallet
+        if not ton_wallet_address:
+            flash('TON wallet address is required.', 'danger')
+            return redirect(url_for('ton_wallet_settings'))
+        
+        if not ((ton_wallet_address.startswith('UQ') or ton_wallet_address.startswith('EQ')) and len(ton_wallet_address) == 48):
+            flash('Invalid TON wallet address format. Must start with UQ or EQ and be exactly 48 characters.', 'danger')
+            return redirect(url_for('ton_wallet_settings'))
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        # Update user's TON wallet
+        cursor.execute('UPDATE users SET wallet_address = ? WHERE id = ?', (ton_wallet_address, session['user_id']))
+        
+        # Update all mining bots owned by this user to use this wallet
+        cursor.execute('SELECT id, bot_config FROM bots WHERE user_id = ? AND bot_type = ?', (session['user_id'], 'mining'))
+        mining_bots = cursor.fetchall()
+        
+        updated_count = 0
+        for bot in mining_bots:
+            bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+            bot_config['owner_ton_wallet'] = ton_wallet_address
+            cursor.execute('UPDATE bots SET bot_config = ? WHERE id = ?', (json.dumps(bot_config), bot['id']))
+            updated_count += 1
+        
+        conn.commit()
+        conn.close()
+        
+        flash(f'✅ TON wallet saved and applied to {updated_count} mining bot(s)!', 'success')
+        return redirect(url_for('ton_wallet_settings'))
+    
+    # Get mining bots for display
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM bots WHERE user_id = ? AND bot_type = ?', (session['user_id'], 'mining'))
+    mining_bots = cursor.fetchall()
+    
+    # Get statistics
+    cursor.execute('''
+        SELECT COUNT(DISTINCT mp.id) as total_players
+        FROM mining_players mp
+        JOIN bots b ON mp.bot_id = b.id
+        WHERE b.user_id = ?
+    ''', (session['user_id'],))
+    stats = cursor.fetchone()
+    total_players = stats['total_players'] if stats else 0
+    
+    cursor.execute('''
+        SELECT COUNT(*) as pending_payments
+        FROM mining_withdrawals mw
+        JOIN mining_players mp ON mw.player_id = mp.id
+        JOIN bots b ON mp.bot_id = b.id
+        WHERE b.user_id = ? AND mw.status = 'pending'
+    ''', (session['user_id'],))
+    payment_stats = cursor.fetchone()
+    total_payments_count = payment_stats['pending_payments'] if payment_stats else 0
+    
+    conn.close()
+    
+    return render_template('ton_wallet.html', 
+                         user=user, 
+                         mining_bots=[dict(bot) for bot in mining_bots],
+                         total_players=total_players,
+                         total_payments_count=total_payments_count)
 
 @app.route('/api/ai/generate-response', methods=['POST'])
 @login_required
