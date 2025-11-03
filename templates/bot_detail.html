@@ -155,8 +155,17 @@
 
                         {% set bot_config_dict = bot.bot_config | from_json if bot.bot_config else {} %}
                         {% if not bot_config_dict.get('owner_ton_wallet') %}
-                        <div class="alert alert-warning mb-3" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); color: #ffc107; font-size: 0.85rem;">
-                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Setup Required:</strong> Add your TON wallet address to receive shop payments!
+                        <div class="alert alert-danger mb-3" style="background: rgba(220, 53, 69, 0.15); border: 2px solid rgba(220, 53, 69, 0.5); color: #ff6b6b; font-size: 0.85rem;">
+                            <div class="mb-2"><i class="bi bi-exclamation-triangle-fill"></i> <strong>Payment Wallet Not Configured!</strong></div>
+                            <div class="mb-2">❌ Players cannot purchase coins from your shop</div>
+                            <div class="mb-2"><strong>How to fix:</strong></div>
+                            <ol class="mb-1 ps-3" style="font-size: 0.8rem;">
+                                <li>Click "Configure Settings" below</li>
+                                <li>Scroll to "Payment & Deposit Settings"</li>
+                                <li>Enter your TON wallet address (starts with EQ or UQ)</li>
+                                <li>Click "Save Settings"</li>
+                            </ol>
+                            <div class="mt-2 small">💡 <em>Get a TON wallet from Tonkeeper or Telegram Wallet</em></div>
                         </div>
                         {% endif %}
 

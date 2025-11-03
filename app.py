@@ -1141,7 +1141,10 @@ def mining_shop_purchase():
         owner_ton_wallet = bot_config.get('owner_ton_wallet')
         
         if not owner_ton_wallet:
-            return jsonify({'success': False, 'error': 'Bot owner has not set up payment wallet. Please contact bot owner.'}), 400
+            return jsonify({
+                'success': False, 
+                'error': '⚠️ Shop Unavailable: The bot owner needs to configure their TON wallet address to accept payments. Please contact @{} to enable the shop.'.format(bot.get('bot_username', 'bot_owner'))
+            }), 400
         
         # Get player's wallet
         conn = db.get_connection()

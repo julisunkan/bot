@@ -451,12 +451,12 @@
                 const initData = tg.initData || '';
                 const response = await fetch(`/api/mining/init?bot_id=${botId}&init_data=${encodeURIComponent(initData)}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     playerData = data.player;
                     sessionToken = data.session_token;
                     const settings = data.settings || {};
-                    
+
                     if (settings.enable_shop === false) {
                         document.querySelector('[onclick*="switchTab(\'shop\')"]').style.display = 'none';
                     }
@@ -469,7 +469,7 @@
                     if (settings.enable_daily_reward === false) {
                         document.getElementById('dailyRewardBtn').style.display = 'none';
                     }
-                    
+
                     updateUI();
                     startEnergyRecovery();
                     document.getElementById('referralLink').textContent = 
@@ -483,15 +483,15 @@
 
         function updateUI() {
             if (!playerData) return;
-            
+
             document.getElementById('totalCoins').textContent = Math.floor(playerData.coins);
             document.getElementById('level').textContent = playerData.level;
             document.getElementById('perTap').textContent = `+${playerData.coins_per_tap}`;
-            
+
             const energyPercent = (playerData.energy / playerData.energy_max) * 100;
             document.getElementById('energyFill').style.width = energyPercent + '%';
             document.getElementById('energyText').textContent = `${playerData.energy}/${playerData.energy_max}`;
-            
+
             const tapButton = document.getElementById('tapButton');
             if (playerData.energy <= 0) {
                 tapButton.classList.add('disabled');
@@ -504,7 +504,7 @@
             if (!playerData || playerData.energy <= 0) return;
 
             tg.HapticFeedback.impactOccurred('light');
-            
+
             const floatText = document.createElement('div');
             floatText.className = 'float-text';
             floatText.textContent = `+${playerData.coins_per_tap}`;
@@ -522,7 +522,7 @@
                         session_token: sessionToken
                     })
                 });
-                
+
                 const data = await response.json();
                 if (data.success) {
                     playerData = data.player;
@@ -549,7 +549,7 @@
                         boost_type: boostType
                     })
                 });
-                
+
                 const data = await response.json();
                 if (data.success) {
                     playerData = data.player;
@@ -566,7 +566,7 @@
 
         function startEnergyRecovery() {
             if (energyInterval) clearInterval(energyInterval);
-            
+
             energyInterval = setInterval(() => {
                 if (playerData && playerData.energy < playerData.energy_max) {
                     playerData.energy = Math.min(
@@ -581,7 +581,7 @@
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
+
             event.target.classList.add('active');
             document.getElementById(tabName + 'Tab').classList.add('active');
 
@@ -610,7 +610,7 @@
             try {
                 const response = await fetch(`/api/mining/leaderboard?bot_id=${botId}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     const list = document.getElementById('leaderboardList');
                     list.innerHTML = data.leaderboard.map((player, index) => `
@@ -662,7 +662,11 @@
                 }
             } catch (error) {
                 console.error('Purchase error:', error);
-                tg.showAlert('Purchase failed');
+                if (error.message && error.message.includes('payment wallet')) {
+                    tg.showAlert('⚠️ Shop temporarily unavailable. The bot owner needs to configure their payment wallet. Please contact the bot owner.');
+                } else {
+                    tg.showAlert('Purchase failed. Please try again.');
+                }
             }
         }
 
@@ -700,22 +704,22 @@
             try {
                 // Prompt user to enter TON wallet address
                 const walletAddress = prompt('Enter your TON wallet address (starts with EQ or UQ):', '');
-                
+
                 if (!walletAddress) {
                     return;
                 }
-                
+
                 // Basic validation
                 if (!walletAddress.startsWith('EQ') && !walletAddress.startsWith('UQ')) {
                     tg.showAlert('Invalid TON wallet address. Must start with EQ or UQ.');
                     return;
                 }
-                
+
                 if (walletAddress.length !== 48) {
                     tg.showAlert('Invalid TON wallet address. Must be 48 characters long.');
                     return;
                 }
-                
+
                 const response = await fetch('/api/mining/wallet/connect', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -745,11 +749,11 @@
                 tg.showAlert('You need at least 10,000 coins to withdraw!');
                 return;
             }
-            
+
             const amount = Math.floor(playerData.coins);
             const fee = Math.floor(amount * 0.02);
             const net = amount - fee;
-            
+
             tg.showConfirm(`Withdraw ${amount} coins? You will receive ${net} coins after 2% fee (${fee} coins).`, async function(confirmed) {
                 if (confirmed) {
                     try {

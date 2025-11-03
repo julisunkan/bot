@@ -15,6 +15,18 @@
             </div>
         </div>
 
+        {% if not owner_ton_wallet %}
+        <div class="row mb-4">
+            <div class="col">
+                <div class="alert alert-danger fade-in-up" style="background: rgba(220, 53, 69, 0.15); border: 2px solid rgba(220, 53, 69, 0.5); color: #ff6b6b; animation-delay: 0.05s;">
+                    <h5 class="mb-2"><i class="bi bi-exclamation-triangle-fill"></i> <strong>Action Required: Setup Payment Wallet</strong></h5>
+                    <p class="mb-2">⚠️ Your bot cannot accept payments yet! Players will see errors when trying to purchase coins from the shop.</p>
+                    <p class="mb-0"><strong>To fix:</strong> Scroll down and enter your TON wallet address in the "Payment & Deposit Settings" section below.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <form method="POST">
             <div class="row">
                 <div class="col-lg-8">
