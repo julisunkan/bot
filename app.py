@@ -230,8 +230,16 @@ def add_command(bot_id):
     response_content = request.form.get('response_content', '').strip()
     url_link = request.form.get('url_link', '').strip()
     
+    # Remove leading slash if user added it
+    command = command.lstrip('/')
+    
     if not command:
         return jsonify({'success': False, 'error': 'Command is required'}), 400
+    
+    # Check for duplicate commands
+    existing_commands = db.get_bot_commands(bot_id)
+    if any(cmd['command'] == command for cmd in existing_commands):
+        return jsonify({'success': False, 'error': f'Command /{command} already exists'}), 400
     
     if response_type != 'url' and not response_content:
         return jsonify({'success': False, 'error': 'Response content required'}), 400
@@ -239,9 +247,11 @@ def add_command(bot_id):
     if response_type == 'url' and not url_link:
         return jsonify({'success': False, 'error': 'URL is required for URL type'}), 400
     
-    db.add_bot_command(bot_id, command, response_type, response_content, url_link)
-    
-    return jsonify({'success': True})
+    try:
+        db.add_bot_command(bot_id, command, response_type, response_content, url_link)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Failed to add command: {str(e)}'}), 500
 
 @app.route('/bot/<int:bot_id>/set-menu', methods=['POST'])
 @login_required
@@ -489,7 +499,45 @@ def webhook(bot_id):
     try:
         update = request.get_json()
         
-        if not update or 'message' not in update:
+        if not update:
+            return jsonify({'ok': True})
+        
+        # Get bot token
+        decrypted_token = db.decrypt_token(bot['bot_token'])
+        telegram_api = TelegramAPI(decrypted_token)
+        
+        # Handle callback queries from inline keyboard buttons
+        if 'callback_query' in update:
+            callback_query = update['callback_query']
+            chat_id = callback_query['message']['chat']['id']
+            callback_data = callback_query['data']
+            
+            # Handle command execution from menu
+            if callback_data.startswith('cmd_'):
+                command_id = int(callback_data.split('_')[1])
+                commands = db.get_bot_commands(bot_id)
+                cmd = next((c for c in commands if c['id'] == command_id), None)
+                
+                if cmd:
+                    if cmd['response_type'] == 'url' and cmd.get('url_link'):
+                        keyboard = {
+                            'inline_keyboard': [[
+                                {
+                                    'text': cmd.get('response_content') or 'Open Link',
+                                    'web_app': {'url': cmd['url_link']}
+                                }
+                            ]]
+                        }
+                        telegram_api.send_message(chat_id, f"/{cmd['command']}", reply_markup=keyboard)
+                    else:
+                        telegram_api.send_message(chat_id, cmd['response_content'])
+                    
+                    telegram_api.answer_callback_query(callback_query['id'], text='Command executed')
+                    db.increment_bot_messages(bot_id)
+            
+            return jsonify({'ok': True})
+        
+        if 'message' not in update:
             return jsonify({'ok': True})
         
         message = update['message']
@@ -503,9 +551,51 @@ def webhook(bot_id):
         # Extract command (remove leading /)
         command = text.lstrip('/').split()[0].lower() if text.startswith('/') else None
         
-        # Get bot token
-        decrypted_token = db.decrypt_token(bot['bot_token'])
-        telegram_api = TelegramAPI(decrypted_token)
+        # Get bot token (already retrieved above)
+        # telegram_api already initialized above
+        
+        # Handle mining bot /start command
+        if command == 'start' and bot.get('bot_type') == 'mining':
+            telegram_user_id = user_info.get('id')
+            username = user_info.get('username', '')
+            first_name = user_info.get('first_name', 'Player')
+            
+            referred_by = None
+            if ' ' in text:
+                ref_code = text.split(' ')[1]
+                if ref_code.startswith('ref_'):
+                    referred_by = ref_code[4:]
+            
+            player = db.get_or_create_mining_player(bot_id, telegram_user_id, username, first_name, referred_by)
+            
+            base_url = request.host_url.replace('http://', 'https://')
+            webapp_url = f"{base_url}mining-app?bot_id={bot_id}"
+            
+            keyboard = {
+                'inline_keyboard': [[
+                    {
+                        'text': '⛏️ Start Mining',
+                        'web_app': {'url': webapp_url}
+                    }
+                ]]
+            }
+            
+            welcome_message = f'''⛏️ Welcome to TapCoin Mining, {first_name}!
+
+💰 Your Balance: {int(player['coins'])} coins
+⚡ Energy: {player['energy']}/{player['energy_max']}
+🏆 Level: {player['level']}
+
+Tap the button below to start mining coins!
+
+🎁 Invite friends and earn 500 coins per referral!
+📈 Plus get 10% of their mining earnings!
+
+Click "Start Mining" to launch the game! 👇'''
+            
+            telegram_api.send_message(chat_id, welcome_message, reply_markup=keyboard)
+            db.increment_bot_messages(bot_id)
+            return jsonify({'ok': True})
         
         # Handle built-in advanced commands
         if command == 'profile' or command == 'me':
@@ -773,68 +863,7 @@ def setup_mining(bot_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-@app.route('/webhook/<int:bot_id>', methods=['POST'])
-def telegram_webhook(bot_id):
-    try:
-        update = request.json
-        
-        if 'message' in update:
-            message = update['message']
-            chat_id = message['chat']['id']
-            telegram_user_id = message['from']['id']
-            username = message['from'].get('username')
-            first_name = message['from'].get('first_name', '')
-            text = message.get('text', '')
-            
-            bot = db.get_bot(bot_id)
-            if not bot or not bot['is_active']:
-                return jsonify({'ok': True})
-            
-            decrypted_token = db.decrypt_token(bot['bot_token'])
-            telegram_api = TelegramAPI(decrypted_token)
-            
-            if text.startswith('/start'):
-                bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
-                bot_username = bot.get('bot_username', 'your_bot')
-                
-                referred_by = None
-                if ' ' in text:
-                    ref_code = text.split(' ')[1]
-                    if ref_code.startswith('ref_'):
-                        referred_by = ref_code[4:]
-                
-                player = db.get_or_create_mining_player(bot_id, telegram_user_id, username, first_name, referred_by)
-                
-                webapp_url = f"{os.environ.get('REPLIT_DEV_DOMAIN', 'http://localhost:5000')}/mining-app?bot_id={bot_id}"
-                
-                keyboard = {
-                    'inline_keyboard': [[
-                        {
-                            'text': '⛏️ Start Mining',
-                            'web_app': {'url': webapp_url}
-                        }
-                    ]]
-                }
-                
-                welcome_message = f'''⛏️ Welcome to TapCoin Mining, {first_name}!
 
-💰 Your Balance: {int(player['coins'])} coins
-⚡ Energy: {player['energy']}/{player['energy_max']}
-🏆 Level: {player['level']}
-
-Tap the button below to start mining coins!
-
-🎁 Invite friends and earn 500 coins per referral!
-📈 Plus get 10% of their mining earnings!
-
-Click "Start Mining" to launch the game! 👇'''
-                
-                telegram_api.send_message(chat_id, welcome_message, parse_mode='Markdown', reply_markup=keyboard)
-            
-        return jsonify({'ok': True})
-    except Exception as e:
-        print(f"Webhook error: {e}")
-        return jsonify({'ok': True})
 
 @app.route('/mining-app')
 def mining_app():
