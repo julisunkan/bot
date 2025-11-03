@@ -181,6 +181,23 @@ def create_bot():
             conn.commit()
             conn.close()
         
+        # Add default commands for the bot
+        default_commands = [
+            ('start', 'text', f'👋 Welcome to {bot_name}!\n\nI\'m here to help you. Use /help to see available commands.'),
+            ('help', 'text', '📋 Available Commands:\n\n/start - Start the bot\n/about - Learn about this bot\n/features - See bot features\n/contact - Contact support\n/settings - Configure your preferences\n/feedback - Send us feedback\n/stats - View your statistics\n/news - Latest updates\n/faq - Frequently asked questions\n/help - Show this message'),
+            ('about', 'text', f'ℹ️ About {bot_name}\n\nThis bot was created using BotForge Pro - the ultimate Telegram bot creator platform.\n\nVersion: 1.0\nCreated: {datetime.now().strftime("%B %Y")}\n\nPowered by BotForge Pro 🚀'),
+            ('features', 'text', '✨ Bot Features:\n\n• 🤖 Automated responses\n• 💬 Interactive commands\n• 📊 Analytics tracking\n• 🔔 Notifications\n• 🎯 Custom workflows\n• 🌐 Multi-language support\n\nMore features coming soon!'),
+            ('contact', 'text', '📧 Contact Us\n\nNeed help? Reach out to us:\n\n📱 Support: @support\n📧 Email: support@example.com\n🌐 Website: https://example.com\n\nWe typically respond within 24 hours!'),
+            ('settings', 'text', '⚙️ Settings\n\nConfigure your bot preferences:\n\n🔔 Notifications: ON\n🌐 Language: English\n📍 Timezone: UTC\n🎨 Theme: Default\n\nUse the buttons below to customize your settings.'),
+            ('feedback', 'text', '💭 Send Feedback\n\nWe value your input! Please share:\n\n• Suggestions for improvement\n• Bug reports\n• Feature requests\n• General comments\n\nSend your feedback as a message and we\'ll review it!'),
+            ('stats', 'text', '📊 Your Statistics\n\n👤 Member since: Today\n💬 Messages sent: 1\n🎯 Commands used: 1\n⭐ Level: Beginner\n\nKeep using the bot to unlock achievements!'),
+            ('news', 'text', '📰 Latest Updates\n\n🎉 New Features (v1.0):\n• Enhanced command system\n• Improved performance\n• Bug fixes and optimizations\n\nStay tuned for more updates!'),
+            ('faq', 'text', '❓ Frequently Asked Questions\n\nQ: How do I use this bot?\nA: Simply send commands starting with /\n\nQ: Is this bot free?\nA: Yes, basic features are completely free!\n\nQ: How do I report issues?\nA: Use /feedback to send us a message\n\nQ: Can I customize responses?\nA: Contact the bot owner for customization options')
+        ]
+        
+        for command, response_type, response_content in default_commands:
+            db.add_bot_command(bot_id, command, response_type, response_content)
+        
         return redirect(url_for('bot_detail', bot_id=bot_id))
     
     return render_template('create_bot.html')
@@ -220,6 +237,43 @@ def add_command(bot_id):
     db.add_bot_command(bot_id, command, response_type, response_content)
     
     return jsonify({'success': True})
+
+@app.route('/bot/<int:bot_id>/command/<int:command_id>/edit', methods=['POST'])
+@login_required
+def edit_command(bot_id, command_id):
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    command = request.form.get('command', '').strip().lower()
+    response_type = request.form.get('response_type', 'text')
+    response_content = request.form.get('response_content', '').strip()
+    
+    if not command or not response_content:
+        return jsonify({'success': False, 'error': 'Command and response required'}), 400
+    
+    updated = db.update_bot_command(command_id, bot_id, command, response_type, response_content)
+    
+    if updated:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Command not found'}), 404
+
+@app.route('/bot/<int:bot_id>/command/<int:command_id>/delete', methods=['POST'])
+@login_required
+def delete_command(bot_id, command_id):
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    deleted = db.delete_bot_command(command_id, bot_id)
+    
+    if deleted:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Command not found'}), 404
 
 @app.route('/bot/<int:bot_id>/delete', methods=['POST'])
 @login_required

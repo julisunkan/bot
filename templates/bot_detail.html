@@ -49,6 +49,7 @@
                                     <th>Command</th>
                                     <th>Type</th>
                                     <th>Response</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -57,6 +58,14 @@
                                     <td><code>/{{ cmd.command }}</code></td>
                                     <td><span class="badge bg-info">{{ cmd.response_type }}</span></td>
                                     <td>{{ cmd.response_content[:100] }}{% if cmd.response_content|length > 100 %}...{% endif %}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editCommand({{ cmd.id }}, '{{ cmd.command }}', '{{ cmd.response_type }}', `{{ cmd.response_content|replace('`', '\\`')|replace('\n', '\\n') }}`)">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCommand({{ cmd.id }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -209,11 +218,17 @@
 
 {% block extra_js %}
 <script>
+let editingCommandId = null;
+
 document.getElementById('saveCommandBtn').addEventListener('click', function() {
     const form = document.getElementById('addCommandForm');
     const formData = new FormData(form);
+    
+    const url = editingCommandId 
+        ? `/bot/{{ bot.id }}/command/${editingCommandId}/edit`
+        : '{{ url_for("add_command", bot_id=bot.id) }}';
 
-    fetch('{{ url_for("add_command", bot_id=bot.id) }}', {
+    fetch(url, {
         method: 'POST',
         body: formData
     })
@@ -225,6 +240,39 @@ document.getElementById('saveCommandBtn').addEventListener('click', function() {
             alert('Error: ' + data.error);
         }
     });
+});
+
+function editCommand(commandId, command, responseType, responseContent) {
+    editingCommandId = commandId;
+    document.getElementById('command').value = command;
+    document.getElementById('response_type').value = responseType;
+    document.getElementById('response_content').value = responseContent;
+    document.querySelector('#addCommandModal .modal-title').innerHTML = '<i class="bi bi-pencil-circle"></i> Edit Command';
+    document.getElementById('saveCommandBtn').innerHTML = '<i class="bi bi-check"></i> Update Command';
+    new bootstrap.Modal(document.getElementById('addCommandModal')).show();
+}
+
+function deleteCommand(commandId) {
+    if (!confirm('Are you sure you want to delete this command?')) return;
+    
+    fetch(`/bot/{{ bot.id }}/command/${commandId}/delete`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+document.getElementById('addCommandModal').addEventListener('hidden.bs.modal', function() {
+    editingCommandId = null;
+    document.getElementById('addCommandForm').reset();
+    document.querySelector('#addCommandModal .modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> Add Command';
+    document.getElementById('saveCommandBtn').innerHTML = '<i class="bi bi-check"></i> Save Command';
 });
 
 document.getElementById('aiGenerateBtn').addEventListener('click', function() {

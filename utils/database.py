@@ -356,6 +356,28 @@ class Database:
         conn.close()
         return [dict(cmd) for cmd in commands]
     
+    def update_bot_command(self, command_id, bot_id, command, response_type, response_content):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE bot_commands 
+            SET command = ?, response_type = ?, response_content = ?
+            WHERE id = ? AND bot_id = ?
+        ''', (command, response_type, response_content, command_id, bot_id))
+        conn.commit()
+        updated = cursor.rowcount > 0
+        conn.close()
+        return updated
+    
+    def delete_bot_command(self, command_id, bot_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM bot_commands WHERE id = ? AND bot_id = ?', (command_id, bot_id))
+        conn.commit()
+        deleted = cursor.rowcount > 0
+        conn.close()
+        return deleted
+    
     def get_analytics_summary(self, user_id):
         conn = self.get_connection()
         cursor = conn.cursor()
