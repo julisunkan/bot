@@ -420,8 +420,10 @@ def setup_webhook(bot_id):
         decrypted_token = db.decrypt_token(bot['bot_token'])
         telegram_api = TelegramAPI(decrypted_token)
         
-        # Get the Repl URL (update this with your actual Repl URL)
-        webhook_url = f"{request.host_url}webhook/{bot_id}"
+        # Get the HTTPS URL for the webhook
+        # Replace http:// with https:// for Replit production URL
+        base_url = request.host_url.replace('http://', 'https://')
+        webhook_url = f"{base_url}webhook/{bot_id}"
         
         result = telegram_api.set_webhook(webhook_url)
         
