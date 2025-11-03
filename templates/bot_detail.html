@@ -221,9 +221,6 @@
                         <input type="url" class="form-control" id="url_link" name="url_link" placeholder="https://example.com" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
                         <small class="text-white-50">The URL will open inside the Telegram bot</small>
                     </div>
-                    <button type="button" class="btn btn-outline-light" id="aiGenerateBtn">
-                        <i class="bi bi-magic"></i> AI Generate Response
-                    </button>
                 </form>
             </div>
             <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
@@ -328,30 +325,6 @@ document.getElementById('addCommandModal').addEventListener('hidden.bs.modal', f
     document.querySelector('#addCommandModal .modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> Add Command';
     document.getElementById('saveCommandBtn').innerHTML = '<i class="bi bi-check"></i> Save Command';
     toggleUrlField();
-});
-
-document.getElementById('aiGenerateBtn').addEventListener('click', function() {
-    const command = document.getElementById('command').value;
-    const btn = this;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
-
-    fetch('/api/ai/generate-response', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({command: command, description: ''})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('response_content').value = data.response;
-            showInlineMessage('command-status-message', 'AI response generated successfully!', 'success');
-        } else {
-            showInlineMessage('command-status-message', data.error || 'AI generation failed', 'danger');
-        }
-        btn.disabled = false;
-        btn.innerHTML = '<i class="bi bi-magic"></i> AI Generate Response';
-    });
 });
 
 function setupWebhook(botId) {
