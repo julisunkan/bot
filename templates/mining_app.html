@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TapCoin Mining</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .mining-area {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .coin-display {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .tap-button {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border: none;
+            font-size: 48px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.5);
+            transition: transform 0.1s, box-shadow 0.1s;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .tap-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(255,215,0,0.3);
+        }
+
+        .tap-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .energy-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .boost-item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .boost-info h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .boost-info p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .boost-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            border: none;
+            border-radius: 8px;
+            color: #333;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .boost-btn:active {
+            transform: scale(0.95);
+        }
+
+        .boost-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .float-text {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px);
+            }
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .referral-link {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⛏️ TapCoin Mining</h1>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">💰 Total Coins</div>
+                <div class="stat-value" id="totalCoins">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🏆 Level</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">⚡ Per Tap</div>
+                <div class="stat-value" id="perTap">+1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">👥 Referrals</div>
+                <div class="stat-value" id="referrals">0</div>
+            </div>
+        </div>
+
+        <div class="mining-area">
+            <div class="coin-display">🪙</div>
+            <button class="tap-button" id="tapButton" onclick="handleTap(event)">
+                TAP
+            </button>
+        </div>
+
+        <div class="energy-bar">
+            <div class="energy-fill" id="energyFill">
+                <span id="energyText">1000/1000</span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('mine')">⛏️ Mine</button>
+            <button class="tab-btn" onclick="switchTab('boost')">🚀 Boost</button>
+            <button class="tab-btn" onclick="switchTab('referral')">👥 Referral</button>
+            <button class="tab-btn" onclick="switchTab('leaderboard')">🏆 Leaders</button>
+        </div>
+
+        <div id="mineTab" class="tab-content active">
+            <h2 style="margin-bottom: 15px;">Keep tapping to earn coins!</h2>
+            <p style="opacity: 0.8;">Energy recovers over time. Upgrade your boosts to earn more!</p>
+        </div>
+
+        <div id="boostTab" class="tab-content">
+            <div class="boost-item">
+                <div class="boost-info">
+                    <h3>⚡ Energy Limit</h3>
+                    <p>Increase max energy (+500)</p>
+                </div>
+                <button class="boost-btn" onclick="buyBoost('energy_limit', 500)">500 🪙</button>
+            </div>
+            <div class="boost-item">
+                <div class="boost-info">
+                    <h3>💎 Multi-Tap</h3>
+                    <p>Double coins per tap (+1)</p>
+                </div>
+                <button class="boost-btn" onclick="buyBoost('multi_tap', 1000)">1000 🪙</button>
+            </div>
+            <div class="boost-item">
+                <div class="boost-info">
+                    <h3>⚡ Recharge Speed</h3>
+                    <p>Faster energy recovery (+1/sec)</p>
+                </div>
+                <button class="boost-btn" onclick="buyBoost('recharge_speed', 750)">750 🪙</button>
+            </div>
+        </div>
+
+        <div id="referralTab" class="tab-content">
+            <h3 style="margin-bottom: 15px;">Share Your Link</h3>
+            <div class="referral-link" id="referralLink">Loading...</div>
+            <button class="copy-btn" onclick="copyReferralLink()">📋 Copy Link</button>
+            <p style="margin-top: 15px; opacity: 0.8;">
+                💰 Earn 500 coins for each friend who joins!<br>
+                📈 Plus 10% of their mining earnings!
+            </p>
+        </div>
+
+        <div id="leaderboardTab" class="tab-content">
+            <h3 style="margin-bottom: 15px;">Top Miners</h3>
+            <div id="leaderboardList">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        let playerData = null;
+        let botId = null;
+        let sessionToken = null;
+        let energyInterval = null;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        botId = urlParams.get('bot_id');
+
+        async function initGame() {
+            try {
+                const initData = tg.initData || '';
+                const response = await fetch(`/api/mining/init?bot_id=${botId}&init_data=${encodeURIComponent(initData)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    playerData = data.player;
+                    sessionToken = data.session_token;
+                    updateUI();
+                    startEnergyRecovery();
+                    document.getElementById('referralLink').textContent = 
+                        `https://t.me/${data.bot_username}?start=ref_${playerData.referral_code}`;
+                }
+            } catch (error) {
+                console.error('Init error:', error);
+                tg.showAlert('Failed to load game. Please try again.');
+            }
+        }
+
+        function updateUI() {
+            if (!playerData) return;
+            
+            document.getElementById('totalCoins').textContent = Math.floor(playerData.coins);
+            document.getElementById('level').textContent = playerData.level;
+            document.getElementById('perTap').textContent = `+${playerData.coins_per_tap}`;
+            
+            const energyPercent = (playerData.energy / playerData.energy_max) * 100;
+            document.getElementById('energyFill').style.width = energyPercent + '%';
+            document.getElementById('energyText').textContent = `${playerData.energy}/${playerData.energy_max}`;
+            
+            const tapButton = document.getElementById('tapButton');
+            if (playerData.energy <= 0) {
+                tapButton.classList.add('disabled');
+            } else {
+                tapButton.classList.remove('disabled');
+            }
+        }
+
+        async function handleTap(event) {
+            if (!playerData || playerData.energy <= 0) return;
+
+            tg.HapticFeedback.impactOccurred('light');
+            
+            const floatText = document.createElement('div');
+            floatText.className = 'float-text';
+            floatText.textContent = `+${playerData.coins_per_tap}`;
+            floatText.style.left = event.clientX + 'px';
+            floatText.style.top = event.clientY + 'px';
+            document.body.appendChild(floatText);
+            setTimeout(() => floatText.remove(), 1000);
+
+            try {
+                const response = await fetch(`/api/mining/tap`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        bot_id: botId,
+                        session_token: sessionToken
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    playerData = data.player;
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Tap error:', error);
+            }
+        }
+
+        async function buyBoost(boostType, cost) {
+            if (!playerData || playerData.coins < cost) {
+                tg.showAlert('Not enough coins!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/mining/boost`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        bot_id: botId,
+                        session_token: sessionToken,
+                        boost_type: boostType
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    playerData = data.player;
+                    updateUI();
+                    tg.showAlert('Boost purchased!');
+                } else {
+                    tg.showAlert(data.error || 'Failed to purchase boost');
+                }
+            } catch (error) {
+                console.error('Boost error:', error);
+                tg.showAlert('Failed to purchase boost');
+            }
+        }
+
+        function startEnergyRecovery() {
+            if (energyInterval) clearInterval(energyInterval);
+            
+            energyInterval = setInterval(() => {
+                if (playerData && playerData.energy < playerData.energy_max) {
+                    playerData.energy = Math.min(
+                        playerData.energy + playerData.energy_recharge_rate,
+                        playerData.energy_max
+                    );
+                    updateUI();
+                }
+            }, 1000);
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+
+            if (tabName === 'leaderboard') {
+                loadLeaderboard();
+            }
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch(`/api/mining/leaderboard?bot_id=${botId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const list = document.getElementById('leaderboardList');
+                    list.innerHTML = data.leaderboard.map((player, index) => `
+                        <div class="leaderboard-item">
+                            <span>${index + 1}. ${player.first_name || player.username || 'Player'}</span>
+                            <span>${Math.floor(player.coins)} 🪙</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Leaderboard error:', error);
+            }
+        }
+
+        function copyReferralLink() {
+            const link = document.getElementById('referralLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                tg.showAlert('Link copied!');
+            });
+        }
+
+        initGame();
+    </script>
+</body>
+</html>

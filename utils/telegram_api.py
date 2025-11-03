@@ -39,7 +39,7 @@ class TelegramAPI:
             print(f"Error getting bot info: {e}")
             return None
 
-    def send_message(self, chat_id, text, parse_mode=None):
+    def send_message(self, chat_id, text, parse_mode=None, reply_markup=None):
         if not self.base_url:
             return None
 
@@ -50,6 +50,8 @@ class TelegramAPI:
             }
             if parse_mode:
                 payload['parse_mode'] = parse_mode
+            if reply_markup:
+                payload['reply_markup'] = reply_markup
 
             response = requests.post(f'{self.base_url}/sendMessage', json=payload, timeout=10)
             return response.json()

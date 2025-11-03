@@ -8,6 +8,7 @@ from utils.database import Database
 from utils.ai import AIAssistant
 from utils.crypto import CryptoAPI
 from utils.telegram_api import TelegramAPI
+from utils.telegram_auth import validate_telegram_webapp_data
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET', secrets.token_hex(32))
@@ -549,6 +550,15 @@ def setup_mining(bot_id):
         conn.commit()
         conn.close()
         
+        if bot_username and bot['bot_token']:
+            decrypted_token = db.decrypt_token(bot['bot_token'])
+            telegram_api = TelegramAPI(decrypted_token)
+            webhook_url = f"{os.environ.get('REPLIT_DEV_DOMAIN', 'http://localhost:5000')}/webhook/{bot_id}"
+            try:
+                telegram_api.set_webhook(webhook_url)
+            except Exception as e:
+                print(f"Webhook setup error: {e}")
+        
         return jsonify({
             'success': True, 
             'message': 'Mining bot activated',
@@ -557,6 +567,228 @@ def setup_mining(bot_id):
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/webhook/<int:bot_id>', methods=['POST'])
+def telegram_webhook(bot_id):
+    try:
+        update = request.json
+        
+        if 'message' in update:
+            message = update['message']
+            chat_id = message['chat']['id']
+            telegram_user_id = message['from']['id']
+            username = message['from'].get('username')
+            first_name = message['from'].get('first_name', '')
+            text = message.get('text', '')
+            
+            bot = db.get_bot(bot_id)
+            if not bot or not bot['is_active']:
+                return jsonify({'ok': True})
+            
+            decrypted_token = db.decrypt_token(bot['bot_token'])
+            telegram_api = TelegramAPI(decrypted_token)
+            
+            if text.startswith('/start'):
+                bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+                bot_username = bot.get('bot_username', 'your_bot')
+                
+                referred_by = None
+                if ' ' in text:
+                    ref_code = text.split(' ')[1]
+                    if ref_code.startswith('ref_'):
+                        referred_by = ref_code[4:]
+                
+                player = db.get_or_create_mining_player(bot_id, telegram_user_id, username, first_name, referred_by)
+                
+                webapp_url = f"{os.environ.get('REPLIT_DEV_DOMAIN', 'http://localhost:5000')}/mining-app?bot_id={bot_id}"
+                
+                keyboard = {
+                    'inline_keyboard': [[
+                        {
+                            'text': '⛏️ Start Mining',
+                            'web_app': {'url': webapp_url}
+                        }
+                    ]]
+                }
+                
+                welcome_message = f'''⛏️ Welcome to TapCoin Mining, {first_name}!
+
+💰 Your Balance: {int(player['coins'])} coins
+⚡ Energy: {player['energy']}/{player['energy_max']}
+🏆 Level: {player['level']}
+
+Tap the button below to start mining coins!
+
+🎁 Invite friends and earn 500 coins per referral!
+📈 Plus get 10% of their mining earnings!
+
+Click "Start Mining" to launch the game! 👇'''
+                
+                telegram_api.send_message(chat_id, welcome_message, parse_mode='Markdown', reply_markup=keyboard)
+            
+        return jsonify({'ok': True})
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        return jsonify({'ok': True})
+
+@app.route('/mining-app')
+def mining_app():
+    return render_template('mining_app.html')
+
+@app.route('/api/mining/init')
+def mining_init():
+    try:
+        bot_id = request.args.get('bot_id')
+        init_data = request.args.get('init_data', '')
+        
+        if not bot_id or not init_data:
+            return jsonify({'success': False, 'error': 'Missing required parameters'}), 400
+        
+        bot = db.get_bot(bot_id)
+        if not bot or not bot['is_active']:
+            return jsonify({'success': False, 'error': 'Bot not found or inactive'}), 404
+        
+        decrypted_token = db.decrypt_token(bot['bot_token'])
+        auth_result = validate_telegram_webapp_data(init_data, decrypted_token)
+        
+        if not auth_result or not auth_result['valid']:
+            return jsonify({'success': False, 'error': 'Invalid authentication'}), 401
+        
+        user_data = auth_result['user']
+        if not user_data:
+            return jsonify({'success': False, 'error': 'User data not found'}), 401
+        
+        telegram_user_id = user_data.get('id')
+        username = user_data.get('username', '')
+        first_name = user_data.get('first_name', 'Player')
+        
+        if not telegram_user_id:
+            return jsonify({'success': False, 'error': 'Invalid user ID'}), 401
+        
+        player = db.get_or_create_mining_player(bot_id, telegram_user_id, username, first_name)
+        player = db.update_player_energy(player['id'])
+        
+        session_token = secrets.token_urlsafe(32)
+        db.create_game_session(player['id'], session_token)
+        
+        bot_username = bot.get('bot_username', 'your_bot')
+        
+        return jsonify({
+            'success': True,
+            'player': player,
+            'bot_username': bot_username,
+            'session_token': session_token
+        })
+    except Exception as e:
+        print(f"Mining init error: {e}")
+        return jsonify({'success': False, 'error': 'Authentication failed'}), 500
+
+@app.route('/api/mining/tap', methods=['POST'])
+def mining_tap():
+    try:
+        data = request.json
+        if not data or 'session_token' not in data or 'bot_id' not in data:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+        
+        session_token = data['session_token']
+        bot_id = data['bot_id']
+        
+        player_id = db.validate_game_session(session_token)
+        if not player_id:
+            return jsonify({'success': False, 'error': 'Invalid or expired session'}), 401
+        
+        player = db.update_player_energy(player_id)
+        
+        if not player or player['bot_id'] != bot_id:
+            return jsonify({'success': False, 'error': 'Invalid player'}), 403
+        
+        if player['energy'] <= 0:
+            return jsonify({'success': False, 'error': 'No energy'}), 400
+        
+        coins_to_add = player['coins_per_tap']
+        energy_cost = 1
+        
+        player = db.update_mining_player_tap(player_id, coins_to_add, energy_cost)
+        
+        return jsonify({
+            'success': True,
+            'player': player
+        })
+    except Exception as e:
+        print(f"Mining tap error: {e}")
+        return jsonify({'success': False, 'error': 'Tap failed'}), 500
+
+@app.route('/api/mining/boost', methods=['POST'])
+def mining_boost():
+    try:
+        data = request.json
+        if not data or 'session_token' not in data or 'bot_id' not in data or 'boost_type' not in data:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+        
+        session_token = data['session_token']
+        bot_id = data['bot_id']
+        boost_type = data['boost_type']
+        
+        player_id = db.validate_game_session(session_token)
+        if not player_id:
+            return jsonify({'success': False, 'error': 'Invalid or expired session'}), 401
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT bot_id FROM mining_players WHERE id = ?', (player_id,))
+        player = cursor.fetchone()
+        conn.close()
+        
+        if not player or player['bot_id'] != bot_id:
+            return jsonify({'success': False, 'error': 'Invalid player'}), 403
+        
+        boost_configs = {
+            'energy_limit': {
+                'cost': 500,
+                'effects': {'energy_max': 500}
+            },
+            'multi_tap': {
+                'cost': 1000,
+                'effects': {'coins_per_tap': 1}
+            },
+            'recharge_speed': {
+                'cost': 750,
+                'effects': {'energy_recharge_rate': 1}
+            }
+        }
+        
+        if boost_type not in boost_configs:
+            return jsonify({'success': False, 'error': 'Invalid boost type'}), 400
+        
+        boost_config = boost_configs[boost_type]
+        result = db.purchase_boost(player_id, boost_type, boost_config['cost'], boost_config['effects'])
+        
+        return jsonify(result)
+    except Exception as e:
+        print(f"Mining boost error: {e}")
+        return jsonify({'success': False, 'error': 'Boost purchase failed'}), 500
+
+@app.route('/api/mining/leaderboard')
+def mining_leaderboard():
+    try:
+        bot_id = request.args.get('bot_id')
+        
+        if not bot_id:
+            return jsonify({'success': False, 'error': 'Missing bot_id'}), 400
+        
+        bot = db.get_bot(bot_id)
+        if not bot or not bot['is_active']:
+            return jsonify({'success': False, 'error': 'Bot not found or inactive'}), 404
+        
+        leaderboard = db.get_mining_leaderboard(bot_id, limit=20)
+        
+        return jsonify({
+            'success': True,
+            'leaderboard': leaderboard
+        })
+    except Exception as e:
+        print(f"Leaderboard error: {e}")
+        return jsonify({'success': False, 'error': 'Failed to load leaderboard'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

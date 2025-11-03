@@ -144,6 +144,84 @@ class Database:
             )
         ''')
         
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS game_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                session_token TEXT UNIQUE NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP NOT NULL,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_players (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                bot_id INTEGER NOT NULL,
+                telegram_user_id INTEGER NOT NULL,
+                username TEXT,
+                first_name TEXT,
+                coins REAL DEFAULT 0,
+                energy INTEGER DEFAULT 1000,
+                energy_max INTEGER DEFAULT 1000,
+                level INTEGER DEFAULT 1,
+                xp INTEGER DEFAULT 0,
+                coins_per_tap INTEGER DEFAULT 1,
+                energy_recharge_rate INTEGER DEFAULT 1,
+                auto_miner_enabled INTEGER DEFAULT 0,
+                total_taps INTEGER DEFAULT 0,
+                combo_record INTEGER DEFAULT 1,
+                streak_days INTEGER DEFAULT 1,
+                referral_code TEXT UNIQUE,
+                referred_by INTEGER,
+                referral_earnings REAL DEFAULT 0,
+                last_tap_time TIMESTAMP,
+                last_energy_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE,
+                UNIQUE(bot_id, telegram_user_id)
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_boosts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                boost_type TEXT NOT NULL,
+                boost_level INTEGER DEFAULT 1,
+                purchased_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE,
+                UNIQUE(player_id, boost_type)
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                task_type TEXT NOT NULL,
+                completed INTEGER DEFAULT 0,
+                reward_claimed INTEGER DEFAULT 0,
+                progress INTEGER DEFAULT 0,
+                completed_at TIMESTAMP,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE,
+                UNIQUE(player_id, task_type)
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_referrals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                referrer_id INTEGER NOT NULL,
+                referred_id INTEGER NOT NULL,
+                bonus_earned REAL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (referrer_id) REFERENCES mining_players(id) ON DELETE CASCADE,
+                FOREIGN KEY (referred_id) REFERENCES mining_players(id) ON DELETE CASCADE
+            )
+        ''')
+        
         conn.commit()
         conn.close()
     
@@ -315,3 +393,176 @@ class Database:
         
         conn.commit()
         conn.close()
+    
+    def get_or_create_mining_player(self, bot_id, telegram_user_id, username=None, first_name=None, referred_by=None):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM mining_players WHERE bot_id = ? AND telegram_user_id = ?', 
+                      (bot_id, telegram_user_id))
+        player = cursor.fetchone()
+        
+        if player:
+            conn.close()
+            return dict(player)
+        
+        referral_code = secrets.token_urlsafe(8)
+        cursor.execute('''
+            INSERT INTO mining_players (bot_id, telegram_user_id, username, first_name, referral_code, referred_by)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (bot_id, telegram_user_id, username, first_name, referral_code, referred_by))
+        
+        player_id = cursor.lastrowid
+        conn.commit()
+        
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        player = cursor.fetchone()
+        conn.close()
+        return dict(player)
+    
+    def update_mining_player_tap(self, player_id, coins_to_add, energy_cost):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE mining_players 
+            SET coins = coins + ?, 
+                energy = MAX(0, energy - ?),
+                total_taps = total_taps + 1,
+                last_tap_time = CURRENT_TIMESTAMP
+            WHERE id = ?
+        ''', (coins_to_add, energy_cost, player_id))
+        
+        conn.commit()
+        
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        player = cursor.fetchone()
+        conn.close()
+        return dict(player) if player else None
+    
+    def update_player_energy(self, player_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT *, 
+            (julianday('now') - julianday(last_energy_update)) * 86400 as seconds_passed
+            FROM mining_players WHERE id = ?
+        ''', (player_id,))
+        player = cursor.fetchone()
+        
+        if player:
+            seconds_passed = player['seconds_passed']
+            energy_recovered = int(seconds_passed * player['energy_recharge_rate'])
+            new_energy = min(player['energy'] + energy_recovered, player['energy_max'])
+            
+            cursor.execute('''
+                UPDATE mining_players 
+                SET energy = ?,
+                    last_energy_update = CURRENT_TIMESTAMP
+                WHERE id = ?
+            ''', (new_energy, player_id))
+            conn.commit()
+        
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        player = cursor.fetchone()
+        conn.close()
+        return dict(player) if player else None
+    
+    def purchase_boost(self, player_id, boost_type, cost, boost_effects):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT coins FROM mining_players WHERE id = ?', (player_id,))
+        player = cursor.fetchone()
+        
+        if not player or player['coins'] < cost:
+            conn.close()
+            return {'success': False, 'error': 'Insufficient coins'}
+        
+        cursor.execute('UPDATE mining_players SET coins = coins - ? WHERE id = ?', (cost, player_id))
+        
+        update_fields = []
+        update_values = []
+        for field, value in boost_effects.items():
+            update_fields.append(f'{field} = {field} + ?')
+            update_values.append(value)
+        
+        if update_fields:
+            update_values.append(player_id)
+            cursor.execute(f'UPDATE mining_players SET {", ".join(update_fields)} WHERE id = ?', update_values)
+        
+        cursor.execute('''
+            INSERT INTO mining_boosts (player_id, boost_type) 
+            VALUES (?, ?)
+            ON CONFLICT(player_id, boost_type) DO UPDATE SET 
+            boost_level = boost_level + 1,
+            purchased_at = CURRENT_TIMESTAMP
+        ''', (player_id, boost_type))
+        
+        conn.commit()
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        player = cursor.fetchone()
+        conn.close()
+        return {'success': True, 'player': dict(player)}
+    
+    def get_mining_leaderboard(self, bot_id, limit=10):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT username, first_name, coins, level, total_taps
+            FROM mining_players 
+            WHERE bot_id = ?
+            ORDER BY coins DESC
+            LIMIT ?
+        ''', (bot_id, limit))
+        
+        leaderboard = cursor.fetchall()
+        conn.close()
+        return [dict(entry) for entry in leaderboard]
+    
+    def activate_bot(self, bot_id, webhook_url):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            UPDATE bots 
+            SET is_active = 1, webhook_url = ?
+            WHERE id = ?
+        ''', (webhook_url, bot_id))
+        
+        conn.commit()
+        updated = cursor.rowcount > 0
+        conn.close()
+        return updated
+    
+    def create_game_session(self, player_id, session_token):
+        from datetime import timedelta
+        
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        expires_at = datetime.now() + timedelta(hours=24)
+        
+        cursor.execute('''
+            INSERT INTO game_sessions (player_id, session_token, expires_at)
+            VALUES (?, ?, ?)
+        ''', (player_id, session_token, expires_at))
+        
+        conn.commit()
+        conn.close()
+    
+    def validate_game_session(self, session_token):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT player_id FROM game_sessions 
+            WHERE session_token = ? AND expires_at > CURRENT_TIMESTAMP
+        ''', (session_token,))
+        
+        result = cursor.fetchone()
+        conn.close()
+        
+        return result['player_id'] if result else None
