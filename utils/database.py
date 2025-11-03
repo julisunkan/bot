@@ -308,7 +308,7 @@ class Database:
 
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_deposits (
-                id INTEGER PRIMARYKEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 player_id INTEGER NOT NULL,
                 amount REAL NOT NULL,
                 transaction_hash TEXT,
