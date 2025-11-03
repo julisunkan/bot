@@ -1110,26 +1110,64 @@ def mining_daily_reward():
 def mining_shop_purchase():
     try:
         data = request.json
-        if not data or 'session_token' not in data or 'bot_id' not in data or 'amount' not in data:
+        if not data or 'session_token' not in data or 'bot_id' not in data or 'amount' not in data or 'price' not in data:
             return jsonify({'success': False, 'error': 'Missing parameters'}), 400
         
         session_token = data['session_token']
         bot_id = int(data['bot_id'])
         amount = int(data['amount'])
+        price = float(data['price'])
         
         player_id = db.validate_game_session(session_token)
         if not player_id:
             return jsonify({'success': False, 'error': 'Invalid session'}), 401
         
+        # Get bot owner's TON wallet
+        bot = db.get_bot(bot_id)
+        if not bot:
+            return jsonify({'success': False, 'error': 'Bot not found'}), 404
+        
+        bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+        owner_ton_wallet = bot_config.get('owner_ton_wallet')
+        
+        if not owner_ton_wallet:
+            return jsonify({'success': False, 'error': 'Bot owner has not set up payment wallet. Please contact bot owner.'}), 400
+        
+        # Get player's wallet
         conn = db.get_connection()
         cursor = conn.cursor()
-        cursor.execute('UPDATE mining_players SET coins = coins + ? WHERE id = ?', (amount, player_id))
-        conn.commit()
-        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
-        player = cursor.fetchone()
+        cursor.execute('SELECT * FROM mining_wallets WHERE player_id = ?', (player_id,))
+        wallet = cursor.fetchone()
+        
+        if not wallet or not wallet['wallet_address']:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Please connect your TON wallet first'}), 400
+        
+        # Create payment link for user to pay
+        from utils.ton_payment import TONPayment
+        ton_payment = TONPayment()
+        
+        payment_link = ton_payment.create_payment_link(
+            owner_ton_wallet, 
+            price, 
+            f"BotForge Mining - {amount} coins"
+        )
+        
+        if not payment_link:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Invalid payment configuration'}), 400
+        
         conn.close()
         
-        return jsonify({'success': True, 'player': dict(player)})
+        # Return payment link for user to complete payment
+        return jsonify({
+            'success': False,
+            'requires_payment': True,
+            'payment_link': payment_link,
+            'amount': amount,
+            'price': price,
+            'message': 'Please complete payment via TON wallet'
+        })
     except Exception as e:
         print(f"Shop purchase error: {e}")
         return jsonify({'success': False, 'error': 'Purchase failed'}), 500

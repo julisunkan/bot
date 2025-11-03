@@ -649,6 +649,14 @@
                     playerData = data.player;
                     updateUI();
                     tg.showAlert(`${amount} coins added! Total: ${Math.floor(playerData.coins)}`);
+                } else if (data.requires_payment && data.payment_link) {
+                    // Open TON payment link
+                    tg.showConfirm(`Pay ${price} TON to receive ${amount} coins?`, function(confirmed) {
+                        if (confirmed) {
+                            window.open(data.payment_link, '_blank');
+                            tg.showAlert('After payment is confirmed, your coins will be added. This may take a few minutes.');
+                        }
+                    });
                 } else {
                     tg.showAlert(data.error || 'Purchase failed');
                 }
