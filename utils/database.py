@@ -290,6 +290,34 @@ class Database:
             )
         ''')
         
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_withdrawals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                amount REAL NOT NULL,
+                fee REAL NOT NULL,
+                net_amount REAL NOT NULL,
+                wallet_address TEXT NOT NULL,
+                status TEXT DEFAULT 'pending',
+                transaction_hash TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                processed_at TIMESTAMP,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_deposits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                amount REAL NOT NULL,
+                transaction_hash TEXT,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE
+            )
+        ''')
+        
         conn.commit()
         conn.close()
     

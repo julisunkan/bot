@@ -690,20 +690,39 @@
 
         async function connectWallet() {
             try {
+                // Prompt user to enter TON wallet address
+                const walletAddress = prompt('Enter your TON wallet address (starts with EQ or UQ):', '');
+                
+                if (!walletAddress) {
+                    return;
+                }
+                
+                // Basic validation
+                if (!walletAddress.startsWith('EQ') && !walletAddress.startsWith('UQ')) {
+                    tg.showAlert('Invalid TON wallet address. Must start with EQ or UQ.');
+                    return;
+                }
+                
+                if (walletAddress.length !== 48) {
+                    tg.showAlert('Invalid TON wallet address. Must be 48 characters long.');
+                    return;
+                }
+                
                 const response = await fetch('/api/mining/wallet/connect', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         session_token: sessionToken,
-                        wallet_type: 'telegram',
-                        wallet_address: `telegram_${tg.initDataUnsafe?.user?.id || 'user'}`
+                        wallet_type: 'ton',
+                        wallet_address: walletAddress
                     })
                 });
                 const data = await response.json();
                 if (data.success) {
-                    tg.showAlert('Wallet connected successfully!');
+                    tg.showAlert(`TON Wallet connected: ${data.wallet_address.substring(0, 8)}...${data.wallet_address.substring(40)}`);
                     document.getElementById('walletStatus').style.display = 'none';
                     document.getElementById('withdrawSection').style.display = 'block';
+                    localStorage.setItem('ton_wallet_' + botId, walletAddress);
                 } else {
                     tg.showAlert(data.error || 'Connection failed');
                 }
@@ -713,17 +732,40 @@
             }
         }
 
-        function withdrawCoins() {
+        async function withdrawCoins() {
             if (!playerData || playerData.coins < 10000) {
                 tg.showAlert('You need at least 10,000 coins to withdraw!');
                 return;
             }
-            tg.showConfirm('Withdraw your coins? (2% fee applies)', function(confirmed) {
+            
+            const amount = Math.floor(playerData.coins);
+            const fee = Math.floor(amount * 0.02);
+            const net = amount - fee;
+            
+            tg.showConfirm(`Withdraw ${amount} coins? You will receive ${net} coins after 2% fee (${fee} coins).`, async function(confirmed) {
                 if (confirmed) {
-                    const amount = playerData.coins;
-                    const fee = Math.floor(amount * 0.02);
-                    const net = amount - fee;
-                    tg.showAlert(`Withdrawal pending: ${net} coins (${fee} fee). Processing may take 24-48 hours.`);
+                    try {
+                        const response = await fetch('/api/mining/wallet/withdraw', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                session_token: sessionToken,
+                                amount: amount
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            playerData = data.player;
+                            updateUI();
+                            document.getElementById('totalWithdrawn').textContent = data.net_amount;
+                            tg.showAlert(`Withdrawal submitted! ${data.net_amount} coins will be sent to ${data.wallet_address.substring(0, 8)}...${data.wallet_address.substring(40)} within 24-48 hours.`);
+                        } else {
+                            tg.showAlert(data.error || 'Withdrawal failed');
+                        }
+                    } catch (error) {
+                        console.error('Withdrawal error:', error);
+                        tg.showAlert('Withdrawal failed');
+                    }
                 }
             });
         }

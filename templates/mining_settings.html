@@ -80,21 +80,35 @@
                     </div>
 
                     <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.3s;">
-                        <h5 class="gradient-text mb-4"><i class="bi bi-wallet2"></i> Withdrawal Settings</h5>
+                        <h5 class="gradient-text mb-4"><i class="bi bi-wallet2"></i> Payment & Withdrawal Settings</h5>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 mb-3">
+                                <label for="owner_ton_wallet" class="form-label">Your TON Wallet Address</label>
+                                <input type="text" class="form-control" id="owner_ton_wallet" name="owner_ton_wallet" 
+                                       value="{{ owner_ton_wallet }}" placeholder="EQ... or UQ..." maxlength="48"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Your TON wallet to receive shop payments (48 characters, starts with EQ or UQ)</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <label for="min_withdrawal" class="form-label">Minimum Withdrawal</label>
                                 <input type="number" class="form-control" id="min_withdrawal" name="min_withdrawal" 
                                        value="{{ settings.min_withdrawal }}" min="1000"
                                        style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
-                                <div class="form-text text-white-50">Minimum coins required to withdraw</div>
+                                <div class="form-text text-white-50">Minimum coins to withdraw</div>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label for="daily_reward_amount" class="form-label">Daily Reward Amount</label>
                                 <input type="number" class="form-control" id="daily_reward_amount" name="daily_reward_amount" 
                                        value="{{ settings.daily_reward_amount }}" min="0"
                                        style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
-                                <div class="form-text text-white-50">Coins given as daily login reward</div>
+                                <div class="form-text text-white-50">Daily login bonus</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="coin_price_usd" class="form-label">Coin Price (USD)</label>
+                                <input type="number" step="0.0001" class="form-control" id="coin_price_usd" name="coin_price_usd" 
+                                       value="{{ settings.coin_price_usd }}" min="0.0001"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Price per coin for shop</div>
                             </div>
                         </div>
                     </div>

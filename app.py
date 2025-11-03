@@ -835,6 +835,15 @@ def mining_settings(bot_id):
         try:
             bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
             
+            # Get TON wallet address for receiving payments
+            owner_ton_wallet = request.form.get('owner_ton_wallet', '').strip()
+            
+            # Validate TON wallet if provided
+            if owner_ton_wallet and not ((owner_ton_wallet.startswith('UQ') or owner_ton_wallet.startswith('EQ')) and len(owner_ton_wallet) == 48):
+                flash('Invalid TON wallet address format. Must start with UQ or EQ and be 48 characters.', 'danger')
+                return redirect(url_for('mining_settings', bot_id=bot_id))
+            
+            bot_config['owner_ton_wallet'] = owner_ton_wallet
             bot_config['mining_settings'] = {
                 'tap_reward': int(request.form.get('tap_reward', 1)),
                 'max_energy': int(request.form.get('max_energy', 1000)),
@@ -850,6 +859,7 @@ def mining_settings(bot_id):
                 'boost_energy_cost': int(request.form.get('boost_energy_cost', 500)),
                 'boost_multitap_cost': int(request.form.get('boost_multitap_cost', 1000)),
                 'boost_recharge_cost': int(request.form.get('boost_recharge_cost', 750)),
+                'coin_price_usd': float(request.form.get('coin_price_usd', 0.001)),
             }
             
             conn = db.get_connection()
@@ -879,9 +889,11 @@ def mining_settings(bot_id):
         'boost_energy_cost': 500,
         'boost_multitap_cost': 1000,
         'boost_recharge_cost': 750,
+        'coin_price_usd': 0.001,
     })
+    owner_ton_wallet = bot_config.get('owner_ton_wallet', '')
     
-    return render_template('mining_settings.html', bot=bot, settings=mining_settings)
+    return render_template('mining_settings.html', bot=bot, settings=mining_settings, owner_ton_wallet=owner_ton_wallet)
 
 @app.route('/mining-app')
 def mining_app():
@@ -946,7 +958,7 @@ def mining_tap():
             return jsonify({'success': False, 'error': 'Missing parameters'}), 400
         
         session_token = data['session_token']
-        bot_id = data['bot_id']
+        bot_id = int(data['bot_id'])
         
         player_id = db.validate_game_session(session_token)
         if not player_id:
@@ -954,7 +966,7 @@ def mining_tap():
         
         player = db.update_player_energy(player_id)
         
-        if not player or player['bot_id'] != bot_id:
+        if not player or int(player['bot_id']) != bot_id:
             return jsonify({'success': False, 'error': 'Invalid player'}), 403
         
         if player['energy'] <= 0:
@@ -1131,11 +1143,16 @@ def mining_wallet_connect():
         
         session_token = data['session_token']
         wallet_address = data.get('wallet_address', '')
-        wallet_type = data.get('wallet_type', 'telegram')
+        wallet_type = data.get('wallet_type', 'ton')
         
         player_id = db.validate_game_session(session_token)
         if not player_id:
             return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        # Validate TON wallet address format
+        if wallet_type == 'ton' and wallet_address:
+            if not (wallet_address.startswith('UQ') or wallet_address.startswith('EQ')) or len(wallet_address) != 48:
+                return jsonify({'success': False, 'error': 'Invalid TON wallet address'}), 400
         
         conn = db.get_connection()
         cursor = conn.cursor()
@@ -1150,10 +1167,135 @@ def mining_wallet_connect():
         conn.commit()
         conn.close()
         
-        return jsonify({'success': True, 'message': 'Wallet connected'})
+        return jsonify({'success': True, 'message': 'Wallet connected', 'wallet_address': wallet_address})
     except Exception as e:
         print(f"Wallet connect error: {e}")
         return jsonify({'success': False, 'error': 'Connection failed'}), 500
+
+@app.route('/api/mining/wallet/withdraw', methods=['POST'])
+def mining_wallet_withdraw():
+    try:
+        data = request.json
+        if not data or 'session_token' not in data or 'amount' not in data:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+        
+        session_token = data['session_token']
+        amount = float(data['amount'])
+        
+        player_id = db.validate_game_session(session_token)
+        if not player_id:
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        player = cursor.fetchone()
+        
+        if not player:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Player not found'}), 404
+        
+        cursor.execute('SELECT * FROM mining_wallets WHERE player_id = ?', (player_id,))
+        wallet = cursor.fetchone()
+        
+        if not wallet or not wallet['wallet_address']:
+            conn.close()
+            return jsonify({'success': False, 'error': 'No wallet connected'}), 400
+        
+        if player['coins'] < amount:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Insufficient coins'}), 400
+        
+        if amount < 10000:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Minimum withdrawal is 10,000 coins'}), 400
+        
+        # Calculate fee (2%)
+        fee = amount * 0.02
+        net_amount = amount - fee
+        
+        # Deduct coins from player
+        cursor.execute('UPDATE mining_players SET coins = coins - ? WHERE id = ?', (amount, player_id))
+        
+        # Record withdrawal
+        cursor.execute('''
+            UPDATE mining_wallets 
+            SET total_withdrawn = total_withdrawn + ?,
+                last_withdrawal_at = CURRENT_TIMESTAMP
+            WHERE player_id = ?
+        ''', (net_amount, player_id))
+        
+        # Log the withdrawal transaction
+        cursor.execute('''
+            INSERT INTO mining_withdrawals (player_id, amount, fee, net_amount, wallet_address, status)
+            VALUES (?, ?, ?, ?, ?, 'pending')
+        ''', (player_id, amount, fee, net_amount, wallet['wallet_address']))
+        
+        withdrawal_id = cursor.lastrowid
+        conn.commit()
+        
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        updated_player = cursor.fetchone()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'withdrawal_id': withdrawal_id,
+            'amount': amount,
+            'fee': fee,
+            'net_amount': net_amount,
+            'wallet_address': wallet['wallet_address'],
+            'player': dict(updated_player)
+        })
+    except Exception as e:
+        print(f"Withdrawal error: {e}")
+        return jsonify({'success': False, 'error': 'Withdrawal failed'}), 500
+
+@app.route('/api/mining/wallet/deposit', methods=['POST'])
+def mining_wallet_deposit():
+    try:
+        data = request.json
+        if not data or 'session_token' not in data or 'amount' not in data:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+        
+        session_token = data['session_token']
+        amount = float(data['amount'])
+        transaction_hash = data.get('transaction_hash', '')
+        
+        player_id = db.validate_game_session(session_token)
+        if not player_id:
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        if amount <= 0:
+            return jsonify({'success': False, 'error': 'Invalid amount'}), 400
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        # Add coins to player account
+        cursor.execute('UPDATE mining_players SET coins = coins + ? WHERE id = ?', (amount, player_id))
+        
+        # Log the deposit
+        cursor.execute('''
+            INSERT INTO mining_deposits (player_id, amount, transaction_hash, status)
+            VALUES (?, ?, ?, 'completed')
+        ''', (player_id, amount, transaction_hash))
+        
+        conn.commit()
+        
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        updated_player = cursor.fetchone()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'amount': amount,
+            'player': dict(updated_player)
+        })
+    except Exception as e:
+        print(f"Deposit error: {e}")
+        return jsonify({'success': False, 'error': 'Deposit failed'}), 500
 
 @app.route('/api/mining/tasks')
 def mining_tasks():
