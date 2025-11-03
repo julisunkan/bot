@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="landing-page">
+    <div class="container">
+        <div class="row min-vh-100 align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-3 fw-bold mb-4">
+                    <i class="bi bi-robot text-primary"></i> BotForge Pro
+                </h1>
+                <p class="lead mb-4">
+                    Create powerful Telegram bots with AI, Web3 integration, and advanced analytics. No coding required!
+                </p>
+                <div class="features mb-4">
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>AI-Powered Responses</strong> - Intelligent chatbot capabilities
+                    </div>
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>Crypto Integration</strong> - Real-time prices and Web3 features
+                    </div>
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>Template Library</strong> - Pre-built bots ready to deploy
+                    </div>
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <strong>Analytics Dashboard</strong> - Track performance in real-time
+                    </div>
+                </div>
+                <div class="d-grid gap-3 d-md-flex">
+                    <a href="{{ url_for('generate_account') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-lightning-fill"></i> Generate Account
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-lg">
+                        <i class="bi bi-person-plus"></i> Register
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center d-none d-lg-block">
+                <div class="illustration">
+                    <i class="bi bi-telegram display-1 text-primary"></i>
+                    <i class="bi bi-plus display-4 text-muted"></i>
+                    <i class="bi bi-robot display-1 text-info"></i>
+                    <i class="bi bi-plus display-4 text-muted"></i>
+                    <i class="bi bi-currency-bitcoin display-1 text-warning"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2>
+                            <i class="bi bi-robot text-primary"></i>
+                            {% if mode == 'register' %}Register{% else %}Login{% endif %}
+                        </h2>
+                    </div>
+                    
+                    {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            {% if mode == 'register' %}
+                            <div class="form-text">Minimum 6 characters</div>
+                            {% endif %}
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                {% if mode == 'register' %}
+                                <i class="bi bi-person-plus"></i> Create Account
+                                {% else %}
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        {% if mode == 'register' %}
+                        <a href="{{ url_for('login') }}">Already have an account? Login</a>
+                        {% else %}
+                        <a href="{{ url_for('register') }}">Don't have an account? Register</a>
+                        {% endif %}
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('generate_account') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-lightning-fill"></i> Quick Start (Generate Account)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

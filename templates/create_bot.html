@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Create Bot - BotForge Pro{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="bi bi-plus-circle"></i> Create New Telegram Bot</h4>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle"></i> How to get a bot token:</h6>
+                        <ol class="mb-0">
+                            <li>Open Telegram and search for <strong>@BotFather</strong></li>
+                            <li>Send the command <code>/newbot</code></li>
+                            <li>Follow the instructions to create your bot</li>
+                            <li>Copy the bot token and paste it below</li>
+                        </ol>
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="bot_name" class="form-label">Bot Name</label>
+                            <input type="text" class="form-control" id="bot_name" name="bot_name" required placeholder="My Awesome Bot">
+                            <div class="form-text">A friendly name for your bot</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="bot_token" class="form-label">Bot Token</label>
+                            <input type="text" class="form-control" id="bot_token" name="bot_token" required placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+                            <div class="form-text">The token provided by @BotFather</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Create Bot
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5><i class="bi bi-lightbulb"></i> Quick Start: Use a Template</h5>
+                </div>
+                <div class="card-body">
+                    <p>Don't have a bot token yet? Browse our template library to see examples:</p>
+                    <a href="{{ url_for('marketplace') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-shop"></i> Browse Templates
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

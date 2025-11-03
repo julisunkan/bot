@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - BotForge Pro{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="bi bi-gear"></i> Settings</h2>
+            <p class="text-muted">Manage your account and preferences</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person"></i> Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">User ID</label>
+                        <input type="text" class="form-control" value="{{ user.id }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Plan</label>
+                        <input type="text" class="form-control" value="{{ user.plan|capitalize }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Referral Code</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" value="{{ user.referral_code }}" readonly>
+                            <button class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ user.referral_code }}')">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-wallet2"></i> Web3 Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="wallet_address" class="form-label">Wallet Address</label>
+                            <input type="text" class="form-control" id="wallet_address" name="wallet_address" 
+                                   value="{{ user.wallet_address or '' }}" 
+                                   placeholder="0x...">
+                            <div class="form-text">Connect your crypto wallet address</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-robot"></i> AI Integration</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>Status:</strong> 
+                        {% if ai_available %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-warning">Not Configured</span>
+                        {% endif %}
+                    </p>
+                    {% if not ai_available %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        To enable AI features, please add your Gemini API key as an environment variable.
+                    </div>
+                    {% endif %}
+                    <p class="mb-0">
+                        AI-powered features include automatic response generation, intent detection, and smart command suggestions.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-palette"></i> Theme</h5>
+                </div>
+                <div class="card-body">
+                    <p>Current theme: <span id="currentTheme">Light</span></p>
+                    <button class="btn btn-outline-primary w-100" id="themeTogglePage">
+                        <i class="bi bi-moon-stars"></i> Toggle Theme
+                    </button>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-star"></i> Upgrade Plan</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.plan == 'free' %}
+                    <h6>Free Plan</h6>
+                    <ul>
+                        <li>1 bot maximum</li>
+                        <li>Basic templates</li>
+                        <li>Standard analytics</li>
+                    </ul>
+                    <hr>
+                    <h6>Pro Plan</h6>
+                    <ul>
+                        <li>Unlimited bots</li>
+                        <li>All templates</li>
+                        <li>Advanced analytics</li>
+                        <li>Web3 features</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <button class="btn btn-success w-100" disabled>
+                        <i class="bi bi-star-fill"></i> Upgrade to Pro (Coming Soon)
+                    </button>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle"></i> You're on the Pro plan!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Help & Support</h5>
+                </div>
+                <div class="card-body">
+                    <p>Need help? Check out these resources:</p>
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-book"></i> Documentation
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-chat"></i> Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('themeTogglePage')?.addEventListener('click', function() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.getElementById('currentTheme').textContent = newTheme.charAt(0).toUpperCase() + newTheme.slice(1);
+});
+</script>
+{% endblock %}

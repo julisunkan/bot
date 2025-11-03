@@ -1,0 +1,356 @@
+import os
+import json
+import secrets
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
+from werkzeug.utils import secure_filename
+from utils.database import Database
+from utils.ai import AIAssistant
+from utils.crypto import CryptoAPI
+from utils.telegram_api import TelegramAPI
+
+app = Flask(__name__)
+app.secret_key = os.environ.get('SESSION_SECRET', secrets.token_hex(32))
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+db = Database()
+ai_assistant = AIAssistant()
+crypto_api = CryptoAPI()
+
+def init_templates():
+    templates_dir = 'templates_library'
+    template_files = {
+        'airdrop.json': ('Airdrop Bot', 'Crypto airdrop distribution bot with claim and referral system', 'crypto'),
+        'payment.json': ('Payment Bot', 'Cryptocurrency payment processing bot with transaction tracking', 'crypto'),
+        'referral.json': ('Referral Bot', 'Referral tracking system with rewards and leaderboard', 'marketing'),
+        'nft_verification.json': ('NFT Verification Bot', 'Verify NFT ownership and grant access to exclusive communities', 'web3'),
+        'ai_chatbot.json': ('AI Chat Bot', 'Intelligent AI-powered chatbot for customer support and conversations', 'ai')
+    }
+    
+    existing_templates = db.get_all_templates()
+    if len(existing_templates) == 0:
+        for filename, (title, description, category) in template_files.items():
+            db.add_template(title, description, category, filename)
+
+init_templates()
+
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/')
+def index():
+    if 'user_id' in session:
+        return redirect(url_for('dashboard'))
+    return render_template('index.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        
+        if not username or not password:
+            return render_template('login.html', error='Username and password required', mode='register')
+        
+        if len(password) < 6:
+            return render_template('login.html', error='Password must be at least 6 characters', mode='register')
+        
+        user_id, referral_code = db.create_user(username, password)
+        
+        if user_id:
+            session['user_id'] = user_id
+            session['username'] = username
+            return redirect(url_for('dashboard'))
+        else:
+            return render_template('login.html', error='Username already exists', mode='register')
+    
+    return render_template('login.html', mode='register')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        
+        user = db.verify_user(username, password)
+        
+        if user:
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            return redirect(url_for('dashboard'))
+        else:
+            return render_template('login.html', error='Invalid credentials', mode='login')
+    
+    return render_template('login.html', mode='login')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
+
+@app.route('/generate-account')
+def generate_account():
+    username = f'user_{secrets.token_hex(4)}'
+    password = secrets.token_urlsafe(12)
+    
+    user_id, referral_code = db.create_user(username, password)
+    
+    if user_id:
+        session['user_id'] = user_id
+        session['username'] = username
+        session['temp_password'] = password
+        return redirect(url_for('dashboard'))
+    
+    return redirect(url_for('login'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    user = db.get_user(session['user_id'])
+    bots = db.get_user_bots(session['user_id'])
+    analytics = db.get_analytics_summary(session['user_id'])
+    
+    crypto_prices = crypto_api.get_multiple_prices(['bitcoin', 'ethereum', 'binancecoin'])
+    
+    temp_password = session.pop('temp_password', None)
+    
+    return render_template('dashboard.html',
+                         user=user,
+                         bots=bots,
+                         analytics=analytics,
+                         crypto_prices=crypto_prices,
+                         temp_password=temp_password)
+
+@app.route('/create-bot', methods=['GET', 'POST'])
+@login_required
+def create_bot():
+    if request.method == 'POST':
+        bot_name = request.form.get('bot_name', '').strip()
+        bot_token = request.form.get('bot_token', '').strip()
+        
+        if not bot_name or not bot_token:
+            return render_template('create_bot.html', error='Bot name and token are required')
+        
+        user = db.get_user(session['user_id'])
+        user_bots = db.get_user_bots(session['user_id'])
+        
+        if user['plan'] == 'free' and len(user_bots) >= 1:
+            return render_template('create_bot.html', error='Free plan allows only 1 bot. Upgrade to Pro for unlimited bots.')
+        
+        telegram_api = TelegramAPI()
+        verification = telegram_api.verify_token(bot_token)
+        
+        if not verification['valid']:
+            return render_template('create_bot.html', error='Invalid Telegram bot token')
+        
+        bot_config = json.dumps({
+            'commands': [],
+            'created_at': datetime.now().isoformat()
+        })
+        
+        bot_id = db.create_bot(session['user_id'], bot_name, bot_token, bot_config)
+        
+        return redirect(url_for('bot_detail', bot_id=bot_id))
+    
+    return render_template('create_bot.html')
+
+@app.route('/bot/<int:bot_id>')
+@login_required
+def bot_detail(bot_id):
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return redirect(url_for('dashboard'))
+    
+    commands = db.get_bot_commands(bot_id)
+    
+    try:
+        bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+    except:
+        bot_config = {}
+    
+    return render_template('bot_detail.html', bot=bot, commands=commands, bot_config=bot_config)
+
+@app.route('/bot/<int:bot_id>/add-command', methods=['POST'])
+@login_required
+def add_command(bot_id):
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    command = request.form.get('command', '').strip().lower()
+    response_type = request.form.get('response_type', 'text')
+    response_content = request.form.get('response_content', '').strip()
+    
+    if not command or not response_content:
+        return jsonify({'success': False, 'error': 'Command and response required'}), 400
+    
+    db.add_bot_command(bot_id, command, response_type, response_content)
+    
+    return jsonify({'success': True})
+
+@app.route('/bot/<int:bot_id>/delete', methods=['POST'])
+@login_required
+def delete_bot(bot_id):
+    deleted = db.delete_bot(bot_id, session['user_id'])
+    
+    if deleted:
+        return redirect(url_for('dashboard'))
+    
+    return redirect(url_for('dashboard'))
+
+@app.route('/bot/<int:bot_id>/export')
+@login_required
+def export_bot(bot_id):
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return redirect(url_for('dashboard'))
+    
+    commands = db.get_bot_commands(bot_id)
+    
+    export_data = {
+        'bot_name': bot['bot_name'],
+        'commands': [
+            {
+                'command': cmd['command'],
+                'response_type': cmd['response_type'],
+                'response_content': cmd['response_content']
+            }
+            for cmd in commands
+        ],
+        'config': json.loads(bot['bot_config']) if bot['bot_config'] else {},
+        'exported_at': datetime.now().isoformat()
+    }
+    
+    filename = f'bot_config_{bot_id}.json'
+    filepath = f'/tmp/{filename}'
+    
+    with open(filepath, 'w') as f:
+        json.dump(export_data, f, indent=2)
+    
+    return send_file(filepath, as_attachment=True, download_name=filename)
+
+@app.route('/marketplace')
+@login_required
+def marketplace():
+    templates = db.get_all_templates()
+    
+    for template in templates:
+        try:
+            with open(f'templates_library/{template["json_file"]}', 'r') as f:
+                template_data = json.load(f)
+                template['preview'] = template_data
+        except:
+            template['preview'] = {}
+    
+    return render_template('marketplace.html', templates=templates)
+
+@app.route('/marketplace/clone/<int:template_id>')
+@login_required
+def clone_template(template_id):
+    user = db.get_user(session['user_id'])
+    user_bots = db.get_user_bots(session['user_id'])
+    
+    if user['plan'] == 'free' and len(user_bots) >= 1:
+        return redirect(url_for('marketplace'))
+    
+    templates = db.get_all_templates()
+    template = next((t for t in templates if t['id'] == template_id), None)
+    
+    if not template:
+        return redirect(url_for('marketplace'))
+    
+    try:
+        with open(f'templates_library/{template["json_file"]}', 'r') as f:
+            template_data = json.load(f)
+        
+        session['clone_template'] = template_data
+        db.increment_template_downloads(template_id)
+        
+        return redirect(url_for('create_bot'))
+    except:
+        return redirect(url_for('marketplace'))
+
+@app.route('/analytics')
+@login_required
+def analytics():
+    user = db.get_user(session['user_id'])
+    bots = db.get_user_bots(session['user_id'])
+    analytics_data = db.get_analytics_summary(session['user_id'])
+    
+    crypto_prices = crypto_api.get_multiple_prices(['bitcoin', 'ethereum', 'binancecoin'])
+    trending = crypto_api.get_trending_coins()
+    global_stats = crypto_api.get_global_stats()
+    
+    return render_template('analytics.html',
+                         user=user,
+                         bots=bots,
+                         analytics=analytics_data,
+                         crypto_prices=crypto_prices,
+                         trending=trending,
+                         global_stats=global_stats)
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    user = db.get_user(session['user_id'])
+    
+    if request.method == 'POST':
+        wallet_address = request.form.get('wallet_address', '').strip()
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET wallet_address = ? WHERE id = ?', (wallet_address, session['user_id']))
+        conn.commit()
+        conn.close()
+        
+        user = db.get_user(session['user_id'])
+    
+    ai_available = ai_assistant.is_available()
+    
+    return render_template('settings.html', user=user, ai_available=ai_available)
+
+@app.route('/api/ai/generate-response', methods=['POST'])
+@login_required
+def api_ai_generate():
+    data = request.get_json()
+    command = data.get('command', '')
+    description = data.get('description', '')
+    
+    if not ai_assistant.is_available():
+        return jsonify({'success': False, 'error': 'AI features require Gemini API key'})
+    
+    response = ai_assistant.suggest_command_response(command, description)
+    
+    return jsonify({'success': True, 'response': response})
+
+@app.route('/api/crypto/price/<coin_id>')
+def api_crypto_price(coin_id):
+    price_data = crypto_api.get_crypto_price(coin_id)
+    
+    if price_data:
+        return jsonify(price_data)
+    
+    return jsonify({'error': 'Failed to fetch price'}), 404
+
+@app.route('/api/templates')
+def api_templates():
+    templates = db.get_all_templates()
+    return jsonify(templates)
+
+@app.route('/api/bots')
+@login_required
+def api_bots():
+    bots = db.get_user_bots(session['user_id'])
+    return jsonify(bots)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
