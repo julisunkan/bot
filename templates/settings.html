@@ -41,16 +41,47 @@
                 </div>
 
                 <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.2s;">
-                    <h5 class="gradient-text mb-4"><i class="bi bi-wallet2"></i> Web3 Settings</h5>
+                    <h5 class="gradient-text mb-4"><i class="bi bi-wallet2"></i> TON Wallet Settings</h5>
+                    <div class="alert alert-info mb-3" style="background: rgba(13, 110, 253, 0.1); border: 1px solid rgba(13, 110, 253, 0.3); color: #66b3ff;">
+                        <i class="bi bi-info-circle-fill"></i> <strong>Important:</strong> This TON wallet will receive all payments from your mining bots (shop purchases & deposits).
+                    </div>
                     <form method="POST">
                         <div class="mb-3">
-                            <label for="wallet_address" class="form-label">Wallet Address</label>
+                            <label for="ton_wallet_address" class="form-label fw-bold">
+                                <i class="bi bi-wallet-fill text-warning"></i> TON Wallet Address (For Mining Bot Payments)
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="ton_wallet_address" name="ton_wallet_address" 
+                                   value="{{ user.wallet_address or '' }}" 
+                                   placeholder="EQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
+                                   maxlength="48"
+                                   style="background: rgba(255,255,255,0.1); border: 2px solid rgba(255, 193, 7, 0.5); color: white; font-family: monospace;">
+                            <div class="form-text text-white-50">
+                                <strong>Format:</strong> Must be 48 characters starting with <code>EQ</code> or <code>UQ</code><br>
+                                <strong>Example:</strong> <code>EQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code><br>
+                                <strong class="d-block mt-2">Get a TON wallet from:</strong>
+                                <ul class="mb-0 mt-1">
+                                    <li>📱 <a href="https://tonkeeper.com" target="_blank" class="text-info">Tonkeeper App</a></li>
+                                    <li>💬 <a href="https://t.me/wallet" target="_blank" class="text-info">Telegram Wallet (@wallet)</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary-gradient">
+                            <i class="bi bi-check"></i> Save TON Wallet
+                        </button>
+                    </form>
+                </div>
+
+                <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.25s;">
+                    <h5 class="gradient-text mb-4"><i class="bi bi-globe"></i> Other Web3 Settings</h5>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="wallet_address" class="form-label">General Wallet Address (Optional)</label>
                             <input type="text" class="form-control" id="wallet_address" name="wallet_address" 
                                    value="{{ user.wallet_address or '' }}" 
                                    placeholder="0x..." style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
-                            <div class="form-text text-white-50">Connect your crypto wallet address</div>
+                            <div class="form-text text-white-50">Connect other crypto wallet addresses (ETH, BNB, etc.)</div>
                         </div>
-                        <button type="submit" class="btn btn-primary-gradient">
+                        <button type="submit" class="btn btn-outline-light">
                             <i class="bi bi-check"></i> Save Changes
                         </button>
                     </form>

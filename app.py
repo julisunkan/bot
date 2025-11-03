@@ -616,11 +616,35 @@ def settings():
     user = db.get_user(session['user_id'])
     
     if request.method == 'POST':
+        ton_wallet_address = request.form.get('ton_wallet_address', '').strip()
         wallet_address = request.form.get('wallet_address', '').strip()
+        
+        # Validate TON wallet if provided
+        if ton_wallet_address and not ((ton_wallet_address.startswith('UQ') or ton_wallet_address.startswith('EQ')) and len(ton_wallet_address) == 48):
+            flash('Invalid TON wallet address format. Must start with UQ or EQ and be 48 characters.', 'danger')
+            return redirect(url_for('settings'))
         
         conn = db.get_connection()
         cursor = conn.cursor()
-        cursor.execute('UPDATE users SET wallet_address = ? WHERE id = ?', (wallet_address, session['user_id']))
+        
+        # Update TON wallet if provided
+        if ton_wallet_address:
+            cursor.execute('UPDATE users SET wallet_address = ? WHERE id = ?', (ton_wallet_address, session['user_id']))
+            
+            # Also update all mining bots owned by this user to use this wallet
+            cursor.execute('SELECT id, bot_config FROM bots WHERE user_id = ? AND bot_type = ?', (session['user_id'], 'mining'))
+            mining_bots = cursor.fetchall()
+            
+            for bot in mining_bots:
+                bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+                bot_config['owner_ton_wallet'] = ton_wallet_address
+                cursor.execute('UPDATE bots SET bot_config = ? WHERE id = ?', (json.dumps(bot_config), bot['id']))
+            
+            flash('TON wallet address saved and applied to all your mining bots!', 'success')
+        elif wallet_address:
+            cursor.execute('UPDATE users SET wallet_address = ? WHERE id = ?', (wallet_address, session['user_id']))
+            flash('Wallet address updated successfully!', 'success')
+        
         conn.commit()
         conn.close()
         
