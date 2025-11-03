@@ -63,16 +63,38 @@ BotForge Pro is a full-stack Flask + SQLite web application for creating and man
    - Modern gradient landing page
    - Intuitive navigation
 
+9. **Telegram Tap-to-Earn Mining Bot** (NEW - November 3, 2025)
+   - Full-featured tap-to-earn mining game for Telegram Mini Apps
+   - Real-time coin mining with energy system
+   - Boost system (Energy Limit, Multi-Tap, Recharge Speed)
+   - Referral system with friend rewards
+   - Task completion system for bonus coins
+   - Leaderboard with global rankings
+   - Secure session-based authentication with HMAC validation
+   - Anti-cheat protection (server-side validation, session expiry)
+   - Beautiful mobile-first UI with animations
+   - Webhook integration for bot commands
+   - One-click bot deployment from bot detail page
+
 ## Database Schema
 
 ### Tables
 - `users`: User accounts (id, username, password_hash, wallet_address, referral_code, plan)
-- `bots`: User-created bots (id, user_id, bot_name, bot_token, bot_config)
+- `bots`: User-created bots (id, user_id, bot_name, bot_token, bot_config, is_active, webhook_url)
 - `templates`: Bot templates (id, title, description, category, json_file, rating, downloads)
 - `bot_commands`: Bot command definitions (id, bot_id, command, response_type, response_content)
 - `analytics`: Bot analytics (id, bot_id, message_count, active_users, date)
 - `referrals`: Referral tracking (id, referrer_id, referred_id, credits_earned)
 - `template_ratings`: User ratings for templates (id, template_id, user_id, rating, review)
+
+### Mining Bot Tables (NEW)
+- `game_sessions`: Session tokens (id, player_id, session_token, created_at, expires_at)
+- `mining_players`: Player profiles (id, bot_id, telegram_user_id, username, first_name, coins, energy, energy_max, last_energy_update, coins_per_tap, energy_recharge_rate)
+- `mining_boosts`: Boost definitions (id, bot_id, boost_type, level, cost, effect_type, effect_value)
+- `player_boosts`: Player-owned boosts (id, player_id, boost_id, purchased_at)
+- `mining_tasks`: Task definitions (id, bot_id, task_type, title, description, reward_coins, requirements)
+- `completed_tasks`: Completed tasks (id, player_id, task_id, completed_at)
+- `mining_referrals`: Referral tracking (id, bot_id, referrer_telegram_id, referred_telegram_id, reward_coins, created_at)
 
 ## Project Structure
 ```
@@ -207,6 +229,26 @@ BotForge Pro is a full-stack Flask + SQLite web application for creating and man
 - All bot tokens stored encrypted in database
 
 ## Recent Changes
+- November 3, 2025: **MAJOR FEATURE - Telegram Tap-to-Earn Mining Bot**
+  - Complete tap-to-earn game system with Telegram Mini App integration
+  - Session-based authentication with HMAC signature validation
+  - Server-side game state management (coins, energy, boosts)
+  - Anti-cheat security: session tokens, expiry checks, bot ownership validation
+  - Real-time energy regeneration system
+  - Boost marketplace (Energy Limit, Multi-Tap, Recharge Speed)
+  - Referral system with friend rewards
+  - Task completion system with configurable rewards
+  - Global leaderboard with top players
+  - Webhook endpoints for bot activation and command handling
+  - Beautiful mobile-first UI with smooth animations
+  - One-click deployment from bot detail page
+  - Security features:
+    * Telegram WebApp initData HMAC validation
+    * Session tokens with 24-hour expiry
+    * Server-side player_id binding (no client trust)
+    * Bot ownership verification on all endpoints
+    * Protection against replay attacks and ID spoofing
+
 - November 3, 2025: UI/UX Enhancement - Animated Landing Page
   - Removed "Register" button from landing page
   - Replaced action buttons with animated circular icons
