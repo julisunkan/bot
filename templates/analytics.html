@@ -17,34 +17,34 @@
             </div>
         </div>
 
-        <div class="row mb-4 g-3">
-            <div class="col-md-4 fade-in-up" style="animation-delay: 0.1s;">
-                <div class="feature-card">
-                    <div class="feature-icon bg-gradient-blue mb-3">
+        <div class="grid-container grid-3 mb-4">
+            <div class="grid-item">
+                <div class="feature-card glass-card h-100">
+                    <div class="feature-icon bg-gradient-blue mb-3 counter">
                         <i class="bi bi-robot"></i>
                     </div>
                     <h6 class="text-white-50">Total Bots</h6>
-                    <h2 class="gradient-text">{{ analytics.total_bots }}</h2>
+                    <h2 class="gradient-text counter">{{ analytics.total_bots }}</h2>
                     <small class="text-success"><i class="bi bi-arrow-up"></i> Active</small>
                 </div>
             </div>
-            <div class="col-md-4 fade-in-up" style="animation-delay: 0.2s;">
-                <div class="feature-card">
-                    <div class="feature-icon bg-gradient-purple mb-3">
+            <div class="grid-item">
+                <div class="feature-card glass-card h-100">
+                    <div class="feature-icon bg-gradient-purple mb-3 counter">
                         <i class="bi bi-chat-dots"></i>
                     </div>
                     <h6 class="text-white-50">Total Messages</h6>
-                    <h2 class="gradient-text">{{ analytics.total_messages }}</h2>
+                    <h2 class="gradient-text counter">{{ analytics.total_messages }}</h2>
                     <small class="text-info"><i class="bi bi-chat-dots"></i> All time</small>
                 </div>
             </div>
-            <div class="col-md-4 fade-in-up" style="animation-delay: 0.3s;">
-                <div class="feature-card">
-                    <div class="feature-icon bg-gradient-green mb-3">
+            <div class="grid-item">
+                <div class="feature-card glass-card h-100">
+                    <div class="feature-icon bg-gradient-green mb-3 counter">
                         <i class="bi bi-star"></i>
                     </div>
                     <h6 class="text-white-50">Plan</h6>
-                    <h2 class="gradient-text">{{ user.plan|capitalize }}</h2>
+                    <h2 class="gradient-text counter">{{ user.plan|capitalize }}</h2>
                     <small class="text-white-50">Current subscription</small>
                 </div>
             </div>

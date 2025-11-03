@@ -24,34 +24,34 @@
             </div>
         </div>
 
-        <div class="row mb-4 g-3">
-            <div class="col-6 col-md-4 col-lg-3 fade-in-up" style="animation-delay: 0.1s;">
-                <div class="feature-card">
-                    <div class="feature-icon bg-gradient-blue mb-3">
+        <div class="grid-container grid-4 mb-4">
+            <div class="grid-item">
+                <div class="feature-card glass-card h-100">
+                    <div class="feature-icon bg-gradient-blue mb-3 counter">
                         <i class="bi bi-robot"></i>
                     </div>
                     <h6 class="text-white-50">Total Bots</h6>
-                    <h2 class="gradient-text mb-0">{{ analytics.total_bots }}</h2>
+                    <h2 class="gradient-text mb-0 counter">{{ analytics.total_bots }}</h2>
                     <small class="text-white-50">{% if user.plan == 'free' %}Free Plan{% else %}Pro Plan{% endif %}</small>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg-3 fade-in-up" style="animation-delay: 0.2s;">
-                <div class="feature-card">
-                    <div class="feature-icon bg-gradient-purple mb-3">
+            <div class="grid-item">
+                <div class="feature-card glass-card h-100">
+                    <div class="feature-icon bg-gradient-purple mb-3 counter">
                         <i class="bi bi-chat-dots"></i>
                     </div>
                     <h6 class="text-white-50">Messages</h6>
-                    <h2 class="gradient-text mb-0">{{ analytics.total_messages }}</h2>
+                    <h2 class="gradient-text mb-0 counter">{{ analytics.total_messages }}</h2>
                     <small class="text-white-50">All time</small>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg-3 fade-in-up" style="animation-delay: 0.3s;">
-                <div class="feature-card">
-                    <div class="feature-icon bg-gradient-green mb-3">
+            <div class="grid-item">
+                <div class="feature-card glass-card h-100">
+                    <div class="feature-icon bg-gradient-green mb-3 counter">
                         <i class="bi bi-currency-bitcoin"></i>
                     </div>
                     <h6 class="text-white-50">BTC</h6>
-                    <h2 class="gradient-text mb-0">
+                    <h2 class="gradient-text mb-0 counter">
                         {% if crypto_prices and crypto_prices|length > 0 %}
                         ${{ "{:,.0f}".format(crypto_prices[0].price) }}
                         {% else %}
@@ -65,13 +65,13 @@
                     </small>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg-3 fade-in-up" style="animation-delay: 0.4s;">
-                <div class="feature-card">
-                    <div class="feature-icon bg-gradient-pink mb-3">
+            <div class="grid-item">
+                <div class="feature-card glass-card h-100">
+                    <div class="feature-icon bg-gradient-pink mb-3 counter">
                         <i class="bi bi-currency-ethereum"></i>
                     </div>
                     <h6 class="text-white-50">ETH</h6>
-                    <h2 class="gradient-text mb-0">
+                    <h2 class="gradient-text mb-0 counter">
                         {% if crypto_prices and crypto_prices|length > 1 %}
                         ${{ "{:,.0f}".format(crypto_prices[1].price) }}
                         {% else %}

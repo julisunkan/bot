@@ -27,6 +27,64 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Scroll animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.grid-item, .feature-card').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+    
+    // Counter animation
+    const animateCounter = (element) => {
+        const target = parseInt(element.textContent.replace(/[^0-9]/g, ''));
+        if (isNaN(target)) return;
+        
+        const duration = 2000;
+        const start = 0;
+        const increment = target / (duration / 16);
+        let current = start;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                element.textContent = element.textContent.replace(/[0-9,]+/, target.toLocaleString());
+                clearInterval(timer);
+            } else {
+                element.textContent = element.textContent.replace(/[0-9,]+/, Math.floor(current).toLocaleString());
+            }
+        }, 16);
+    };
+    
+    document.querySelectorAll('.counter').forEach(counter => {
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.dataset.animated) {
+                    entry.target.dataset.animated = 'true';
+                    if (entry.target.querySelector('h2, h3')) {
+                        animateCounter(entry.target.querySelector('h2, h3'));
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        counterObserver.observe(counter);
+    });
+    
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
         if (!alert.classList.contains('alert-dismissible')) {

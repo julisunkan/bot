@@ -44,11 +44,11 @@
         </div>
         {% endif %}
 
-        <main class="{% if session.user_id %}p-3{% endif %}">
+        <main class="{% if session.user_id %}p-3{% endif %} page-transition">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        <div class="alert alert-{{ category }} alert-dismissible fade show grid-item" role="alert">
                             {{ message }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
