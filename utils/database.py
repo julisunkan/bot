@@ -274,3 +274,19 @@ class Database:
             'total_bots': total_bots,
             'total_messages': total_messages
         }
+    
+    def increment_bot_messages(self, bot_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        today = datetime.now().date()
+        
+        cursor.execute('''
+            INSERT INTO analytics (bot_id, message_count, date) 
+            VALUES (?, 1, ?)
+            ON CONFLICT(bot_id, date) DO UPDATE SET 
+            message_count = message_count + 1
+        ''', (bot_id, today))
+        
+        conn.commit()
+        conn.close()

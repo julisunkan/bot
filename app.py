@@ -352,5 +352,86 @@ def api_bots():
     bots = db.get_user_bots(session['user_id'])
     return jsonify(bots)
 
+@app.route('/webhook/<int:bot_id>', methods=['POST'])
+def webhook(bot_id):
+    """Handle incoming Telegram updates for a specific bot"""
+    bot = db.get_bot(bot_id)
+    
+    if not bot:
+        return jsonify({'error': 'Bot not found'}), 404
+    
+    try:
+        update = request.get_json()
+        
+        if not update or 'message' not in update:
+            return jsonify({'ok': True})
+        
+        message = update['message']
+        chat_id = message['chat']['id']
+        text = message.get('text', '')
+        
+        if not text:
+            return jsonify({'ok': True})
+        
+        # Extract command (remove leading /)
+        command = text.lstrip('/').split()[0].lower() if text.startswith('/') else None
+        
+        # Get bot token
+        decrypted_token = db.decrypt_token(bot['bot_token'])
+        telegram_api = TelegramAPI(decrypted_token)
+        
+        # Find matching command
+        commands = db.get_bot_commands(bot_id)
+        response_sent = False
+        
+        for cmd in commands:
+            if cmd['command'].lower() == command:
+                # Send the response
+                telegram_api.send_message(chat_id, cmd['response_content'])
+                response_sent = True
+                
+                # Update analytics
+                db.increment_bot_messages(bot_id)
+                break
+        
+        if not response_sent and command:
+            # Send default help message
+            help_text = "Available commands:\n"
+            for cmd in commands:
+                help_text += f"/{cmd['command']}\n"
+            telegram_api.send_message(chat_id, help_text or "No commands configured yet.")
+        
+        return jsonify({'ok': True})
+    
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        return jsonify({'ok': True})
+
+@app.route('/bot/<int:bot_id>/setup-webhook', methods=['POST'])
+@login_required
+def setup_webhook(bot_id):
+    """Set up webhook for a bot"""
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    try:
+        decrypted_token = db.decrypt_token(bot['bot_token'])
+        telegram_api = TelegramAPI(decrypted_token)
+        
+        # Get the Repl URL (update this with your actual Repl URL)
+        webhook_url = f"{request.host_url}webhook/{bot_id}"
+        
+        result = telegram_api.set_webhook(webhook_url)
+        
+        if result and result.get('ok'):
+            return jsonify({'success': True, 'webhook_url': webhook_url})
+        else:
+            return jsonify({'success': False, 'error': result.get('description', 'Failed to set webhook')})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
