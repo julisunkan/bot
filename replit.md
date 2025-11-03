@@ -57,6 +57,15 @@ BotForge Pro is a full-stack Flask + SQLite web application for creating and man
    - Template ratings and downloads tracking
    - Preview templates before cloning
 
+10. **Template Management** (NEW - November 3, 2025)
+   - Edit templates directly from marketplace with JSON editor
+   - Real-time JSON validation
+   - Export templates as .zip files (includes template JSON + metadata)
+   - Import custom templates from .zip files
+   - Apply templates to existing bots (replaces all commands)
+   - Easy-to-modify JSON configuration format
+   - Dynamic template loading (imported templates appear immediately)
+
 8. **UI/UX**
    - Responsive Bootstrap 5 design
    - Dark/Light theme toggle (persists in localStorage)
@@ -117,6 +126,8 @@ BotForge Pro is a full-stack Flask + SQLite web application for creating and man
 │   ├── create_bot.html        # Bot creation form
 │   ├── bot_detail.html        # Bot management & commands
 │   ├── marketplace.html       # Template marketplace
+│   ├── edit_template.html     # Template editor (NEW)
+│   ├── import_template.html   # Template importer (NEW)
 │   ├── analytics.html         # Analytics dashboard
 │   └── settings.html          # User settings
 ├── templates_library/
@@ -229,6 +240,15 @@ BotForge Pro is a full-stack Flask + SQLite web application for creating and man
 - All bot tokens stored encrypted in database
 
 ## Recent Changes
+- November 3, 2025: **NEW FEATURE - Advanced Template Management**
+  - Template editor with JSON syntax highlighting and real-time validation
+  - Export templates as .zip packages with metadata
+  - Import custom templates from .zip files
+  - Apply templates to existing bots (one-click command replacement)
+  - Dynamic template loading - imported templates appear immediately in marketplace
+  - Easy-to-modify JSON configuration format for all templates
+  - Database methods for full template CRUD operations
+
 - November 3, 2025: **MAJOR FEATURE - Telegram Tap-to-Earn Mining Bot**
   - Complete tap-to-earn game system with Telegram Mini App integration
   - Session-based authentication with HMAC signature validation
