@@ -14,6 +14,16 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET', secrets.token_hex(32))
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
+# Add custom Jinja2 filters
+@app.template_filter('from_json')
+def from_json_filter(value):
+    if not value:
+        return {}
+    try:
+        return json.loads(value)
+    except:
+        return {}
+
 db = Database()
 ai_assistant = AIAssistant()
 crypto_api = CryptoAPI()
