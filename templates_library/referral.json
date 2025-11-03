@@ -1,0 +1,42 @@
+{
+  "name": "Referral Bot",
+  "description": "Referral tracking system with rewards and leaderboard",
+  "category": "marketing",
+  "commands": [
+    {
+      "command": "start",
+      "response_type": "text",
+      "response_content": "🌟 Welcome to the Referral Bot!\n\nInvite friends and earn amazing rewards!\n\nCommands:\n/invite - Get your invite link\n/stats - View your referral stats\n/leaderboard - See top referrers\n/rewards - Check your rewards\n/help - Show this message"
+    },
+    {
+      "command": "invite",
+      "response_type": "text",
+      "response_content": "🔗 Your Personal Invite Link:\nhttps://t.me/YourBot?start=INV456\n\n🎁 Rewards:\n• 1-5 referrals: 10 points each\n• 6-20 referrals: 20 points each\n• 21+ referrals: 50 points each\n\nShare and earn!"
+    },
+    {
+      "command": "stats",
+      "response_type": "text",
+      "response_content": "📊 Your Referral Stats\n\n👥 Total referrals: 0\n⭐ Points earned: 0\n🏆 Rank: Beginner\n📈 Level: 1\n\nKeep inviting to level up!"
+    },
+    {
+      "command": "leaderboard",
+      "response_type": "text",
+      "response_content": "🏆 Top Referrers\n\n1. 👑 User123 - 150 referrals\n2. 🥈 CryptoKing - 120 referrals\n3. 🥉 Inviter99 - 95 referrals\n4. User456 - 80 referrals\n5. RefMaster - 75 referrals\n\n📍 Your rank: Not ranked yet"
+    },
+    {
+      "command": "rewards",
+      "response_type": "text",
+      "response_content": "🎁 Available Rewards\n\n💎 Your points: 0\n\nRedeem:\n• 100 pts - Premium Badge\n• 500 pts - $10 Voucher\n• 1000 pts - Exclusive NFT\n• 5000 pts - VIP Access\n\nKeep referring to unlock!"
+    },
+    {
+      "command": "help",
+      "response_type": "text",
+      "response_content": "📋 Available Commands:\n\n/start - Start the bot\n/invite - Get your invite link\n/stats - View referral statistics\n/leaderboard - See top referrers\n/rewards - Check available rewards\n/help - Show this help message"
+    }
+  ],
+  "settings": {
+    "points_per_referral": 10,
+    "bonus_threshold": 5,
+    "enable_leaderboard": true
+  }
+}

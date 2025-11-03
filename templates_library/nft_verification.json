@@ -1,0 +1,42 @@
+{
+  "name": "NFT Verification Bot",
+  "description": "Verify NFT ownership and grant access to exclusive communities",
+  "category": "web3",
+  "commands": [
+    {
+      "command": "start",
+      "response_type": "text",
+      "response_content": "🎨 Welcome to the NFT Verification Bot!\n\nVerify your NFT ownership and unlock exclusive benefits.\n\nCommands:\n/verify - Verify your NFT\n/connect - Connect your wallet\n/collections - View supported collections\n/status - Check verification status\n/help - Show this message"
+    },
+    {
+      "command": "verify",
+      "response_type": "text",
+      "response_content": "✨ NFT Verification\n\nPlease connect your wallet first using /connect\n\nThen provide:\n1. Wallet address\n2. NFT collection name\n3. Token ID (optional)\n\nWe'll verify ownership instantly!"
+    },
+    {
+      "command": "connect",
+      "response_type": "text",
+      "response_content": "🔗 Connect Your Wallet\n\nSupported wallets:\n• MetaMask\n• Trust Wallet\n• Coinbase Wallet\n• WalletConnect\n\nSend your wallet address to connect.\n⚠️ Never share your private keys!"
+    },
+    {
+      "command": "collections",
+      "response_type": "text",
+      "response_content": "🖼️ Supported NFT Collections\n\n✅ Bored Ape Yacht Club (BAYC)\n✅ CryptoPunks\n✅ Azuki\n✅ Doodles\n✅ Clone X\n✅ Moonbirds\n\nMore collections added weekly!"
+    },
+    {
+      "command": "status",
+      "response_type": "text",
+      "response_content": "📊 Verification Status\n\n🔐 Wallet: Not connected\n🎨 NFTs verified: 0\n✨ Access level: Guest\n\nConnect your wallet to get started!"
+    },
+    {
+      "command": "help",
+      "response_type": "text",
+      "response_content": "📋 Available Commands:\n\n/start - Start the bot\n/verify - Verify NFT ownership\n/connect - Connect your wallet\n/collections - View supported NFT collections\n/status - Check verification status\n/help - Show this help message"
+    }
+  ],
+  "settings": {
+    "supported_chains": ["Ethereum", "Polygon", "BSC"],
+    "verification_required": true,
+    "auto_role_assignment": true
+  }
+}

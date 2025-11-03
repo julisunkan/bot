@@ -1,0 +1,37 @@
+{
+  "name": "Payment Bot",
+  "description": "Cryptocurrency payment processing bot with transaction tracking",
+  "category": "crypto",
+  "commands": [
+    {
+      "command": "start",
+      "response_type": "text",
+      "response_content": "💳 Welcome to the Payment Bot!\n\nProcess crypto payments securely and easily.\n\nCommands:\n/pay - Make a payment\n/status - Check payment status\n/history - View payment history\n/help - Show this message"
+    },
+    {
+      "command": "pay",
+      "response_type": "text",
+      "response_content": "💰 Initiate Payment\n\nPlease send the amount and recipient address:\nExample: 0.1 ETH to 0x1234...\n\n⚠️ Note: This is a demo bot. No real transactions will be processed."
+    },
+    {
+      "command": "status",
+      "response_type": "text",
+      "response_content": "📊 Payment Status\n\nLatest transaction:\n✅ Status: Confirmed\n💵 Amount: 0.1 ETH\n🔗 TX Hash: 0xabc123...\n⏰ Time: 2 minutes ago"
+    },
+    {
+      "command": "history",
+      "response_type": "text",
+      "response_content": "📜 Payment History\n\n1. ✅ 0.1 ETH - Confirmed (2 min ago)\n2. ✅ 0.05 BTC - Confirmed (1 hour ago)\n3. ⏳ 50 USDT - Pending (5 min ago)\n\nTotal transactions: 3"
+    },
+    {
+      "command": "help",
+      "response_type": "text",
+      "response_content": "📋 Available Commands:\n\n/start - Start the bot\n/pay - Initiate a payment\n/status - Check payment status\n/history - View transaction history\n/help - Show this help message"
+    }
+  ],
+  "settings": {
+    "supported_currencies": ["BTC", "ETH", "USDT"],
+    "min_amount": 0.001,
+    "confirmation_required": true
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "Airdrop Bot",
+  "description": "Crypto airdrop distribution bot with claim and referral system",
+  "category": "crypto",
+  "commands": [
+    {
+      "command": "start",
+      "response_type": "text",
+      "response_content": "🎁 Welcome to the Airdrop Bot!\n\nClaim your free tokens and invite friends to earn more!\n\nCommands:\n/claim - Claim your airdrop\n/balance - Check your balance\n/referral - Get your referral link\n/help - Show this message"
+    },
+    {
+      "command": "claim",
+      "response_type": "text",
+      "response_content": "✅ Congratulations! You've claimed 100 tokens!\n\nInvite friends with /referral to earn 50 tokens per referral!"
+    },
+    {
+      "command": "balance",
+      "response_type": "text",
+      "response_content": "💰 Your Token Balance: 100 tokens\n\n📊 Total claimed: 100\n👥 Referrals: 0\n🎁 Bonus earnings: 0"
+    },
+    {
+      "command": "referral",
+      "response_type": "text",
+      "response_content": "👥 Your Referral Link:\nhttps://t.me/YourBot?start=REF123\n\n💎 Earn 50 tokens for each friend who joins!\n\nReferrals: 0\nEarnings: 0 tokens"
+    },
+    {
+      "command": "help",
+      "response_type": "text",
+      "response_content": "📋 Available Commands:\n\n/start - Start the bot\n/claim - Claim your airdrop tokens\n/balance - Check your token balance\n/referral - Get your referral link\n/help - Show this help message"
+    }
+  ],
+  "settings": {
+    "airdrop_amount": 100,
+    "referral_bonus": 50,
+    "max_claims": 1
+  }
+}

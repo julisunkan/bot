@@ -1,0 +1,43 @@
+{
+  "name": "AI Chat Bot",
+  "description": "Intelligent AI-powered chatbot for customer support and conversations",
+  "category": "ai",
+  "commands": [
+    {
+      "command": "start",
+      "response_type": "text",
+      "response_content": "🤖 Welcome to the AI Chat Bot!\n\nI'm an intelligent assistant powered by AI. Ask me anything!\n\nCommands:\n/chat - Start a conversation\n/faq - View frequently asked questions\n/feedback - Send feedback\n/language - Change language\n/help - Show this message"
+    },
+    {
+      "command": "chat",
+      "response_type": "text",
+      "response_content": "💬 Chat Mode Activated!\n\nJust send me any message and I'll respond intelligently.\n\nI can help with:\n• Answering questions\n• Providing information\n• Having conversations\n• Solving problems\n\nGo ahead, ask me anything!"
+    },
+    {
+      "command": "faq",
+      "response_type": "text",
+      "response_content": "❓ Frequently Asked Questions\n\nQ: What can you do?\nA: I can answer questions, provide information, and have conversations on various topics.\n\nQ: Are you available 24/7?\nA: Yes! I'm always here to help.\n\nQ: What languages do you support?\nA: Currently English, with more coming soon.\n\nAsk me anything!"
+    },
+    {
+      "command": "feedback",
+      "response_type": "text",
+      "response_content": "📝 Send Your Feedback\n\nWe'd love to hear from you!\n\nPlease send your:\n• Suggestions\n• Bug reports\n• Feature requests\n• General comments\n\nYour feedback helps us improve!"
+    },
+    {
+      "command": "language",
+      "response_type": "text",
+      "response_content": "🌍 Language Settings\n\nAvailable languages:\n✅ English (Current)\n🔄 Spanish (Coming soon)\n🔄 French (Coming soon)\n🔄 German (Coming soon)\n\nMore languages coming soon!"
+    },
+    {
+      "command": "help",
+      "response_type": "text",
+      "response_content": "📋 Available Commands:\n\n/start - Start the bot\n/chat - Begin AI conversation\n/faq - View FAQs\n/feedback - Send feedback\n/language - Change language\n/help - Show this help message\n\nOr just send any message to chat!"
+    }
+  ],
+  "settings": {
+    "ai_enabled": true,
+    "response_style": "friendly",
+    "max_response_length": 500,
+    "context_memory": true
+  }
+}
