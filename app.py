@@ -230,11 +230,18 @@ def add_command(bot_id):
     command = request.form.get('command', '').strip().lower()
     response_type = request.form.get('response_type', 'text')
     response_content = request.form.get('response_content', '').strip()
+    url_link = request.form.get('url_link', '').strip()
     
-    if not command or not response_content:
-        return jsonify({'success': False, 'error': 'Command and response required'}), 400
+    if not command:
+        return jsonify({'success': False, 'error': 'Command is required'}), 400
     
-    db.add_bot_command(bot_id, command, response_type, response_content)
+    if response_type != 'url' and not response_content:
+        return jsonify({'success': False, 'error': 'Response content required'}), 400
+    
+    if response_type == 'url' and not url_link:
+        return jsonify({'success': False, 'error': 'URL is required for URL type'}), 400
+    
+    db.add_bot_command(bot_id, command, response_type, response_content, url_link)
     
     return jsonify({'success': True})
 
@@ -249,11 +256,18 @@ def edit_command(bot_id, command_id):
     command = request.form.get('command', '').strip().lower()
     response_type = request.form.get('response_type', 'text')
     response_content = request.form.get('response_content', '').strip()
+    url_link = request.form.get('url_link', '').strip()
     
-    if not command or not response_content:
-        return jsonify({'success': False, 'error': 'Command and response required'}), 400
+    if not command:
+        return jsonify({'success': False, 'error': 'Command is required'}), 400
     
-    updated = db.update_bot_command(command_id, bot_id, command, response_type, response_content)
+    if response_type != 'url' and not response_content:
+        return jsonify({'success': False, 'error': 'Response content required'}), 400
+    
+    if response_type == 'url' and not url_link:
+        return jsonify({'success': False, 'error': 'URL is required for URL type'}), 400
+    
+    updated = db.update_bot_command(command_id, bot_id, command, response_type, response_content, url_link)
     
     if updated:
         return jsonify({'success': True})
@@ -465,8 +479,23 @@ def webhook(bot_id):
         
         for cmd in commands:
             if cmd['command'].lower() == command:
-                # Send the response
-                telegram_api.send_message(chat_id, cmd['response_content'])
+                # Check if this is a URL type command
+                if cmd['response_type'] == 'url' and cmd.get('url_link'):
+                    # Create inline keyboard with web app button
+                    keyboard = {
+                        'inline_keyboard': [[
+                            {
+                                'text': cmd.get('response_content') or 'Open Link',
+                                'web_app': {'url': cmd['url_link']}
+                            }
+                        ]]
+                    }
+                    message_text = f"Click the button below to open:\n{cmd['url_link']}"
+                    telegram_api.send_message(chat_id, message_text, reply_markup=keyboard)
+                else:
+                    # Send regular text response
+                    telegram_api.send_message(chat_id, cmd['response_content'])
+                
                 response_sent = True
                 
                 # Update analytics

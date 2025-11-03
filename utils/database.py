@@ -125,10 +125,18 @@ class Database:
                 command TEXT NOT NULL,
                 response_type TEXT DEFAULT 'text',
                 response_content TEXT,
+                url_link TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE
             )
         ''')
+        
+        # Migration: Add url_link column if it doesn't exist
+        try:
+            cursor.execute("SELECT url_link FROM bot_commands LIMIT 1")
+        except sqlite3.OperationalError:
+            cursor.execute("ALTER TABLE bot_commands ADD COLUMN url_link TEXT")
+            conn.commit()
         
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS template_ratings (
@@ -338,12 +346,12 @@ class Database:
         conn.commit()
         conn.close()
     
-    def add_bot_command(self, bot_id, command, response_type, response_content):
+    def add_bot_command(self, bot_id, command, response_type, response_content, url_link=None):
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute(
-            'INSERT INTO bot_commands (bot_id, command, response_type, response_content) VALUES (?, ?, ?, ?)',
-            (bot_id, command, response_type, response_content)
+            'INSERT INTO bot_commands (bot_id, command, response_type, response_content, url_link) VALUES (?, ?, ?, ?, ?)',
+            (bot_id, command, response_type, response_content, url_link)
         )
         conn.commit()
         conn.close()
@@ -356,14 +364,14 @@ class Database:
         conn.close()
         return [dict(cmd) for cmd in commands]
     
-    def update_bot_command(self, command_id, bot_id, command, response_type, response_content):
+    def update_bot_command(self, command_id, bot_id, command, response_type, response_content, url_link=None):
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute('''
             UPDATE bot_commands 
-            SET command = ?, response_type = ?, response_content = ?
+            SET command = ?, response_type = ?, response_content = ?, url_link = ?
             WHERE id = ? AND bot_id = ?
-        ''', (command, response_type, response_content, command_id, bot_id))
+        ''', (command, response_type, response_content, url_link, command_id, bot_id))
         conn.commit()
         updated = cursor.rowcount > 0
         conn.close()

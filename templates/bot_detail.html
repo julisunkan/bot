@@ -57,9 +57,16 @@
                                 <tr>
                                     <td><code>/{{ cmd.command }}</code></td>
                                     <td><span class="badge bg-info">{{ cmd.response_type }}</span></td>
-                                    <td>{{ cmd.response_content[:100] }}{% if cmd.response_content|length > 100 %}...{% endif %}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="editCommand({{ cmd.id }}, '{{ cmd.command }}', '{{ cmd.response_type }}', `{{ cmd.response_content|replace('`', '\\`')|replace('\n', '\\n') }}`)">
+                                        {% if cmd.response_type == 'url' and cmd.url_link %}
+                                            <strong>{{ cmd.response_content or 'Open Link' }}</strong><br>
+                                            <small class="text-white-50">🔗 {{ cmd.url_link[:50] }}{% if cmd.url_link|length > 50 %}...{% endif %}</small>
+                                        {% else %}
+                                            {{ cmd.response_content[:100] }}{% if cmd.response_content|length > 100 %}...{% endif %}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editCommand({{ cmd.id }}, '{{ cmd.command }}', '{{ cmd.response_type }}', `{{ cmd.response_content|replace('`', '\\`')|replace('\n', '\\n') }}`, '{{ cmd.url_link or '' }}')">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <button class="btn btn-sm btn-outline-danger" onclick="deleteCommand({{ cmd.id }})">
@@ -190,15 +197,22 @@
                     </div>
                     <div class="mb-3">
                         <label for="response_type" class="form-label">Response Type</label>
-                        <select class="form-select" id="response_type" name="response_type" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                        <select class="form-select" id="response_type" name="response_type" onchange="toggleUrlField()" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
                             <option value="text">Text</option>
+                            <option value="url">External URL (Opens in Bot)</option>
                             <option value="image">Image</option>
                             <option value="button">Button</option>
                         </select>
                     </div>
-                    <div class="mb-3">
+                    <div class="mb-3" id="response_content_field">
                         <label for="response_content" class="form-label">Response Content</label>
-                        <textarea class="form-control" id="response_content" name="response_content" rows="4" required style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;"></textarea>
+                        <textarea class="form-control" id="response_content" name="response_content" rows="4" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;"></textarea>
+                        <small class="text-white-50">For URL type, this will be the button text</small>
+                    </div>
+                    <div class="mb-3" id="url_link_field" style="display: none;">
+                        <label for="url_link" class="form-label">External URL</label>
+                        <input type="url" class="form-control" id="url_link" name="url_link" placeholder="https://example.com" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                        <small class="text-white-50">The URL will open inside the Telegram bot</small>
                     </div>
                     <button type="button" class="btn btn-outline-light" id="aiGenerateBtn">
                         <i class="bi bi-magic"></i> AI Generate Response
@@ -219,6 +233,23 @@
 {% block extra_js %}
 <script>
 let editingCommandId = null;
+
+function toggleUrlField() {
+    const responseType = document.getElementById('response_type').value;
+    const urlField = document.getElementById('url_link_field');
+    const contentField = document.getElementById('response_content_field');
+    const contentInput = document.getElementById('response_content');
+    
+    if (responseType === 'url') {
+        urlField.style.display = 'block';
+        contentInput.required = false;
+        contentInput.placeholder = 'Button text (e.g., "Open Website")';
+    } else {
+        urlField.style.display = 'none';
+        contentInput.required = true;
+        contentInput.placeholder = '';
+    }
+}
 
 document.getElementById('saveCommandBtn').addEventListener('click', function() {
     const form = document.getElementById('addCommandForm');
@@ -242,11 +273,13 @@ document.getElementById('saveCommandBtn').addEventListener('click', function() {
     });
 });
 
-function editCommand(commandId, command, responseType, responseContent) {
+function editCommand(commandId, command, responseType, responseContent, urlLink) {
     editingCommandId = commandId;
     document.getElementById('command').value = command;
     document.getElementById('response_type').value = responseType;
     document.getElementById('response_content').value = responseContent;
+    document.getElementById('url_link').value = urlLink || '';
+    toggleUrlField();
     document.querySelector('#addCommandModal .modal-title').innerHTML = '<i class="bi bi-pencil-circle"></i> Edit Command';
     document.getElementById('saveCommandBtn').innerHTML = '<i class="bi bi-check"></i> Update Command';
     new bootstrap.Modal(document.getElementById('addCommandModal')).show();
@@ -273,6 +306,7 @@ document.getElementById('addCommandModal').addEventListener('hidden.bs.modal', f
     document.getElementById('addCommandForm').reset();
     document.querySelector('#addCommandModal .modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> Add Command';
     document.getElementById('saveCommandBtn').innerHTML = '<i class="bi bi-check"></i> Save Command';
+    toggleUrlField();
 });
 
 document.getElementById('aiGenerateBtn').addEventListener('click', function() {

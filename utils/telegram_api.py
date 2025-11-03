@@ -1,4 +1,5 @@
 import requests
+import json
 
 class TelegramAPI:
     def __init__(self, bot_token=None):
@@ -40,20 +41,20 @@ class TelegramAPI:
             return None
 
     def send_message(self, chat_id, text, parse_mode=None, reply_markup=None):
-        if not self.base_url:
-            return None
+        url = f"{self.base_url}/sendMessage"
+        data = {
+            'chat_id': chat_id,
+            'text': text
+        }
+
+        if parse_mode:
+            data['parse_mode'] = parse_mode
+
+        if reply_markup:
+            data['reply_markup'] = json.dumps(reply_markup)
 
         try:
-            payload = {
-                'chat_id': chat_id,
-                'text': text
-            }
-            if parse_mode:
-                payload['parse_mode'] = parse_mode
-            if reply_markup:
-                payload['reply_markup'] = reply_markup
-
-            response = requests.post(f'{self.base_url}/sendMessage', json=payload, timeout=10)
+            response = requests.post(url, json=data, timeout=10)
             return response.json()
         except Exception as e:
             print(f"Error sending message: {e}")
