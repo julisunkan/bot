@@ -1,0 +1,44 @@
+
+{
+  "name": "Game Creator Bot",
+  "description": "Build and play interactive games directly in Telegram",
+  "category": "game",
+  "bot_type": "game",
+  "commands": [
+    {
+      "command": "start",
+      "response_type": "text",
+      "response_content": "🎮 Welcome to Game Creator!\n\nCreate addictive games your users will love!\n\nCommands:\n/newgame - Create a new game\n/play - Play a game\n/leaderboard - View top scores\n/mygames - Your created games\n/help - Show this message"
+    },
+    {
+      "command": "newgame",
+      "response_type": "text",
+      "response_content": "🎯 Create New Game\n\nSelect game type:\n1. 🎲 Dice Game\n2. 🎰 Slot Machine\n3. 🃏 Card Flip Memory\n4. 🏀 Basketball Shot\n5. ⚽ Penalty Kick\n6. 🎯 Target Practice\n\nSend number to create!"
+    },
+    {
+      "command": "play",
+      "response_type": "text",
+      "response_content": "🎮 Available Games\n\n1. 🎲 Lucky Dice - Roll to win!\n2. 🎰 Mega Slots - Spin the reels!\n3. 🃏 Memory Match - Find pairs!\n4. 🏀 Hoop Master - Shoot hoops!\n\nSend number to play or /newgame to create!"
+    },
+    {
+      "command": "leaderboard",
+      "response_type": "text",
+      "response_content": "🏆 Global Leaderboard\n\n1. 👑 ProGamer - 15,420 pts\n2. 🥈 GameKing - 12,850 pts\n3. 🥉 SkillMaster - 11,200 pts\n4. Player99 - 9,450 pts\n5. Winner123 - 8,900 pts\n\n📍 Your rank: #8 (7,200 pts)"
+    },
+    {
+      "command": "mygames",
+      "response_type": "text",
+      "response_content": "🎮 Your Games\n\n1. 🎲 Super Dice\n   Plays: 1,245 | Rating: ⭐⭐⭐⭐⭐\n\n2. 🎰 Lucky Slots\n   Plays: 892 | Rating: ⭐⭐⭐⭐\n\nTotal games: 2 | Total plays: 2,137"
+    },
+    {
+      "command": "help",
+      "response_type": "text",
+      "response_content": "📋 Available Commands:\n\n/start - Start the bot\n/newgame - Create a new game\n/play - Play available games\n/leaderboard - View rankings\n/mygames - Your created games\n/help - Show this message"
+    }
+  ],
+  "settings": {
+    "enable_scoring": true,
+    "enable_leaderboard": true,
+    "multiplayer": true
+  }
+}

@@ -1,0 +1,59 @@
+
+{
+  "name": "Tap-to-Earn Mining Bot",
+  "description": "Create viral tap-to-earn coin mining games like Notcoin, Hamster Kombat",
+  "category": "mining",
+  "bot_type": "mining",
+  "commands": [
+    {
+      "command": "start",
+      "response_type": "text",
+      "response_content": "⛏️ Welcome to TapCoin Mining!\n\nTap to mine coins and earn rewards!\n\n💎 Your Balance: 0 coins\n⚡ Energy: 1000/1000\n🏆 Level: 1\n\nCommands:\n/mine - Start mining\n/boost - Upgrade mining power\n/tasks - Complete tasks for bonus\n/referral - Invite friends\n/withdraw - Claim your coins\n/help - Show this message"
+    },
+    {
+      "command": "mine",
+      "response_type": "text",
+      "response_content": "⛏️ TAP TO MINE!\n\n[🪙 TAP HERE 🪙]\n\n💰 Coins per tap: +1\n⚡ Energy: 995/1000\n💎 Total mined: 5 coins\n\n🔥 Combo: x1 (Keep tapping!)\n\nTap the button to mine more coins!"
+    },
+    {
+      "command": "boost",
+      "response_type": "text",
+      "response_content": "🚀 Mining Boosts\n\n⚡ Energy Limit\n├ Current: 1000\n├ Upgrade: 1500 (Cost: 500 coins)\n└ Benefit: +500 energy capacity\n\n💎 Multi-Tap\n├ Current: +1 per tap\n├ Upgrade: +2 per tap (Cost: 1000 coins)\n└ Benefit: Double mining speed\n\n⚡ Recharge Speed\n├ Current: 1/sec\n├ Upgrade: 2/sec (Cost: 750 coins)\n└ Benefit: Faster energy recovery\n\n🤖 Auto-Miner\n├ Current: Locked\n├ Unlock: 2000 coins\n└ Benefit: Mine while offline\n\nSend boost number to upgrade!"
+    },
+    {
+      "command": "tasks",
+      "response_type": "text",
+      "response_content": "📋 Daily Tasks\n\n✅ Mine 100 coins - Reward: 50 coins\n⏳ Invite 1 friend - Reward: 200 coins\n⏳ Reach level 5 - Reward: 500 coins\n⏳ Mine for 7 days - Reward: 1000 coins\n\n🎁 Special Tasks:\n• Join our channel - 100 coins\n• Share with friends - 150 coins\n• Connect wallet - 300 coins\n\nComplete tasks to earn bonus coins!"
+    },
+    {
+      "command": "referral",
+      "response_type": "text",
+      "response_content": "👥 Referral Program\n\n🔗 Your referral link:\nhttps://t.me/YourBot?start=MINE789\n\n💰 Earnings:\n• Direct referral: 500 coins\n• Their mining: 10% bonus\n• Level 2 referrals: 5% bonus\n\n📊 Your Stats:\n• Referrals: 0\n• Total earned: 0 coins\n\n🏆 Top Referrers:\n1. MiningKing - 250 referrals\n2. CoinMaster - 180 referrals\n3. TapGuru - 150 referrals\n\nShare your link to earn more!"
+    },
+    {
+      "command": "withdraw",
+      "response_type": "text",
+      "response_content": "💸 Withdraw Coins\n\n💎 Available: 0 coins\n⚠️ Minimum: 10,000 coins\n\n📊 Progress: 0%\n▱▱▱▱▱▱▱▱▱▱ 0/10,000\n\nWithdrawal Options:\n• TON Blockchain - 0.5% fee\n• Telegram Wallet - 1% fee\n• Gift Cards - 2% fee\n\nKeep mining to reach the minimum!"
+    },
+    {
+      "command": "help",
+      "response_type": "text",
+      "response_content": "📋 Available Commands:\n\n/start - Start mining\n/mine - Tap to mine coins\n/boost - Upgrade your mining\n/tasks - Complete tasks\n/referral - Invite friends\n/withdraw - Claim your coins\n/stats - View your statistics\n/help - Show this message\n\n💡 Tips:\n• Tap fast to build combos\n• Complete daily tasks\n• Invite friends for bonus\n• Upgrade boosts early"
+    },
+    {
+      "command": "stats",
+      "response_type": "text",
+      "response_content": "📊 Your Statistics\n\n💎 Total Mined: 0 coins\n⚡ Energy: 1000/1000\n🏆 Level: 1 (0/100 XP)\n🔥 Combo Record: x1\n\n⛏️ Mining Stats:\n• Total taps: 0\n• Coins per tap: +1\n• Auto-mining: Locked\n\n👥 Referral Stats:\n• Referrals: 0\n• Bonus earned: 0 coins\n\n📅 Streak: 1 day\n🎯 Next reward: 50 coins"
+    }
+  ],
+  "settings": {
+    "tap_reward": 1,
+    "energy_max": 1000,
+    "energy_recharge_rate": 1,
+    "referral_bonus": 500,
+    "min_withdrawal": 10000,
+    "enable_boosts": true,
+    "enable_tasks": true,
+    "enable_leaderboard": true
+  }
+}

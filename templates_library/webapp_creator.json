@@ -1,0 +1,44 @@
+
+{
+  "name": "Web App Creator Bot",
+  "description": "Create and deploy interactive web applications directly from Telegram",
+  "category": "webapp",
+  "bot_type": "webapp",
+  "commands": [
+    {
+      "command": "start",
+      "response_type": "text",
+      "response_content": "🌐 Welcome to Web App Creator!\n\nCreate powerful web applications right from Telegram!\n\nCommands:\n/create - Create a new web app\n/deploy - Deploy your web app\n/templates - Browse web app templates\n/myapps - View your web apps\n/help - Show this message"
+    },
+    {
+      "command": "create",
+      "response_type": "text",
+      "response_content": "🎨 Create Web App\n\nChoose a template:\n1. 📝 To-Do List App\n2. 💰 Expense Tracker\n3. 🎮 Quiz Game\n4. 📊 Poll Creator\n5. 🛒 E-commerce Store\n\nSend the number to get started!"
+    },
+    {
+      "command": "deploy",
+      "response_type": "text",
+      "response_content": "🚀 Deploy Web App\n\nYour app is being deployed...\n\n✅ Deployment successful!\n🔗 URL: https://yourapp.replit.dev\n\nShare this link with anyone to use your app!"
+    },
+    {
+      "command": "templates",
+      "response_type": "text",
+      "response_content": "📚 Web App Templates\n\n✅ Todo List - Task management\n✅ Portfolio Site - Personal website\n✅ Blog Platform - Content publishing\n✅ Chat App - Real-time messaging\n✅ Form Builder - Custom forms\n\nUse /create to get started!"
+    },
+    {
+      "command": "myapps",
+      "response_type": "text",
+      "response_content": "📱 Your Web Apps\n\n1. 📝 Todo App - https://todo.replit.dev\n   Status: ✅ Active | Users: 150\n\n2. 💰 Expense Tracker - https://expense.replit.dev\n   Status: ✅ Active | Users: 89\n\nTotal Apps: 2 | Total Users: 239"
+    },
+    {
+      "command": "help",
+      "response_type": "text",
+      "response_content": "📋 Available Commands:\n\n/start - Start the bot\n/create - Create a new web app\n/deploy - Deploy your app\n/templates - Browse templates\n/myapps - View your apps\n/help - Show this message"
+    }
+  ],
+  "settings": {
+    "auto_deploy": true,
+    "custom_domains": true,
+    "max_apps": 10
+  }
+}

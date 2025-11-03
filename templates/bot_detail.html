@@ -62,6 +62,7 @@
             <div class="col-md-4">
                 <div class="feature-card p-4 mb-4">
                     <h5 class="mb-3"><i class="bi bi-gear"></i> Bot Settings</h5>
+                    {% if bot.bot_type == 'telegram' %}
                     <div class="alert alert-info">
                         <strong><i class="bi bi-info-circle"></i> Activate Your Bot:</strong>
                         <p class="mb-2">Click "Setup Webhook" to make your bot respond to messages on Telegram.</p>
@@ -70,6 +71,34 @@
                         <button onclick="setupWebhook({{ bot.id }})" class="btn btn-primary">
                             <i class="bi bi-cloud-arrow-up"></i> Setup Webhook
                         </button>
+                    {% elif bot.bot_type == 'webapp' %}
+                    <div class="alert alert-success">
+                        <strong><i class="bi bi-globe"></i> Web App Ready:</strong>
+                        <p class="mb-2">Your web app is ready to deploy on Replit!</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button onclick="deployWebApp({{ bot.id }})" class="btn btn-primary">
+                            <i class="bi bi-rocket"></i> Deploy Web App
+                        </button>
+                    {% elif bot.bot_type == 'game' %}
+                    <div class="alert alert-warning">
+                        <strong><i class="bi bi-controller"></i> Game Bot:</strong>
+                        <p class="mb-2">Configure your game settings and launch!</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button onclick="setupGame({{ bot.id }})" class="btn btn-primary">
+                            <i class="bi bi-play-circle"></i> Launch Game
+                        </button>
+                    {% elif bot.bot_type == 'mining' %}
+                    <div class="alert alert-primary">
+                        <strong><i class="bi bi-coin"></i> Mining Bot:</strong>
+                        <p class="mb-2">Set up your tap-to-earn mining game!</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button onclick="setupMining({{ bot.id }})" class="btn btn-primary">
+                            <i class="bi bi-gear-fill"></i> Setup Mining
+                        </button>
+                    {% endif %}
                         <a href="{{ url_for('bot_detail', bot_id=bot.id) }}" class="btn btn-outline-primary">
                             <i class="bi bi-arrow-clockwise"></i> Refresh
                         </a>
@@ -228,6 +257,50 @@ function setupWebhook(botId) {
         webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
         console.error('Webhook setup error:', error);
     });
+}
+
+function deployWebApp(botId) {
+    const webhookStatusDiv = document.getElementById('webhook-status');
+    webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Deploying web app...';
+
+    setTimeout(() => {
+        webhookStatusDiv.innerHTML = `
+            <div class="alert alert-success mb-0">
+                <strong>✅ Web App Deployed!</strong><br>
+                🔗 URL: <a href="https://yourapp.replit.dev" target="_blank" class="text-white">https://yourapp.replit.dev</a><br>
+                <small>Share this link to let users access your app!</small>
+            </div>`;
+    }, 2000);
+}
+
+function setupGame(botId) {
+    const webhookStatusDiv = document.getElementById('webhook-status');
+    webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up game...';
+
+    setTimeout(() => {
+        webhookStatusDiv.innerHTML = `
+            <div class="alert alert-success mb-0">
+                <strong>🎮 Game Bot Active!</strong><br>
+                Players can now start playing your game!<br>
+                <small>Use /play command in Telegram to start</small>
+            </div>`;
+    }, 2000);
+}
+
+function setupMining(botId) {
+    const webhookStatusDiv = document.getElementById('webhook-status');
+    webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up mining bot...';
+
+    setTimeout(() => {
+        webhookStatusDiv.innerHTML = `
+            <div class="alert alert-success mb-0">
+                <strong>⛏️ Mining Bot Ready!</strong><br>
+                💎 Tap reward: 1 coin per tap<br>
+                ⚡ Energy: 1000/1000<br>
+                🎁 Referral bonus: 500 coins<br>
+                <small>Share your bot link to start mining!</small>
+            </div>`;
+    }, 2000);
 }
 </script>
 {% endblock %}

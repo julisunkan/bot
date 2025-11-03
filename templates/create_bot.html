@@ -29,16 +29,27 @@
                             </ol>
                         </div>
                         
-                        <form method="POST">
+                        <form method="POST" id="createBotForm">
+                            <div class="mb-3">
+                                <label for="bot_type" class="form-label">Bot Type</label>
+                                <select class="form-select form-select-lg" id="bot_type" name="bot_type" required>
+                                    <option value="telegram">📱 Telegram Bot</option>
+                                    <option value="webapp">🌐 Web App</option>
+                                    <option value="game">🎮 Game Bot</option>
+                                    <option value="mining">⛏️ Tap-to-Earn Mining</option>
+                                </select>
+                                <div class="form-text text-white-50">Choose what you want to create</div>
+                            </div>
+                            
                             <div class="mb-3">
                                 <label for="bot_name" class="form-label">Bot Name</label>
                                 <input type="text" class="form-control form-control-lg" id="bot_name" name="bot_name" required placeholder="My Awesome Bot">
                                 <div class="form-text text-white-50">A friendly name for your bot</div>
                             </div>
                             
-                            <div class="mb-4">
+                            <div class="mb-4" id="tokenField">
                                 <label for="bot_token" class="form-label">Bot Token</label>
-                                <input type="text" class="form-control form-control-lg" id="bot_token" name="bot_token" required placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+                                <input type="text" class="form-control form-control-lg" id="bot_token" name="bot_token" placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
                                 <div class="form-text text-white-50">The token provided by @BotFather</div>
                             </div>
                             
@@ -73,4 +84,25 @@
         <i class="bi bi-stars"></i>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('bot_type').addEventListener('change', function() {
+    const tokenField = document.getElementById('tokenField');
+    const tokenInput = document.getElementById('bot_token');
+    
+    if (this.value === 'telegram') {
+        tokenField.style.display = 'block';
+        tokenInput.required = true;
+    } else {
+        tokenField.style.display = 'none';
+        tokenInput.required = false;
+        tokenInput.value = '';
+    }
+});
+
+// Initialize on page load
+document.getElementById('bot_type').dispatchEvent(new Event('change'));
+</script>
 {% endblock %}

@@ -52,6 +52,9 @@ class Database:
                 bot_token TEXT NOT NULL,
                 bot_username TEXT,
                 bot_config TEXT,
+                bot_type TEXT DEFAULT 'telegram',
+                webhook_url TEXT,
+                is_active INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
@@ -77,7 +80,8 @@ class Database:
                 message_count INTEGER DEFAULT 0,
                 active_users INTEGER DEFAULT 0,
                 date DATE DEFAULT CURRENT_DATE,
-                FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE
+                FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE,
+                UNIQUE(bot_id, date)
             )
         ''')
         
@@ -168,15 +172,15 @@ class Database:
         conn.close()
         return dict(user) if user else None
     
-    def create_bot(self, user_id, bot_name, bot_token, bot_config):
+    def create_bot(self, user_id, bot_name, bot_token, bot_config, bot_type='telegram'):
         conn = self.get_connection()
         cursor = conn.cursor()
         
-        encrypted_token = self.encrypt_token(bot_token)
+        encrypted_token = self.encrypt_token(bot_token) if bot_token else ''
         
         cursor.execute(
-            'INSERT INTO bots (user_id, bot_name, bot_token, bot_config) VALUES (?, ?, ?, ?)',
-            (user_id, bot_name, encrypted_token, bot_config)
+            'INSERT INTO bots (user_id, bot_name, bot_token, bot_config, bot_type) VALUES (?, ?, ?, ?, ?)',
+            (user_id, bot_name, encrypted_token, bot_config, bot_type)
         )
         conn.commit()
         bot_id = cursor.lastrowid

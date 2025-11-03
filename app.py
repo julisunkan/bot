@@ -24,7 +24,10 @@ def init_templates():
         'payment.json': ('Payment Bot', 'Cryptocurrency payment processing bot with transaction tracking', 'crypto'),
         'referral.json': ('Referral Bot', 'Referral tracking system with rewards and leaderboard', 'marketing'),
         'nft_verification.json': ('NFT Verification Bot', 'Verify NFT ownership and grant access to exclusive communities', 'web3'),
-        'ai_chatbot.json': ('AI Chat Bot', 'Intelligent AI-powered chatbot for customer support and conversations', 'ai')
+        'ai_chatbot.json': ('AI Chat Bot', 'Intelligent AI-powered chatbot for customer support and conversations', 'ai'),
+        'webapp_creator.json': ('Web App Creator Bot', 'Create and deploy interactive web applications directly from Telegram', 'webapp'),
+        'game_creator.json': ('Game Creator Bot', 'Build and play interactive games directly in Telegram', 'game'),
+        'coin_mining.json': ('Tap-to-Earn Mining Bot', 'Create viral tap-to-earn coin mining games like Notcoin, Hamster Kombat', 'mining')
     }
     
     existing_templates = db.get_all_templates()
@@ -133,9 +136,14 @@ def create_bot():
     if request.method == 'POST':
         bot_name = request.form.get('bot_name', '').strip()
         bot_token = request.form.get('bot_token', '').strip()
+        bot_type = request.form.get('bot_type', 'telegram')
         
-        if not bot_name or not bot_token:
-            return render_template('create_bot.html', error='Bot name and token are required')
+        if not bot_name:
+            return render_template('create_bot.html', error='Bot name is required')
+        
+        # Only require token for telegram bots
+        if bot_type == 'telegram' and not bot_token:
+            return render_template('create_bot.html', error='Bot token is required for Telegram bots')
         
         user = db.get_user(session['user_id'])
         user_bots = db.get_user_bots(session['user_id'])
@@ -143,18 +151,21 @@ def create_bot():
         if user['plan'] == 'free' and len(user_bots) >= 1:
             return render_template('create_bot.html', error='Free plan allows only 1 bot. Upgrade to Pro for unlimited bots.')
         
-        telegram_api = TelegramAPI()
-        verification = telegram_api.verify_token(bot_token)
-        
-        if not verification['valid']:
-            return render_template('create_bot.html', error='Invalid Telegram bot token')
+        # Verify telegram bot token if provided
+        if bot_type == 'telegram':
+            telegram_api = TelegramAPI()
+            verification = telegram_api.verify_token(bot_token)
+            
+            if not verification['valid']:
+                return render_template('create_bot.html', error='Invalid Telegram bot token')
         
         bot_config = json.dumps({
             'commands': [],
+            'bot_type': bot_type,
             'created_at': datetime.now().isoformat()
         })
         
-        bot_id = db.create_bot(session['user_id'], bot_name, bot_token, bot_config)
+        bot_id = db.create_bot(session['user_id'], bot_name, bot_token, bot_config, bot_type)
         
         return redirect(url_for('bot_detail', bot_id=bot_id))
     
