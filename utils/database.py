@@ -60,6 +60,13 @@ class Database:
             )
         ''')
         
+        # Migration: Add bot_type column if it doesn't exist
+        try:
+            cursor.execute("SELECT bot_type FROM bots LIMIT 1")
+        except sqlite3.OperationalError:
+            cursor.execute("ALTER TABLE bots ADD COLUMN bot_type TEXT DEFAULT 'telegram'")
+            conn.commit()
+        
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS templates (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,

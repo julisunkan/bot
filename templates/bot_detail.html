@@ -263,44 +263,80 @@ function deployWebApp(botId) {
     const webhookStatusDiv = document.getElementById('webhook-status');
     webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Deploying web app...';
 
-    setTimeout(() => {
-        webhookStatusDiv.innerHTML = `
-            <div class="alert alert-success mb-0">
-                <strong>✅ Web App Deployed!</strong><br>
-                🔗 URL: <a href="https://yourapp.replit.dev" target="_blank" class="text-white">https://yourapp.replit.dev</a><br>
-                <small>Share this link to let users access your app!</small>
-            </div>`;
-    }, 2000);
+    fetch(`/bot/${botId}/deploy-webapp`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            webhookStatusDiv.innerHTML = `
+                <div class="alert alert-success mb-0">
+                    <strong>✅ Web App Deployed!</strong><br>
+                    🔗 URL: <a href="${data.webapp_url}" target="_blank" class="text-white">${data.webapp_url}</a><br>
+                    <small>Share this link to let users access your app!</small>
+                </div>`;
+        } else {
+            webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
+        console.error('Deploy error:', error);
+    });
 }
 
 function setupGame(botId) {
     const webhookStatusDiv = document.getElementById('webhook-status');
     webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up game...';
 
-    setTimeout(() => {
-        webhookStatusDiv.innerHTML = `
-            <div class="alert alert-success mb-0">
-                <strong>🎮 Game Bot Active!</strong><br>
-                Players can now start playing your game!<br>
-                <small>Use /play command in Telegram to start</small>
-            </div>`;
-    }, 2000);
+    fetch(`/bot/${botId}/setup-game`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            webhookStatusDiv.innerHTML = `
+                <div class="alert alert-success mb-0">
+                    <strong>🎮 Game Bot Active!</strong><br>
+                    Players can now start playing your game!<br>
+                    <small>Use /play command in Telegram to start</small>
+                </div>`;
+        } else {
+            webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
+        console.error('Game setup error:', error);
+    });
 }
 
 function setupMining(botId) {
     const webhookStatusDiv = document.getElementById('webhook-status');
     webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up mining bot...';
 
-    setTimeout(() => {
-        webhookStatusDiv.innerHTML = `
-            <div class="alert alert-success mb-0">
-                <strong>⛏️ Mining Bot Ready!</strong><br>
-                💎 Tap reward: 1 coin per tap<br>
-                ⚡ Energy: 1000/1000<br>
-                🎁 Referral bonus: 500 coins<br>
-                <small>Share your bot link to start mining!</small>
-            </div>`;
-    }, 2000);
+    fetch(`/bot/${botId}/setup-mining`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            webhookStatusDiv.innerHTML = `
+                <div class="alert alert-success mb-0">
+                    <strong>⛏️ Mining Bot Ready!</strong><br>
+                    💎 Tap reward: 1 coin per tap<br>
+                    ⚡ Energy: 1000/1000<br>
+                    🎁 Referral bonus: 500 coins<br>
+                    <small>Share your bot link to start mining!</small>
+                </div>`;
+        } else {
+            webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
+        console.error('Mining setup error:', error);
+    });
 }
 </script>
 {% endblock %}

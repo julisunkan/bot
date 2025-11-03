@@ -446,5 +446,95 @@ def setup_webhook(bot_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+@app.route('/bot/<int:bot_id>/deploy-webapp', methods=['POST'])
+@login_required
+def deploy_webapp(bot_id):
+    """Deploy web app bot"""
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    try:
+        base_url = request.host_url.replace('http://', 'https://')
+        webapp_url = f"{base_url}webapp/{bot_id}"
+        
+        # Update bot config
+        bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+        bot_config['webapp_url'] = webapp_url
+        bot_config['deployed_at'] = datetime.now().isoformat()
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE bots SET bot_config = ?, is_active = 1 WHERE id = ?', 
+                      (json.dumps(bot_config), bot_id))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'webapp_url': webapp_url})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/bot/<int:bot_id>/setup-game', methods=['POST'])
+@login_required
+def setup_game(bot_id):
+    """Setup game bot"""
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    try:
+        # Update bot config with game settings
+        bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+        bot_config['game_active'] = True
+        bot_config['game_settings'] = {
+            'max_players': 100,
+            'rounds': 5,
+            'start_command': '/play'
+        }
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE bots SET bot_config = ?, is_active = 1 WHERE id = ?', 
+                      (json.dumps(bot_config), bot_id))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Game bot activated'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/bot/<int:bot_id>/setup-mining', methods=['POST'])
+@login_required
+def setup_mining(bot_id):
+    """Setup mining bot"""
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    try:
+        # Update bot config with mining settings
+        bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+        bot_config['mining_active'] = True
+        bot_config['mining_settings'] = {
+            'tap_reward': 1,
+            'max_energy': 1000,
+            'referral_bonus': 500,
+            'energy_recharge_rate': 1
+        }
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE bots SET bot_config = ?, is_active = 1 WHERE id = ?', 
+                      (json.dumps(bot_config), bot_id))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Mining bot activated'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
