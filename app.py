@@ -153,20 +153,33 @@ def create_bot():
             return render_template('create_bot.html', error='Free plan allows only 1 bot. Upgrade to Pro for unlimited bots.')
         
         # Verify telegram bot token if provided
+        bot_username = None
         if bot_type == 'telegram':
             telegram_api = TelegramAPI()
             verification = telegram_api.verify_token(bot_token)
             
             if not verification['valid']:
                 return render_template('create_bot.html', error='Invalid Telegram bot token')
+            
+            # Get bot username for the link
+            bot_username = verification.get('bot_info', {}).get('username')
         
         bot_config = json.dumps({
             'commands': [],
             'bot_type': bot_type,
-            'created_at': datetime.now().isoformat()
+            'created_at': datetime.now().isoformat(),
+            'bot_link': f'https://t.me/{bot_username}' if bot_username else None
         })
         
         bot_id = db.create_bot(session['user_id'], bot_name, bot_token, bot_config, bot_type)
+        
+        # Update bot username in database
+        if bot_username:
+            conn = db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute('UPDATE bots SET bot_username = ? WHERE id = ?', (bot_username, bot_id))
+            conn.commit()
+            conn.close()
         
         return redirect(url_for('bot_detail', bot_id=bot_id))
     

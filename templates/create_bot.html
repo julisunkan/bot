@@ -20,13 +20,18 @@
                         {% endif %}
                         
                         <div class="alert" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
-                            <h6><i class="bi bi-info-circle"></i> How to get a bot token:</h6>
+                            <h6><i class="bi bi-info-circle"></i> How to get a bot token (takes 2 minutes):</h6>
                             <ol class="mb-0">
-                                <li>Open Telegram and search for <strong>@BotFather</strong></li>
+                                <li>Open Telegram and click this link: <a href="https://t.me/BotFather" target="_blank" class="text-warning"><strong>@BotFather</strong></a></li>
                                 <li>Send the command <code>/newbot</code></li>
-                                <li>Follow the instructions to create your bot</li>
-                                <li>Copy the bot token and paste it below</li>
+                                <li>Choose a name for your bot (e.g., "My Awesome Bot")</li>
+                                <li>Choose a username ending in 'bot' (e.g., "myawesome_bot")</li>
+                                <li>Copy the bot token (long string of numbers and letters)</li>
+                                <li>Paste it below and you're done! ✅</li>
                             </ol>
+                            <div class="mt-2">
+                                <small><i class="bi bi-lightbulb"></i> Your bot link will be: <code>https://t.me/YOUR_BOT_USERNAME</code></small>
+                            </div>
                         </div>
                         
                         <form method="POST" id="createBotForm">
