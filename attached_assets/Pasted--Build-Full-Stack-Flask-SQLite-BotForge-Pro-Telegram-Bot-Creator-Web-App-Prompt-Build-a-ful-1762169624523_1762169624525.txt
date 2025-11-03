@@ -1,0 +1,261 @@
+🚀 Build Full-Stack Flask + SQLite “BotForge Pro” Telegram Bot Creator Web App
+
+Prompt:
+
+Build a full-stack Flask + SQLite web app called “BotForge Pro” — a complete Telegram Bot Creator Platform with AI + Web3 + Analytics + Marketplace + Monetization features.
+It should function like BotFather + Hugging Face + Dapp + Replit combined, but simplified for educational use with free APIs and local database.
+
+🔧 1. CORE BOT BUILDER
+
+Create / delete / clone Telegram bots
+
+Manage multiple bots per user in dashboard
+
+Add / edit bot commands (/start, /help, /claim, etc.)
+
+Rich replies: text, image, button, and inline keyboard
+
+Import / export bot configurations as JSON
+
+Visual drag-and-drop flow editor (use jsPlumb, Drawflow, or rete.js)
+
+Template library with prebuilt bot templates:
+
+Airdrop Bot
+
+Payment Bot
+
+Referral Bot
+
+NFT Verification Bot
+
+AI Chat Bot
+
+Save templates in /templates/ folder as JSON files
+
+🧠 2. AI & AUTOMATION
+
+AI auto-reply generation using Hugging Face API (free models) or Gemini API (via key)
+
+AI-suggested command creation (“auto-fill command replies”)
+
+Intent detection (detect phrases like “buy”, “price”, “claim”)
+
+AI-based mining/reward logic generator (text-based simulation)
+
+Smart FAQ Bot: learns from provided FAQs (simple vector search via embeddings file)
+
+🪙 3. WEB3 & BLOCKCHAIN TOOLS
+
+Wallet connect using WalletConnect.js + MetaMask
+
+Token balance check using Web3.py + RPC (Alchemy / Infura free endpoint)
+
+ERC20/BEP20 token transfers (testnet only)
+
+NFT ownership verification using Alchemy API (free)
+
+Crypto airdrop distribution simulation bot
+
+Crypto payment bot integration using NowPayments API (sandbox)
+
+On-chain staking/claim simulation
+
+Crypto price fetcher using CoinGecko API
+
+🧾 4. USER SYSTEM
+
+Anonymous account generation (no email)
+
+Optionally allow Google Sign-In using Firebase Auth (optional)
+
+User profile page with connected wallets
+
+Built-in 2FA via email OTP or Telegram bot code
+
+Multi-bot management (each user can have multiple bots)
+
+Referral system (invite code → earns token credits)
+
+SQLite Tables:
+
+users: id, username, password_hash, wallet_address, referral_code, referred_by, plan
+
+bots: id, user_id, bot_name, bot_token, bot_config, created_at
+
+templates: id, title, description, json_file, rating
+
+transactions, referrals, analytics
+
+📊 5. ANALYTICS & DASHBOARD
+
+Show total users, bots, daily messages, top commands
+
+Crypto stats (token balance, prices)
+
+Display charts with Chart.js
+
+Export analytics to PDF / Excel (use reportlab and openpyxl)
+
+Live updates via Flask-SocketIO
+
+Each bot: track message count, active users, etc.
+
+🧠 6. AI BOT MARKETPLACE
+
+Browse community-created bots
+
+Clone templates instantly
+
+Rate / review templates
+
+Share or sell bot configurations
+
+Public REST endpoint: /api/templates
+
+💸 7. MONETIZATION
+
+Freemium model:
+
+Free plan → 1 bot, basic templates
+
+Pro plan → unlimited bots, Web3 features
+
+On-chain payment (NowPayments or WalletConnect ETH testnet)
+
+Admin-defined commission on paid bots
+
+Ad slot areas (optional)
+
+🔐 8. SECURITY
+
+Encrypt bot tokens in SQLite using Fernet
+
+Enable 2FA login (email OTP or Telegram verification code)
+
+API rate limiting with Flask-Limiter
+
+Daily auto-backup to Google Drive (via Google API free quota)
+
+Verify Telegram webhook signatures
+
+Sanitize user inputs (Flask-WTF forms)
+
+🧰 9. DEVELOPER TOOLS
+
+Public REST API endpoints:
+
+POST /api/create_bot
+
+GET /api/bots
+
+POST /api/execute_command
+
+Webhook integration (for custom bot actions)
+
+Plugin builder: inject small JS or Python functions into bots
+
+White-label support (custom domain/logo per instance)
+
+🖌️ 10. UI / UX
+
+Modern responsive dashboard (Bootstrap 5 + Chart.js)
+
+Dark / Light theme toggle
+
+Live Telegram bot emulator window (HTML + JS preview)
+
+Multi-language support via JSON translation files (/locales/)
+
+Notification center using Flask-SocketIO or JS polling
+
+Installable as PWA (manifest + service worker)
+
+🗂️ PROJECT STRUCTURE
+/botforge
+├── app.py
+├── database.db
+├── static/
+│   ├── css/
+│   ├── js/
+│   └── icons/
+├── templates/
+│   ├── index.html
+│   ├── dashboard.html
+│   ├── login.html
+│   ├── create_bot.html
+│   ├── marketplace.html
+│   ├── settings.html
+│   └── analytics.html
+├── templates_library/
+│   ├── airdrop.json
+│   ├── ai_chatbot.json
+│   ├── payment.json
+├── utils/
+│   ├── ai.py
+│   ├── crypto.py
+│   ├── telegram_api.py
+│   └── backup.py
+├── manifest.json
+└── service_worker.js
+
+💾 DATABASE SETUP
+
+Initialize SQLite automatically if not exists.
+
+Preload default templates.
+
+Use foreign keys (user_id → bots.user_id).
+
+🧩 REQUIRED LIBRARIES
+Flask
+Flask-SocketIO
+Flask-Limiter
+requests
+werkzeug
+openpyxl
+reportlab
+cryptography
+web3
+
+🧱 RUN CONFIGURATION
+
+Command: python app.py
+
+Auto-create database and admin account if missing.
+
+Default port: 5000
+
+🧠 GOAL
+
+Build a complete functional prototype of a Telegram Bot Creator Web App (BotForge Pro) in Flask + SQLite, integrating:
+
+Bot building (drag-drop)
+
+AI automation (Hugging Face / Gemini)
+
+Web3 tools (WalletConnect + Web3.py)
+
+Analytics (Chart.js)
+
+Marketplace & monetization
+
+PWA support
+
+Everything should use free APIs or local testnets.
+The app must be ready to run instantly in Replit with all dependencies installed.
+
+⚡ Tips for Use
+
+After Replit builds the scaffold:
+
+pip install -r requirements.txt
+python app.py
+
+
+Then open:
+
+https://<your-repl-name>.repl.co
+
+
+Click Generate Account, explore dashboard, create sample bots, and test template cloning.
