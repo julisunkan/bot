@@ -515,6 +515,23 @@ def setup_mining(bot_id):
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
     try:
+        # Get bot username from Telegram API
+        bot_username = None
+        bot_link = None
+        
+        if bot['bot_token']:
+            try:
+                decrypted_token = db.decrypt_token(bot['bot_token'])
+                telegram_api = TelegramAPI(decrypted_token)
+                bot_info = telegram_api.get_me()
+                
+                if bot_info and bot_info.get('ok'):
+                    bot_username = bot_info['result'].get('username')
+                    if bot_username:
+                        bot_link = f"https://t.me/{bot_username}"
+            except Exception as e:
+                print(f"Error getting bot info: {e}")
+        
         # Update bot config with mining settings
         bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
         bot_config['mining_active'] = True
@@ -527,12 +544,17 @@ def setup_mining(bot_id):
         
         conn = db.get_connection()
         cursor = conn.cursor()
-        cursor.execute('UPDATE bots SET bot_config = ?, is_active = 1 WHERE id = ?', 
-                      (json.dumps(bot_config), bot_id))
+        cursor.execute('UPDATE bots SET bot_config = ?, is_active = 1, bot_username = ? WHERE id = ?', 
+                      (json.dumps(bot_config), bot_username, bot_id))
         conn.commit()
         conn.close()
         
-        return jsonify({'success': True, 'message': 'Mining bot activated'})
+        return jsonify({
+            'success': True, 
+            'message': 'Mining bot activated',
+            'bot_link': bot_link,
+            'bot_username': bot_username
+        })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 

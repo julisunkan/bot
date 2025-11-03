@@ -321,13 +321,26 @@ function setupMining(botId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            let botLinkHtml = '';
+            if (data.bot_link) {
+                botLinkHtml = `
+                    <hr>
+                    <strong>🔗 Bot Link:</strong><br>
+                    <a href="${data.bot_link}" target="_blank" class="text-white fw-bold">${data.bot_link}</a><br>
+                    <button class="btn btn-sm btn-outline-light mt-2" onclick="copyToClipboard('${data.bot_link}')">
+                        <i class="bi bi-clipboard"></i> Copy Link
+                    </button>
+                `;
+            }
+            
             webhookStatusDiv.innerHTML = `
                 <div class="alert alert-success mb-0">
                     <strong>⛏️ Mining Bot Ready!</strong><br>
                     💎 Tap reward: 1 coin per tap<br>
                     ⚡ Energy: 1000/1000<br>
                     🎁 Referral bonus: 500 coins<br>
-                    <small>Share your bot link to start mining!</small>
+                    ${botLinkHtml}
+                    <small class="d-block mt-2">Share your bot link to start mining!</small>
                 </div>`;
         } else {
             webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
@@ -336,6 +349,14 @@ function setupMining(botId) {
     .catch(error => {
         webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
         console.error('Mining setup error:', error);
+    });
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Bot link copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
     });
 }
 </script>
