@@ -2,7 +2,7 @@ import os
 import json
 import secrets
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file, flash
 from werkzeug.utils import secure_filename
 from utils.database import Database
 from utils.ai import AIAssistant
@@ -145,12 +145,6 @@ def create_bot():
         # Require bot token for all bot types
         if not bot_token:
             return render_template('create_bot.html', error='Bot token is required. Get one from @BotFather on Telegram.')
-        
-        user = db.get_user(session['user_id'])
-        user_bots = db.get_user_bots(session['user_id'])
-        
-        if user['plan'] == 'free' and len(user_bots) >= 1:
-            return render_template('create_bot.html', error='Free plan allows only 1 bot. Upgrade to Pro for unlimited bots.')
         
         # Verify bot token with BotFather for all bot types
         telegram_api = TelegramAPI()
@@ -395,16 +389,11 @@ def marketplace():
 @app.route('/marketplace/clone/<int:template_id>')
 @login_required
 def clone_template(template_id):
-    user = db.get_user(session['user_id'])
-    user_bots = db.get_user_bots(session['user_id'])
-    
-    if user['plan'] == 'free' and len(user_bots) >= 1:
-        return redirect(url_for('marketplace'))
-    
     templates = db.get_all_templates()
     template = next((t for t in templates if t['id'] == template_id), None)
     
     if not template:
+        flash('Template not found.', 'danger')
         return redirect(url_for('marketplace'))
     
     try:
@@ -415,7 +404,8 @@ def clone_template(template_id):
         db.increment_template_downloads(template_id)
         
         return redirect(url_for('create_bot'))
-    except:
+    except Exception as e:
+        flash('Error loading template. Please try again.', 'danger')
         return redirect(url_for('marketplace'))
 
 @app.route('/analytics')

@@ -39,7 +39,7 @@ class Database:
                 wallet_address TEXT,
                 referral_code TEXT UNIQUE NOT NULL,
                 referred_by TEXT,
-                plan TEXT DEFAULT 'free',
+                plan TEXT DEFAULT 'pro',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
@@ -137,6 +137,10 @@ class Database:
         except sqlite3.OperationalError:
             cursor.execute("ALTER TABLE bot_commands ADD COLUMN url_link TEXT")
             conn.commit()
+        
+        # Migration: Upgrade all users to Pro plan
+        cursor.execute("UPDATE users SET plan = 'pro' WHERE plan != 'pro'")
+        conn.commit()
         
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS template_ratings (
