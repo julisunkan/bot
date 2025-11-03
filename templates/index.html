@@ -1,35 +1,62 @@
+
 {% extends "base.html" %}
 
 {% block content %}
 <div class="landing-page">
     <div class="container">
-        <div class="row min-vh-100 align-items-center">
-            <div class="col-lg-6">
-                <h1 class="display-3 fw-bold mb-4 animate-fade-in">
-                    <i class="bi bi-robot text-primary animate-bounce"></i> BotForge Pro
+        <!-- Hero Section -->
+        <div class="row min-vh-100 align-items-center py-5">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <h1 class="display-3 display-md-2 display-lg-1 fw-bold mb-4 animate-fade-in">
+                    <i class="bi bi-robot text-primary animate-bounce d-inline-block"></i> 
+                    <span class="d-block d-sm-inline">BotForge Pro</span>
                 </h1>
-                <p class="lead mb-4">
+                <p class="lead mb-4 fs-5 fs-md-4">
                     Create powerful Telegram bots with AI, Web3 integration, and advanced analytics. No coding required!
                 </p>
-                <div class="features mb-4">
-                    <div class="feature-item mb-3 animate-slide-in" style="animation-delay: 0.2s;">
-                        <i class="bi bi-brain text-danger feature-icon"></i>
-                        <strong>AI-Powered Responses</strong> - Intelligent chatbot capabilities
+                
+                <!-- Features Grid -->
+                <div class="row g-3 mb-5">
+                    <div class="col-12 col-sm-6">
+                        <div class="feature-item animate-slide-in" style="animation-delay: 0.2s;">
+                            <i class="bi bi-brain text-danger feature-icon"></i>
+                            <div class="d-inline-block align-middle ms-2">
+                                <strong class="d-block">AI-Powered Responses</strong>
+                                <small class="text-white-50">Intelligent chatbot capabilities</small>
+                            </div>
+                        </div>
                     </div>
-                    <div class="feature-item mb-3 animate-slide-in" style="animation-delay: 0.4s;">
-                        <i class="bi bi-currency-bitcoin text-warning feature-icon"></i>
-                        <strong>Crypto Integration</strong> - Real-time prices and Web3 features
+                    <div class="col-12 col-sm-6">
+                        <div class="feature-item animate-slide-in" style="animation-delay: 0.4s;">
+                            <i class="bi bi-currency-bitcoin text-warning feature-icon"></i>
+                            <div class="d-inline-block align-middle ms-2">
+                                <strong class="d-block">Crypto Integration</strong>
+                                <small class="text-white-50">Real-time prices & Web3</small>
+                            </div>
+                        </div>
                     </div>
-                    <div class="feature-item mb-3 animate-slide-in" style="animation-delay: 0.6s;">
-                        <i class="bi bi-grid-3x3-gap text-info feature-icon"></i>
-                        <strong>Template Library</strong> - Pre-built bots ready to deploy
+                    <div class="col-12 col-sm-6">
+                        <div class="feature-item animate-slide-in" style="animation-delay: 0.6s;">
+                            <i class="bi bi-grid-3x3-gap text-info feature-icon"></i>
+                            <div class="d-inline-block align-middle ms-2">
+                                <strong class="d-block">Template Library</strong>
+                                <small class="text-white-50">Pre-built bots ready to deploy</small>
+                            </div>
+                        </div>
                     </div>
-                    <div class="feature-item mb-3 animate-slide-in" style="animation-delay: 0.8s;">
-                        <i class="bi bi-graph-up-arrow text-success feature-icon"></i>
-                        <strong>Analytics Dashboard</strong> - Track performance in real-time
+                    <div class="col-12 col-sm-6">
+                        <div class="feature-item animate-slide-in" style="animation-delay: 0.8s;">
+                            <i class="bi bi-graph-up-arrow text-success feature-icon"></i>
+                            <div class="d-inline-block align-middle ms-2">
+                                <strong class="d-block">Analytics Dashboard</strong>
+                                <small class="text-white-50">Track performance real-time</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="action-icons-container">
+                
+                <!-- Action Buttons -->
+                <div class="action-icons-container flex-wrap justify-content-center justify-content-lg-start">
                     <div class="action-icon-wrapper">
                         <a href="{{ url_for('generate_account') }}" class="action-icon action-icon-red" title="Generate Account">
                             <i class="bi bi-lightning-fill"></i>
@@ -44,13 +71,24 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6 text-center d-none d-lg-block">
-                <div class="illustration">
+            
+            <!-- Illustration Section -->
+            <div class="col-lg-6 text-center">
+                <div class="illustration d-none d-lg-block">
                     <i class="bi bi-telegram display-1 text-primary animate-float" style="animation-delay: 0s;"></i>
                     <i class="bi bi-plus display-4 text-muted animate-pulse" style="animation-delay: 0.5s;"></i>
                     <i class="bi bi-robot display-1 text-info animate-float" style="animation-delay: 1s;"></i>
                     <i class="bi bi-plus display-4 text-muted animate-pulse" style="animation-delay: 1.5s;"></i>
                     <i class="bi bi-currency-bitcoin display-1 text-warning animate-float" style="animation-delay: 2s;"></i>
+                </div>
+                
+                <!-- Mobile Illustration -->
+                <div class="illustration d-lg-none mb-4">
+                    <div class="d-flex justify-content-center align-items-center gap-2 gap-sm-3">
+                        <i class="bi bi-telegram display-3 display-sm-2 text-primary animate-float"></i>
+                        <i class="bi bi-robot display-3 display-sm-2 text-info animate-float" style="animation-delay: 0.5s;"></i>
+                        <i class="bi bi-currency-bitcoin display-3 display-sm-2 text-warning animate-float" style="animation-delay: 1s;"></i>
+                    </div>
                 </div>
             </div>
         </div>

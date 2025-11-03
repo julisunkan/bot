@@ -104,8 +104,8 @@ body.has-bottom-nav {
 }
 
 .feature-item {
-    font-size: 1.1rem;
-    padding: 15px;
+    font-size: 0.95rem;
+    padding: 12px;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
@@ -120,9 +120,52 @@ body.has-bottom-nav {
 }
 
 .feature-item i {
-    font-size: 2rem;
-    margin-right: 15px;
+    font-size: 1.75rem;
     vertical-align: middle;
+}
+
+.feature-item strong {
+    font-size: 1rem;
+}
+
+.feature-item small {
+    font-size: 0.8rem;
+}
+
+@media (min-width: 576px) {
+    .feature-item {
+        font-size: 1rem;
+        padding: 14px;
+    }
+    
+    .feature-item i {
+        font-size: 1.85rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .feature-item {
+        font-size: 1.05rem;
+        padding: 15px;
+    }
+    
+    .feature-item i {
+        font-size: 2rem;
+    }
+    
+    .feature-item strong {
+        font-size: 1.05rem;
+    }
+    
+    .feature-item small {
+        font-size: 0.85rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .feature-item {
+        font-size: 1.1rem;
+    }
 }
 
 .feature-icon {
@@ -326,17 +369,33 @@ body.has-bottom-nav {
 /* Responsive adjustments for action icons */
 @media (max-width: 576px) {
     .action-icons-container {
-        gap: 30px;
+        gap: 20px;
     }
     
     .action-icon {
-        width: 80px;
-        height: 80px;
-        font-size: 2.5rem;
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
     }
     
     .action-label {
-        font-size: 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (min-width: 577px) and (max-width: 767px) {
+    .action-icons-container {
+        gap: 35px;
+    }
+    
+    .action-icon {
+        width: 85px;
+        height: 85px;
+        font-size: 2.75rem;
+    }
+    
+    .action-label {
+        font-size: 1.1rem;
     }
 }
 
@@ -667,7 +726,11 @@ body.has-bottom-nav main {
 @media (max-width: 576px) {
     /* Mobile phones */
     .landing-page h1 {
-        font-size: 2rem;
+        font-size: 1.75rem;
+    }
+    
+    .landing-page .lead {
+        font-size: 1rem;
     }
     
     .navbar-brand {
@@ -681,19 +744,32 @@ body.has-bottom-nav main {
     .card-body h6 {
         font-size: 0.85rem;
     }
+    
+    .landing-page .row {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
 }
 
 @media (min-width: 577px) and (max-width: 767px) {
     /* Large phones / small tablets */
     .landing-page h1 {
-        font-size: 2.5rem;
+        font-size: 2.25rem;
+    }
+    
+    .landing-page .lead {
+        font-size: 1.1rem;
     }
 }
 
 @media (min-width: 768px) and (max-width: 991px) {
     /* Tablets */
     .landing-page h1 {
-        font-size: 3rem;
+        font-size: 2.75rem;
+    }
+    
+    .landing-page .lead {
+        font-size: 1.15rem;
     }
     
     .navbar-brand {
@@ -705,6 +781,10 @@ body.has-bottom-nav main {
     /* Desktop */
     .landing-page h1 {
         font-size: 3.5rem;
+    }
+    
+    .landing-page .lead {
+        font-size: 1.25rem;
     }
     
     .navbar-brand {
@@ -721,5 +801,9 @@ body.has-bottom-nav main {
     /* Large desktop */
     .landing-page h1 {
         font-size: 4rem;
+    }
+    
+    .landing-page .lead {
+        font-size: 1.35rem;
     }
 }
