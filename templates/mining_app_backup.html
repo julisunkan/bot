@@ -291,13 +291,11 @@
             </div>
         </div>
 
-        <div class="tabs" style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <button class="tab-btn active" onclick="switchTab('mine')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">⛏️ Mine</button>
-            <button class="tab-btn" onclick="switchTab('boost')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">🚀 Boost</button>
-            <button class="tab-btn" onclick="switchTab('shop')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">🛒 Shop</button>
-            <button class="tab-btn" onclick="switchTab('tasks')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">📋 Tasks</button>
-            <button class="tab-btn" onclick="switchTab('wallet')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">💳 Wallet</button>
-            <button class="tab-btn" onclick="switchTab('leaderboard')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">🏆 Leaders</button>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('mine')">⛏️ Mine</button>
+            <button class="tab-btn" onclick="switchTab('boost')">🚀 Boost</button>
+            <button class="tab-btn" onclick="switchTab('referral')">👥 Referral</button>
+            <button class="tab-btn" onclick="switchTab('leaderboard')">🏆 Leaders</button>
         </div>
 
         <div id="mineTab" class="tab-content active">
@@ -339,96 +337,8 @@
             </p>
         </div>
 
-        <div id="shopTab" class="tab-content">
-            <h3 style="margin-bottom: 15px;">🛒 Coin Shop</h3>
-            <p style="opacity: 0.8; margin-bottom: 20px;">Buy coins and special boosters!</p>
-            <div class="boost-item">
-                <div class="boost-info">
-                    <h3>💰 1,000 Coins</h3>
-                    <p>Starter Pack</p>
-                </div>
-                <button class="boost-btn" onclick="buyCoins(1000, 0.99)">$0.99</button>
-            </div>
-            <div class="boost-item">
-                <div class="boost-info">
-                    <h3>💰 5,000 Coins</h3>
-                    <p>Popular Choice</p>
-                </div>
-                <button class="boost-btn" onclick="buyCoins(5000, 3.99)">$3.99</button>
-            </div>
-            <div class="boost-item">
-                <div class="boost-info">
-                    <h3>💰 15,000 Coins</h3>
-                    <p>Best Value!</p>
-                </div>
-                <button class="boost-btn" onclick="buyCoins(15000, 9.99)">$9.99</button>
-            </div>
-            <div class="boost-item">
-                <div class="boost-info">
-                    <h3>🚀 VIP Booster Pack</h3>
-                    <p>+10 per tap & 2000 energy</p>
-                </div>
-                <button class="boost-btn" onclick="buyVIP()">$19.99</button>
-            </div>
-        </div>
-
-        <div id="tasksTab" class="tab-content">
-            <h3 style="margin-bottom: 15px;">📋 Daily Tasks</h3>
-            <div class="boost-item">
-                <div class="boost-info">
-                    <h3>🎁 Daily Login</h3>
-                    <p>Claim your daily reward</p>
-                </div>
-                <button class="boost-btn" id="dailyRewardBtn" onclick="claimDailyReward()">Claim 100 🪙</button>
-            </div>
-            <div class="boost-item">
-                <div class="boost-info">
-                    <h3>⛏️ Mine 1000 Coins</h3>
-                    <p id="miningProgress">0/1000</p>
-                </div>
-                <button class="boost-btn" disabled>500 🪙</button>
-            </div>
-            <div class="boost-item">
-                <div class="boost-info">
-                    <h3>👥 Invite 3 Friends</h3>
-                    <p id="inviteProgress">0/3</p>
-                </div>
-                <button class="boost-btn" disabled>1000 🪙</button>
-            </div>
-            <div class="boost-item">
-                <div class="boost-info">
-                    <h3>🔥 7-Day Streak</h3>
-                    <p id="streakProgress">Day 1</p>
-                </div>
-                <button class="boost-btn" disabled>2000 🪙</button>
-            </div>
-        </div>
-
-        <div id="walletTab" class="tab-content">
-            <h3 style="margin-bottom: 15px;">💳 Wallet</h3>
-            <p style="opacity: 0.8; margin-bottom: 20px;">Connect your wallet to withdraw coins!</p>
-            <div class="boost-item" id="walletStatus">
-                <div class="boost-info">
-                    <h3>🔗 Connect Wallet</h3>
-                    <p>TON or Telegram Wallet</p>
-                </div>
-                <button class="boost-btn" onclick="connectWallet()">Connect</button>
-            </div>
-            <div class="boost-item" id="withdrawSection" style="display: none;">
-                <div class="boost-info">
-                    <h3>💸 Withdraw Coins</h3>
-                    <p>Min: 10,000 coins</p>
-                </div>
-                <button class="boost-btn" onclick="withdrawCoins()">Withdraw</button>
-            </div>
-            <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
-                <p><strong>Total Withdrawn:</strong> <span id="totalWithdrawn">0</span> coins</p>
-                <p style="opacity: 0.7; font-size: 14px; margin-top: 10px;">Withdrawal fee: 2%</p>
-            </div>
-        </div>
-
         <div id="leaderboardTab" class="tab-content">
-            <h3 style="margin-bottom: 15px;">🏆 Top Miners</h3>
+            <h3 style="margin-bottom: 15px;">Top Miners</h3>
             <div id="leaderboardList">Loading...</div>
         </div>
     </div>
@@ -455,21 +365,6 @@
                 if (data.success) {
                     playerData = data.player;
                     sessionToken = data.session_token;
-                    const settings = data.settings || {};
-                    
-                    if (settings.enable_shop === false) {
-                        document.querySelector('[onclick*="switchTab(\'shop\')"]').style.display = 'none';
-                    }
-                    if (settings.enable_wallet === false) {
-                        document.querySelector('[onclick*="switchTab(\'wallet\')"]').style.display = 'none';
-                    }
-                    if (settings.enable_tasks === false) {
-                        document.querySelector('[onclick*="switchTab(\'tasks\')"]').style.display = 'none';
-                    }
-                    if (settings.enable_daily_reward === false) {
-                        document.getElementById('dailyRewardBtn').style.display = 'none';
-                    }
-                    
                     updateUI();
                     startEnergyRecovery();
                     document.getElementById('referralLink').textContent = 
@@ -587,22 +482,6 @@
 
             if (tabName === 'leaderboard') {
                 loadLeaderboard();
-            } else if (tabName === 'tasks') {
-                loadTasks();
-            }
-        }
-
-        async function loadTasks() {
-            try {
-                const response = await fetch(`/api/mining/tasks?bot_id=${botId}&session_token=${sessionToken}`);
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('miningProgress').textContent = `${data.tasks[0].progress}/${data.tasks[0].target}`;
-                    document.getElementById('inviteProgress').textContent = `${data.tasks[1].progress}/${data.tasks[1].target}`;
-                    document.getElementById('streakProgress').textContent = `Day ${data.tasks[2].progress}`;
-                }
-            } catch (error) {
-                console.error('Tasks error:', error);
             }
         }
 
@@ -629,102 +508,6 @@
             const link = document.getElementById('referralLink').textContent;
             navigator.clipboard.writeText(link).then(() => {
                 tg.showAlert('Link copied!');
-            });
-        }
-
-        async function buyCoins(amount, price) {
-            try {
-                const response = await fetch('/api/mining/shop/purchase', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        bot_id: botId,
-                        session_token: sessionToken,
-                        amount: amount,
-                        price: price
-                    })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    playerData = data.player;
-                    updateUI();
-                    tg.showAlert(`${amount} coins added! Total: ${Math.floor(playerData.coins)}`);
-                } else {
-                    tg.showAlert(data.error || 'Purchase failed');
-                }
-            } catch (error) {
-                console.error('Purchase error:', error);
-                tg.showAlert('Purchase failed');
-            }
-        }
-
-        function buyVIP() {
-            tg.showAlert('VIP Booster Pack coming soon! This will give you +10 per tap and 2000 max energy.');
-        }
-
-        async function claimDailyReward() {
-            try {
-                const response = await fetch('/api/mining/daily-reward', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        bot_id: botId,
-                        session_token: sessionToken
-                    })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    playerData = data.player;
-                    updateUI();
-                    tg.showAlert(`Daily reward claimed! +${data.reward} coins. Streak: ${data.streak} days`);
-                    document.getElementById('dailyRewardBtn').disabled = true;
-                    document.getElementById('dailyRewardBtn').textContent = 'Claimed ✓';
-                } else {
-                    tg.showAlert(data.error || 'Already claimed today!');
-                }
-            } catch (error) {
-                console.error('Daily reward error:', error);
-                tg.showAlert('Failed to claim reward');
-            }
-        }
-
-        async function connectWallet() {
-            try {
-                const response = await fetch('/api/mining/wallet/connect', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        session_token: sessionToken,
-                        wallet_type: 'telegram',
-                        wallet_address: `telegram_${tg.initDataUnsafe?.user?.id || 'user'}`
-                    })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    tg.showAlert('Wallet connected successfully!');
-                    document.getElementById('walletStatus').style.display = 'none';
-                    document.getElementById('withdrawSection').style.display = 'block';
-                } else {
-                    tg.showAlert(data.error || 'Connection failed');
-                }
-            } catch (error) {
-                console.error('Wallet connect error:', error);
-                tg.showAlert('Connection failed');
-            }
-        }
-
-        function withdrawCoins() {
-            if (!playerData || playerData.coins < 10000) {
-                tg.showAlert('You need at least 10,000 coins to withdraw!');
-                return;
-            }
-            tg.showConfirm('Withdraw your coins? (2% fee applies)', function(confirmed) {
-                if (confirmed) {
-                    const amount = playerData.coins;
-                    const fee = Math.floor(amount * 0.02);
-                    const net = amount - fee;
-                    tg.showAlert(`Withdrawal pending: ${net} coins (${fee} fee). Processing may take 24-48 hours.`);
-                }
             });
         }
 

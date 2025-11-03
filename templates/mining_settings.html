@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Mining Bot Settings - {{ bot.bot_name }}{% endblock %}
+
+{% block content %}
+<div class="landing-page-v2 min-vh-100">
+    <div class="container px-3 py-4">
+        <div class="row mb-4 fade-in-up">
+            <div class="col">
+                <h2 class="gradient-text display-5 fw-bold"><i class="bi bi-coin"></i> Mining Bot Settings</h2>
+                <p class="hero-subtitle">{{ bot.bot_name }} - Configure your tap-to-earn game</p>
+                <a href="{{ url_for('bot_detail', bot_id=bot.id) }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back to Bot
+                </a>
+            </div>
+        </div>
+
+        <form method="POST">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.1s;">
+                        <h5 class="gradient-text mb-4"><i class="bi bi-joystick"></i> Game Mechanics</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tap_reward" class="form-label">Coins Per Tap</label>
+                                <input type="number" class="form-control" id="tap_reward" name="tap_reward" 
+                                       value="{{ settings.tap_reward }}" min="1" max="100"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">How many coins players earn per tap</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="max_energy" class="form-label">Maximum Energy</label>
+                                <input type="number" class="form-control" id="max_energy" name="max_energy" 
+                                       value="{{ settings.max_energy }}" min="100" max="10000"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Starting max energy capacity</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="energy_recharge_rate" class="form-label">Energy Recharge Rate</label>
+                                <input type="number" class="form-control" id="energy_recharge_rate" name="energy_recharge_rate" 
+                                       value="{{ settings.energy_recharge_rate }}" min="1" max="10"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Energy recharged per second</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="referral_bonus" class="form-label">Referral Bonus</label>
+                                <input type="number" class="form-control" id="referral_bonus" name="referral_bonus" 
+                                       value="{{ settings.referral_bonus }}" min="0" max="10000"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Coins earned per referral</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.2s;">
+                        <h5 class="gradient-text mb-4"><i class="bi bi-rocket"></i> Boost Pricing</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="boost_energy_cost" class="form-label">⚡ Energy Limit Boost</label>
+                                <input type="number" class="form-control" id="boost_energy_cost" name="boost_energy_cost" 
+                                       value="{{ settings.boost_energy_cost }}" min="100"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Cost in coins</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="boost_multitap_cost" class="form-label">💎 Multi-Tap Boost</label>
+                                <input type="number" class="form-control" id="boost_multitap_cost" name="boost_multitap_cost" 
+                                       value="{{ settings.boost_multitap_cost }}" min="100"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Cost in coins</div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="boost_recharge_cost" class="form-label">⚡ Recharge Speed Boost</label>
+                                <input type="number" class="form-control" id="boost_recharge_cost" name="boost_recharge_cost" 
+                                       value="{{ settings.boost_recharge_cost }}" min="100"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Cost in coins</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.3s;">
+                        <h5 class="gradient-text mb-4"><i class="bi bi-wallet2"></i> Withdrawal Settings</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="min_withdrawal" class="form-label">Minimum Withdrawal</label>
+                                <input type="number" class="form-control" id="min_withdrawal" name="min_withdrawal" 
+                                       value="{{ settings.min_withdrawal }}" min="1000"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Minimum coins required to withdraw</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="daily_reward_amount" class="form-label">Daily Reward Amount</label>
+                                <input type="number" class="form-control" id="daily_reward_amount" name="daily_reward_amount" 
+                                       value="{{ settings.daily_reward_amount }}" min="0"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">Coins given as daily login reward</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.4s;">
+                        <h5 class="gradient-text mb-4"><i class="bi bi-toggles"></i> Features</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable_shop" name="enable_shop" 
+                                           {% if settings.enable_shop %}checked{% endif %}
+                                           style="width: 3em; height: 1.5em;">
+                                    <label class="form-check-label ms-2" for="enable_shop">
+                                        <strong>🛒 Enable Shop</strong>
+                                        <div class="form-text text-white-50">Players can buy coins and boosts</div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable_wallet" name="enable_wallet" 
+                                           {% if settings.enable_wallet %}checked{% endif %}
+                                           style="width: 3em; height: 1.5em;">
+                                    <label class="form-check-label ms-2" for="enable_wallet">
+                                        <strong>💳 Enable Wallet Connection</strong>
+                                        <div class="form-text text-white-50">TON & Telegram Wallet integration</div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable_tasks" name="enable_tasks" 
+                                           {% if settings.enable_tasks %}checked{% endif %}
+                                           style="width: 3em; height: 1.5em;">
+                                    <label class="form-check-label ms-2" for="enable_tasks">
+                                        <strong>📋 Enable Daily Tasks</strong>
+                                        <div class="form-text text-white-50">Players can complete tasks for rewards</div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable_leaderboard" name="enable_leaderboard" 
+                                           {% if settings.enable_leaderboard %}checked{% endif %}
+                                           style="width: 3em; height: 1.5em;">
+                                    <label class="form-check-label ms-2" for="enable_leaderboard">
+                                        <strong>🏆 Enable Leaderboard</strong>
+                                        <div class="form-text text-white-50">Show top players ranking</div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable_daily_reward" name="enable_daily_reward" 
+                                           {% if settings.enable_daily_reward %}checked{% endif %}
+                                           style="width: 3em; height: 1.5em;">
+                                    <label class="form-check-label ms-2" for="enable_daily_reward">
+                                        <strong>🎁 Enable Daily Rewards</strong>
+                                        <div class="form-text text-white-50">Daily login bonus for players</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 fade-in-up" style="animation-delay: 0.5s;">
+                        <button type="submit" class="btn btn-primary-gradient btn-lg">
+                            <i class="bi bi-save"></i> Save Settings
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="feature-card mb-4 fade-in-up sticky-top" style="animation-delay: 0.1s; top: 20px;">
+                        <h5 class="gradient-text mb-4"><i class="bi bi-info-circle"></i> Quick Tips</h5>
+                        <div class="alert" style="background: rgba(106, 90, 205, 0.1); border: 1px solid rgba(106, 90, 205, 0.3); color: white; margin-bottom: 15px;">
+                            <strong>💡 Balanced Settings</strong>
+                            <p class="mb-0 small">Start with default values and adjust based on player feedback. Higher rewards = faster coin inflation.</p>
+                        </div>
+                        <div class="alert" style="background: rgba(34, 139, 34, 0.1); border: 1px solid rgba(34, 139, 34, 0.3); color: white; margin-bottom: 15px;">
+                            <strong>🎮 Engagement Tips</strong>
+                            <p class="mb-0 small">Enable all features for maximum player engagement. Tasks and daily rewards keep players coming back!</p>
+                        </div>
+                        <div class="alert" style="background: rgba(255, 165, 0, 0.1); border: 1px solid rgba(255, 165, 0, 0.3); color: white;">
+                            <strong>💰 Monetization</strong>
+                            <p class="mb-0 small">Enable shop and wallet features to let players purchase coins or withdraw earnings.</p>
+                        </div>
+                        
+                        <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+                        
+                        <h6 class="text-white mb-3">Current Configuration</h6>
+                        <p class="mb-2"><i class="bi bi-coin text-warning"></i> <strong>Per Tap:</strong> {{ settings.tap_reward }} coins</p>
+                        <p class="mb-2"><i class="bi bi-lightning-charge text-info"></i> <strong>Max Energy:</strong> {{ settings.max_energy }}</p>
+                        <p class="mb-2"><i class="bi bi-people text-success"></i> <strong>Referral:</strong> {{ settings.referral_bonus }} coins</p>
+                        <p class="mb-0"><i class="bi bi-wallet text-primary"></i> <strong>Min Withdrawal:</strong> {{ settings.min_withdrawal }} coins</p>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

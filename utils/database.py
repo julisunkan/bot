@@ -234,6 +234,62 @@ class Database:
             )
         ''')
         
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_shop_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                bot_id INTEGER NOT NULL,
+                item_type TEXT NOT NULL,
+                item_name TEXT NOT NULL,
+                item_description TEXT,
+                price REAL NOT NULL,
+                currency TEXT DEFAULT 'coins',
+                reward_type TEXT,
+                reward_amount INTEGER,
+                is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_purchases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                shop_item_id INTEGER NOT NULL,
+                amount_paid REAL NOT NULL,
+                payment_method TEXT,
+                transaction_id TEXT,
+                purchased_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE,
+                FOREIGN KEY (shop_item_id) REFERENCES mining_shop_items(id) ON DELETE CASCADE
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_wallets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL UNIQUE,
+                wallet_address TEXT,
+                wallet_type TEXT,
+                connected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_withdrawal_at TIMESTAMP,
+                total_withdrawn REAL DEFAULT 0,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_daily_rewards (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                claimed_at DATE DEFAULT CURRENT_DATE,
+                reward_amount INTEGER DEFAULT 0,
+                streak_days INTEGER DEFAULT 1,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE,
+                UNIQUE(player_id, claimed_at)
+            )
+        ''')
+        
         conn.commit()
         conn.close()
     

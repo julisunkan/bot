@@ -817,6 +817,72 @@ def setup_mining(bot_id):
 
 
 
+@app.route('/bot/<int:bot_id>/mining-settings', methods=['GET', 'POST'])
+@login_required
+def mining_settings(bot_id):
+    """Mining bot configuration page"""
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        flash('Bot not found or unauthorized', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    if bot['bot_type'] != 'mining':
+        flash('This is not a mining bot', 'warning')
+        return redirect(url_for('bot_detail', bot_id=bot_id))
+    
+    if request.method == 'POST':
+        try:
+            bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+            
+            bot_config['mining_settings'] = {
+                'tap_reward': int(request.form.get('tap_reward', 1)),
+                'max_energy': int(request.form.get('max_energy', 1000)),
+                'energy_recharge_rate': int(request.form.get('energy_recharge_rate', 1)),
+                'referral_bonus': int(request.form.get('referral_bonus', 500)),
+                'min_withdrawal': int(request.form.get('min_withdrawal', 10000)),
+                'enable_shop': request.form.get('enable_shop') == 'on',
+                'enable_wallet': request.form.get('enable_wallet') == 'on',
+                'enable_tasks': request.form.get('enable_tasks') == 'on',
+                'enable_leaderboard': request.form.get('enable_leaderboard') == 'on',
+                'enable_daily_reward': request.form.get('enable_daily_reward') == 'on',
+                'daily_reward_amount': int(request.form.get('daily_reward_amount', 100)),
+                'boost_energy_cost': int(request.form.get('boost_energy_cost', 500)),
+                'boost_multitap_cost': int(request.form.get('boost_multitap_cost', 1000)),
+                'boost_recharge_cost': int(request.form.get('boost_recharge_cost', 750)),
+            }
+            
+            conn = db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute('UPDATE bots SET bot_config = ? WHERE id = ?', (json.dumps(bot_config), bot_id))
+            conn.commit()
+            conn.close()
+            
+            flash('Mining settings updated successfully!', 'success')
+            return redirect(url_for('mining_settings', bot_id=bot_id))
+        except Exception as e:
+            flash(f'Error updating settings: {str(e)}', 'danger')
+    
+    bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+    mining_settings = bot_config.get('mining_settings', {
+        'tap_reward': 1,
+        'max_energy': 1000,
+        'energy_recharge_rate': 1,
+        'referral_bonus': 500,
+        'min_withdrawal': 10000,
+        'enable_shop': True,
+        'enable_wallet': True,
+        'enable_tasks': True,
+        'enable_leaderboard': True,
+        'enable_daily_reward': True,
+        'daily_reward_amount': 100,
+        'boost_energy_cost': 500,
+        'boost_multitap_cost': 1000,
+        'boost_recharge_cost': 750,
+    })
+    
+    return render_template('mining_settings.html', bot=bot, settings=mining_settings)
+
 @app.route('/mining-app')
 def mining_app():
     return render_template('mining_app.html')
@@ -858,12 +924,15 @@ def mining_init():
         db.create_game_session(player['id'], session_token)
         
         bot_username = bot.get('bot_username', 'your_bot')
+        bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+        mining_settings = bot_config.get('mining_settings', {})
         
         return jsonify({
             'success': True,
             'player': player,
             'bot_username': bot_username,
-            'session_token': session_token
+            'session_token': session_token,
+            'settings': mining_settings
         })
     except Exception as e:
         print(f"Mining init error: {e}")
@@ -953,6 +1022,175 @@ def mining_boost():
     except Exception as e:
         print(f"Mining boost error: {e}")
         return jsonify({'success': False, 'error': 'Boost purchase failed'}), 500
+
+@app.route('/api/mining/daily-reward', methods=['POST'])
+def mining_daily_reward():
+    try:
+        data = request.json
+        if not data or 'session_token' not in data or 'bot_id' not in data:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+        
+        session_token = data['session_token']
+        bot_id = data['bot_id']
+        
+        player_id = db.validate_game_session(session_token)
+        if not player_id:
+            return jsonify({'success': False, 'error': 'Invalid or expired session'}), 401
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT * FROM mining_players WHERE id = ? AND bot_id = ?', (player_id, bot_id))
+        player = cursor.fetchone()
+        
+        if not player:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Player not found'}), 404
+        
+        cursor.execute('''
+            SELECT * FROM mining_daily_rewards 
+            WHERE player_id = ? AND claimed_at = DATE('now')
+        ''', (player_id,))
+        
+        today_reward = cursor.fetchone()
+        
+        if today_reward:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Already claimed today'}), 400
+        
+        cursor.execute('''
+            SELECT MAX(streak_days) as max_streak FROM mining_daily_rewards 
+            WHERE player_id = ? AND DATE(claimed_at) = DATE('now', '-1 day')
+        ''', (player_id,))
+        
+        yesterday_data = cursor.fetchone()
+        streak = (yesterday_data['max_streak'] + 1) if yesterday_data and yesterday_data['max_streak'] else 1
+        reward_amount = 100 + (streak * 10)
+        
+        cursor.execute('''
+            INSERT INTO mining_daily_rewards (player_id, claimed_at, reward_amount, streak_days)
+            VALUES (?, DATE('now'), ?, ?)
+        ''', (player_id, reward_amount, streak))
+        
+        cursor.execute('''
+            UPDATE mining_players SET coins = coins + ?
+            WHERE id = ?
+        ''', (reward_amount, player_id))
+        
+        conn.commit()
+        
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        updated_player = cursor.fetchone()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'reward': reward_amount,
+            'streak': streak,
+            'player': dict(updated_player)
+        })
+        
+    except Exception as e:
+        print(f"Daily reward error: {e}")
+        return jsonify({'success': False, 'error': 'Failed to claim reward'}), 500
+
+@app.route('/api/mining/shop/purchase', methods=['POST'])
+def mining_shop_purchase():
+    try:
+        data = request.json
+        if not data or 'session_token' not in data or 'bot_id' not in data or 'amount' not in data:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+        
+        session_token = data['session_token']
+        bot_id = data['bot_id']
+        amount = int(data['amount'])
+        
+        player_id = db.validate_game_session(session_token)
+        if not player_id:
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE mining_players SET coins = coins + ? WHERE id = ?', (amount, player_id))
+        conn.commit()
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        player = cursor.fetchone()
+        conn.close()
+        
+        return jsonify({'success': True, 'player': dict(player)})
+    except Exception as e:
+        print(f"Shop purchase error: {e}")
+        return jsonify({'success': False, 'error': 'Purchase failed'}), 500
+
+@app.route('/api/mining/wallet/connect', methods=['POST'])
+def mining_wallet_connect():
+    try:
+        data = request.json
+        if not data or 'session_token' not in data:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+        
+        session_token = data['session_token']
+        wallet_address = data.get('wallet_address', '')
+        wallet_type = data.get('wallet_type', 'telegram')
+        
+        player_id = db.validate_game_session(session_token)
+        if not player_id:
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO mining_wallets (player_id, wallet_address, wallet_type)
+            VALUES (?, ?, ?)
+            ON CONFLICT(player_id) DO UPDATE SET 
+                wallet_address = ?,
+                wallet_type = ?,
+                connected_at = CURRENT_TIMESTAMP
+        ''', (player_id, wallet_address, wallet_type, wallet_address, wallet_type))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'Wallet connected'})
+    except Exception as e:
+        print(f"Wallet connect error: {e}")
+        return jsonify({'success': False, 'error': 'Connection failed'}), 500
+
+@app.route('/api/mining/tasks')
+def mining_tasks():
+    try:
+        bot_id = request.args.get('bot_id')
+        session_token = request.args.get('session_token')
+        
+        if not bot_id or not session_token:
+            return jsonify({'success': False, 'error': 'Missing parameters'}), 400
+        
+        player_id = db.validate_game_session(session_token)
+        if not player_id:
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
+        player = cursor.fetchone()
+        
+        cursor.execute('SELECT COUNT(*) as referral_count FROM mining_referrals WHERE referrer_id = ?', (player_id,))
+        referral_data = cursor.fetchone()
+        
+        cursor.execute('SELECT streak_days FROM mining_daily_rewards WHERE player_id = ? ORDER BY claimed_at DESC LIMIT 1', (player_id,))
+        streak_data = cursor.fetchone()
+        
+        conn.close()
+        
+        tasks = [
+            {'id': 'mining', 'name': 'Mine 1000 Coins', 'progress': min(int(player['coins']), 1000), 'target': 1000, 'reward': 500, 'completed': player['coins'] >= 1000},
+            {'id': 'referrals', 'name': 'Invite 3 Friends', 'progress': min(referral_data['referral_count'] if referral_data else 0, 3), 'target': 3, 'reward': 1000, 'completed': (referral_data['referral_count'] if referral_data else 0) >= 3},
+            {'id': 'streak', 'name': '7-Day Streak', 'progress': min(streak_data['streak_days'] if streak_data else 1, 7), 'target': 7, 'reward': 2000, 'completed': (streak_data['streak_days'] if streak_data else 1) >= 7}
+        ]
+        
+        return jsonify({'success': True, 'tasks': tasks})
+    except Exception as e:
+        print(f"Tasks error: {e}")
+        return jsonify({'success': False, 'error': 'Failed to fetch tasks'}), 500
 
 @app.route('/api/mining/leaderboard')
 def mining_leaderboard():
