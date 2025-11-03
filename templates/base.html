@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body{% if session.user_id %} class="has-bottom-nav"{% endif %}>
     <div class="app-container">
         {% if session.user_id %}
         <div class="navbar-top p-3 d-flex justify-content-between align-items-center">

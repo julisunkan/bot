@@ -57,6 +57,9 @@
 body {
     transition: background-color 0.3s ease, color 0.3s ease;
     background-color: var(--bg-color);
+}
+
+body.has-bottom-nav {
     padding-bottom: 80px;
 }
 
@@ -268,10 +271,14 @@ code {
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: #999;
+    color: #6c757d;
     padding: 8px 0;
     transition: all 0.3s ease;
     position: relative;
+}
+
+[data-theme="dark"] .bottom-nav-item {
+    color: #adb5bd;
 }
 
 .bottom-nav-item i {
@@ -381,8 +388,8 @@ code {
 }
 
 /* Mobile-first adjustments */
-main {
-    padding-bottom: 80px !important;
+body.has-bottom-nav main {
+    padding-bottom: 20px;
 }
 
 .navbar-top {
