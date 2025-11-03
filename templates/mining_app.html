@@ -296,6 +296,7 @@
             <button class="tab-btn" onclick="switchTab('boost')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">🚀 Boost</button>
             <button class="tab-btn" onclick="switchTab('shop')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">🛒 Shop</button>
             <button class="tab-btn" onclick="switchTab('tasks')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">📋 Tasks</button>
+            <button class="tab-btn" onclick="switchTab('friends')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">👥 Friends</button>
             <button class="tab-btn" onclick="switchTab('wallet')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">💳 Wallet</button>
             <button class="tab-btn" onclick="switchTab('leaderboard')" style="flex: 1 1 calc(33.33% - 8px); min-width: 80px; padding: 10px 5px; font-size: 12px;">🏆 Leaders</button>
         </div>
@@ -329,14 +330,26 @@
             </div>
         </div>
 
-        <div id="referralTab" class="tab-content">
-            <h3 style="margin-bottom: 15px;">Share Your Link</h3>
+        <div id="friendsTab" class="tab-content">
+            <h3 style="margin-bottom: 15px;">👥 Invite Friends</h3>
+            <div class="stats-grid" style="margin-bottom: 20px;">
+                <div class="stat-card">
+                    <div class="stat-label">Friends Invited</div>
+                    <div class="stat-value" id="friendCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Earnings from Referrals</div>
+                    <div class="stat-value" id="referralEarnings">0 🪙</div>
+                </div>
+            </div>
+            <h4 style="margin-bottom: 10px;">📤 Your Referral Link</h4>
             <div class="referral-link" id="referralLink">Loading...</div>
             <button class="copy-btn" onclick="copyReferralLink()">📋 Copy Link</button>
-            <p style="margin-top: 15px; opacity: 0.8;">
-                💰 Earn 500 coins for each friend who joins!<br>
-                📈 Plus 10% of their mining earnings!
-            </p>
+            <div style="margin-top: 20px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                <p style="margin-bottom: 10px;"><strong>🎁 Referral Rewards:</strong></p>
+                <p style="opacity: 0.9; margin-bottom: 5px;">💰 Earn 500 coins for each friend who joins!</p>
+                <p style="opacity: 0.9;">📈 Plus get 10% of their mining earnings!</p>
+            </div>
         </div>
 
         <div id="shopTab" class="tab-content">
@@ -474,6 +487,10 @@
                     startEnergyRecovery();
                     document.getElementById('referralLink').textContent = 
                         `https://t.me/${data.bot_username}?start=ref_${playerData.referral_code}`;
+                    
+                    // Update referral stats
+                    document.getElementById('referrals').textContent = playerData.referral_count || 0;
+                    document.getElementById('friendCount').textContent = playerData.referral_count || 0;
                 }
             } catch (error) {
                 console.error('Init error:', error);

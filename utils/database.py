@@ -10,7 +10,7 @@ class Database:
         self.encryption_key = self._get_or_create_key()
         self.cipher = Fernet(self.encryption_key)
         self.init_db()
-    
+
     def _get_or_create_key(self):
         try:
             with open('.encryption_key', 'rb') as f:
@@ -20,17 +20,17 @@ class Database:
             with open('.encryption_key', 'wb') as f:
                 f.write(key)
             return key
-    
+
     def get_connection(self):
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         conn.execute('PRAGMA foreign_keys = ON')
         return conn
-    
+
     def init_db(self):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +43,7 @@ class Database:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS bots (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,28 +59,28 @@ class Database:
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         ''')
-        
+
         # Migration: Add bot_type column if it doesn't exist
         try:
             cursor.execute("SELECT bot_type FROM bots LIMIT 1")
         except sqlite3.OperationalError:
             cursor.execute("ALTER TABLE bots ADD COLUMN bot_type TEXT DEFAULT 'telegram'")
             conn.commit()
-        
+
         # Migration: Add is_active column if it doesn't exist
         try:
             cursor.execute("SELECT is_active FROM bots LIMIT 1")
         except sqlite3.OperationalError:
             cursor.execute("ALTER TABLE bots ADD COLUMN is_active INTEGER DEFAULT 0")
             conn.commit()
-        
+
         # Migration: Add webhook_url column if it doesn't exist
         try:
             cursor.execute("SELECT webhook_url FROM bots LIMIT 1")
         except sqlite3.OperationalError:
             cursor.execute("ALTER TABLE bots ADD COLUMN webhook_url TEXT")
             conn.commit()
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS templates (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,7 +93,7 @@ class Database:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS analytics (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,7 +105,7 @@ class Database:
                 UNIQUE(bot_id, date)
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS referrals (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,7 +117,7 @@ class Database:
                 FOREIGN KEY (referred_id) REFERENCES users(id)
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS bot_commands (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -130,18 +130,18 @@ class Database:
                 FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE
             )
         ''')
-        
+
         # Migration: Add url_link column if it doesn't exist
         try:
             cursor.execute("SELECT url_link FROM bot_commands LIMIT 1")
         except sqlite3.OperationalError:
             cursor.execute("ALTER TABLE bot_commands ADD COLUMN url_link TEXT")
             conn.commit()
-        
+
         # Migration: Upgrade all users to Pro plan
         cursor.execute("UPDATE users SET plan = 'pro' WHERE plan != 'pro'")
         conn.commit()
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS template_ratings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -155,7 +155,7 @@ class Database:
                 UNIQUE(template_id, user_id)
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS game_sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -166,7 +166,7 @@ class Database:
                 FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_players (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -195,7 +195,7 @@ class Database:
                 UNIQUE(bot_id, telegram_user_id)
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_boosts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -207,7 +207,7 @@ class Database:
                 UNIQUE(player_id, boost_type)
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_tasks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -221,7 +221,7 @@ class Database:
                 UNIQUE(player_id, task_type)
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_referrals (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -233,7 +233,7 @@ class Database:
                 FOREIGN KEY (referred_id) REFERENCES mining_players(id) ON DELETE CASCADE
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_shop_items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -250,7 +250,7 @@ class Database:
                 FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_purchases (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -264,7 +264,7 @@ class Database:
                 FOREIGN KEY (shop_item_id) REFERENCES mining_shop_items(id) ON DELETE CASCADE
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_wallets (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -277,19 +277,19 @@ class Database:
                 FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_daily_rewards (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 player_id INTEGER NOT NULL,
-                claimed_at DATE DEFAULT CURRENT_DATE,
-                reward_amount INTEGER DEFAULT 0,
+                claimed_at DATE NOT NULL,
+                reward_amount INTEGER DEFAULT 100,
                 streak_days INTEGER DEFAULT 1,
-                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id),
                 UNIQUE(player_id, claimed_at)
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_withdrawals (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -305,35 +305,36 @@ class Database:
                 FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE
             )
         ''')
-        
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_deposits (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARYKEY AUTOINCREMENT,
                 player_id INTEGER NOT NULL,
                 amount REAL NOT NULL,
                 transaction_hash TEXT,
                 status TEXT DEFAULT 'pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                processed_at TIMESTAMP,
                 FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE
             )
         ''')
-        
+
         conn.commit()
         conn.close()
-    
+
     def encrypt_token(self, token):
         return self.cipher.encrypt(token.encode()).decode()
-    
+
     def decrypt_token(self, encrypted_token):
         return self.cipher.decrypt(encrypted_token.encode()).decode()
-    
+
     def create_user(self, username, password):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         password_hash = generate_password_hash(password)
         referral_code = secrets.token_urlsafe(8)
-        
+
         try:
             cursor.execute(
                 'INSERT INTO users (username, password_hash, referral_code) VALUES (?, ?, ?)',
@@ -346,19 +347,19 @@ class Database:
         except sqlite3.IntegrityError:
             conn.close()
             return None, None
-    
+
     def verify_user(self, username, password):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
         user = cursor.fetchone()
         conn.close()
-        
+
         if user and check_password_hash(user['password_hash'], password):
             return dict(user)
         return None
-    
+
     def get_user(self, user_id):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -366,13 +367,13 @@ class Database:
         user = cursor.fetchone()
         conn.close()
         return dict(user) if user else None
-    
+
     def create_bot(self, user_id, bot_name, bot_token, bot_config, bot_type='telegram'):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         encrypted_token = self.encrypt_token(bot_token) if bot_token else ''
-        
+
         cursor.execute(
             'INSERT INTO bots (user_id, bot_name, bot_token, bot_config, bot_type) VALUES (?, ?, ?, ?, ?)',
             (user_id, bot_name, encrypted_token, bot_config, bot_type)
@@ -381,7 +382,7 @@ class Database:
         bot_id = cursor.lastrowid
         conn.close()
         return bot_id
-    
+
     def get_user_bots(self, user_id):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -389,7 +390,7 @@ class Database:
         bots = cursor.fetchall()
         conn.close()
         return [dict(bot) for bot in bots]
-    
+
     def get_bot(self, bot_id):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -397,7 +398,7 @@ class Database:
         bot = cursor.fetchone()
         conn.close()
         return dict(bot) if bot else None
-    
+
     def delete_bot(self, bot_id, user_id):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -406,7 +407,7 @@ class Database:
         deleted = cursor.rowcount > 0
         conn.close()
         return deleted
-    
+
     def get_all_templates(self):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -414,7 +415,7 @@ class Database:
         templates = cursor.fetchall()
         conn.close()
         return [dict(template) for template in templates]
-    
+
     def add_template(self, title, description, category, json_file):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -426,14 +427,14 @@ class Database:
         template_id = cursor.lastrowid
         conn.close()
         return template_id
-    
+
     def increment_template_downloads(self, template_id):
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute('UPDATE templates SET downloads = downloads + 1 WHERE id = ?', (template_id,))
         conn.commit()
         conn.close()
-    
+
     def add_bot_command(self, bot_id, command, response_type, response_content, url_link=None):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -443,7 +444,7 @@ class Database:
         )
         conn.commit()
         conn.close()
-    
+
     def get_bot_commands(self, bot_id):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -451,7 +452,7 @@ class Database:
         commands = cursor.fetchall()
         conn.close()
         return [dict(cmd) for cmd in commands]
-    
+
     def update_bot_command(self, command_id, bot_id, command, response_type, response_content, url_link=None):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -464,7 +465,7 @@ class Database:
         updated = cursor.rowcount > 0
         conn.close()
         return updated
-    
+
     def delete_bot_command(self, command_id, bot_id):
         conn = self.get_connection()
         cursor = conn.cursor()
@@ -473,14 +474,14 @@ class Database:
         deleted = cursor.rowcount > 0
         conn.close()
         return deleted
-    
+
     def get_analytics_summary(self, user_id):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('SELECT COUNT(*) as total_bots FROM bots WHERE user_id = ?', (user_id,))
         total_bots = cursor.fetchone()['total_bots']
-        
+
         cursor.execute('''
             SELECT SUM(a.message_count) as total_messages 
             FROM analytics a 
@@ -489,59 +490,59 @@ class Database:
         ''', (user_id,))
         result = cursor.fetchone()
         total_messages = result['total_messages'] or 0
-        
+
         conn.close()
         return {
             'total_bots': total_bots,
             'total_messages': total_messages
         }
-    
+
     def increment_bot_messages(self, bot_id):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         today = datetime.now().date()
-        
+
         cursor.execute('''
             INSERT INTO analytics (bot_id, message_count, date) 
             VALUES (?, 1, ?)
             ON CONFLICT(bot_id, date) DO UPDATE SET 
             message_count = message_count + 1
         ''', (bot_id, today))
-        
+
         conn.commit()
         conn.close()
-    
+
     def get_or_create_mining_player(self, bot_id, telegram_user_id, username=None, first_name=None, referred_by=None):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('SELECT * FROM mining_players WHERE bot_id = ? AND telegram_user_id = ?', 
                       (bot_id, telegram_user_id))
         player = cursor.fetchone()
-        
+
         if player:
             conn.close()
             return dict(player)
-        
+
         referral_code = secrets.token_urlsafe(8)
         cursor.execute('''
             INSERT INTO mining_players (bot_id, telegram_user_id, username, first_name, referral_code, referred_by)
             VALUES (?, ?, ?, ?, ?, ?)
         ''', (bot_id, telegram_user_id, username, first_name, referral_code, referred_by))
-        
+
         player_id = cursor.lastrowid
         conn.commit()
-        
+
         cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
         player = cursor.fetchone()
         conn.close()
         return dict(player)
-    
+
     def update_mining_player_tap(self, player_id, coins_to_add, energy_cost):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('''
             UPDATE mining_players 
             SET coins = coins + ?, 
@@ -550,30 +551,30 @@ class Database:
                 last_tap_time = CURRENT_TIMESTAMP
             WHERE id = ?
         ''', (coins_to_add, energy_cost, player_id))
-        
+
         conn.commit()
-        
+
         cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
         player = cursor.fetchone()
         conn.close()
         return dict(player) if player else None
-    
+
     def update_player_energy(self, player_id):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('''
             SELECT *, 
-            (julianday('now') - julianday(last_energy_update)) * 86400 as seconds_passed
+            (julianday('now') - julianday(last_energy_update)) as seconds_passed
             FROM mining_players WHERE id = ?
         ''', (player_id,))
         player = cursor.fetchone()
-        
+
         if player:
             seconds_passed = player['seconds_passed']
             energy_recovered = int(seconds_passed * player['energy_recharge_rate'])
             new_energy = min(player['energy'] + energy_recovered, player['energy_max'])
-            
+
             cursor.execute('''
                 UPDATE mining_players 
                 SET energy = ?,
@@ -581,35 +582,35 @@ class Database:
                 WHERE id = ?
             ''', (new_energy, player_id))
             conn.commit()
-        
+
         cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
         player = cursor.fetchone()
         conn.close()
         return dict(player) if player else None
-    
+
     def purchase_boost(self, player_id, boost_type, cost, boost_effects):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('SELECT coins FROM mining_players WHERE id = ?', (player_id,))
         player = cursor.fetchone()
-        
+
         if not player or player['coins'] < cost:
             conn.close()
             return {'success': False, 'error': 'Insufficient coins'}
-        
+
         cursor.execute('UPDATE mining_players SET coins = coins - ? WHERE id = ?', (cost, player_id))
-        
+
         update_fields = []
         update_values = []
         for field, value in boost_effects.items():
             update_fields.append(f'{field} = {field} + ?')
             update_values.append(value)
-        
+
         if update_fields:
             update_values.append(player_id)
             cursor.execute(f'UPDATE mining_players SET {", ".join(update_fields)} WHERE id = ?', update_values)
-        
+
         cursor.execute('''
             INSERT INTO mining_boosts (player_id, boost_type) 
             VALUES (?, ?)
@@ -617,17 +618,17 @@ class Database:
             boost_level = boost_level + 1,
             purchased_at = CURRENT_TIMESTAMP
         ''', (player_id, boost_type))
-        
+
         conn.commit()
         cursor.execute('SELECT * FROM mining_players WHERE id = ?', (player_id,))
         player = cursor.fetchone()
         conn.close()
         return {'success': True, 'player': dict(player)}
-    
+
     def get_mining_leaderboard(self, bot_id, limit=10):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('''
             SELECT username, first_name, coins, level, total_taps
             FROM mining_players 
@@ -635,52 +636,52 @@ class Database:
             ORDER BY coins DESC
             LIMIT ?
         ''', (bot_id, limit))
-        
+
         leaderboard = cursor.fetchall()
         conn.close()
         return [dict(entry) for entry in leaderboard]
-    
+
     def activate_bot(self, bot_id, webhook_url):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('''
             UPDATE bots 
             SET is_active = 1, webhook_url = ?
             WHERE id = ?
         ''', (webhook_url, bot_id))
-        
+
         conn.commit()
         updated = cursor.rowcount > 0
         conn.close()
         return updated
-    
+
     def create_game_session(self, player_id, session_token):
         from datetime import timedelta
-        
+
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         expires_at = datetime.now() + timedelta(hours=24)
-        
+
         cursor.execute('''
             INSERT INTO game_sessions (player_id, session_token, expires_at)
             VALUES (?, ?, ?)
         ''', (player_id, session_token, expires_at))
-        
+
         conn.commit()
         conn.close()
-    
+
     def validate_game_session(self, session_token):
         conn = self.get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute('''
             SELECT player_id FROM game_sessions 
             WHERE session_token = ? AND expires_at > CURRENT_TIMESTAMP
         ''', (session_token,))
-        
+
         result = cursor.fetchone()
         conn.close()
-        
+
         return result['player_id'] if result else None
