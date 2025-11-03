@@ -104,6 +104,9 @@
                         <button onclick="setBotMenu({{ bot.id }})" class="btn btn-success">
                             <i class="bi bi-list-ul"></i> Set Menu
                         </button>
+                        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#applyTemplateModal">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Apply Template
+                        </button>
                     {% elif bot.bot_type == 'webapp' %}
                     <div class="alert alert-success">
                         <strong><i class="bi bi-globe"></i> Web App Ready:</strong>
@@ -568,4 +571,63 @@ function showDeleteBotConfirmation() {
     document.getElementById('bot-status-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 </script>
+
+<!-- Apply Template Modal -->
+<div class="modal fade" id="applyTemplateModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="background: #2d3139; color: white;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title gradient-text">Apply Template to Bot</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Select a template to apply to this bot. This will replace all current commands with the template's commands.</p>
+                <div class="alert alert-warning" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3);">
+                    <i class="bi bi-exclamation-triangle"></i> <strong>Warning:</strong> This will delete all existing commands for this bot. This action cannot be undone.
+                </div>
+                
+                <div class="row">
+                    {% for template in templates %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    {% if template.category == 'crypto' %}
+                                    <i class="bi bi-currency-bitcoin"></i>
+                                    {% elif template.category == 'web3' %}
+                                    <i class="bi bi-globe"></i>
+                                    {% elif template.category == 'ai' %}
+                                    <i class="bi bi-robot"></i>
+                                    {% elif template.category == 'marketing' %}
+                                    <i class="bi bi-megaphone"></i>
+                                    {% elif template.category == 'game' %}
+                                    <i class="bi bi-controller"></i>
+                                    {% elif template.category == 'mining' %}
+                                    <i class="bi bi-coin"></i>
+                                    {% else %}
+                                    <i class="bi bi-box"></i>
+                                    {% endif %}
+                                    {{ template.title }}
+                                </h6>
+                                <span class="badge bg-primary">{{ template.category }}</span>
+                                <div class="mt-2">
+                                    <a href="{{ url_for('apply_template_to_bot', bot_id=bot.id, template_id=template.id) }}" 
+                                       class="btn btn-sm btn-primary-gradient w-100"
+                                       onclick="return confirm('Are you sure you want to apply this template? All existing commands will be deleted.')">
+                                        Apply Template
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

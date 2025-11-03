@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Import Template - BotForge Pro{% endblock %}
+
+{% block content %}
+<div class="landing-page-v2 min-vh-100">
+    <div class="container-fluid px-3 py-4">
+        <div class="row mb-4">
+            <div class="col">
+                <a href="{{ url_for('marketplace') }}" class="btn btn-outline-light mb-3">
+                    <i class="bi bi-arrow-left"></i> Back to Marketplace
+                </a>
+                <h2 class="gradient-text display-5 fw-bold"><i class="bi bi-upload"></i> Import Template</h2>
+                <p class="hero-subtitle">Upload a template .zip file to add to your library</p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="feature-card">
+                    <form method="POST" action="{{ url_for('import_template') }}" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <h5 class="gradient-text mb-3">Upload Template File</h5>
+                            <p class="text-white-50 mb-3">
+                                Select a .zip file containing your template. The zip should include:
+                            </p>
+                            <ul class="text-white-50">
+                                <li><code>metadata.json</code> - Template information (title, description, category)</li>
+                                <li><code>template.json</code> - Template configuration with commands and settings</li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="template_file" class="form-label text-white">Template File (.zip)</label>
+                            <input type="file" class="form-control" id="template_file" name="template_file" accept=".zip" required>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary-gradient">
+                                <i class="bi bi-upload"></i> Import Template
+                            </button>
+                            <a href="{{ url_for('marketplace') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="feature-card mt-4">
+                    <h5 class="gradient-text mb-3">Template Package Structure</h5>
+                    <p class="text-white-50 mb-3">Your .zip file should contain the following files:</p>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-white">metadata.json</h6>
+                        <pre style="background: #1a1c23; color: #fff; padding: 15px; border-radius: 8px; font-size: 12px; overflow-x: auto;"><code>{
+  "title": "My Custom Template",
+  "description": "Description of your template",
+  "category": "custom",
+  "template_file": "template.json"
+}</code></pre>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-white">template.json (or any name specified in metadata)</h6>
+                        <pre style="background: #1a1c23; color: #fff; padding: 15px; border-radius: 8px; font-size: 12px; overflow-x: auto;"><code>{
+  "name": "My Custom Template",
+  "description": "Bot template description",
+  "category": "custom",
+  "commands": [
+    {
+      "command": "start",
+      "response_type": "text",
+      "response_content": "Welcome message"
+    }
+  ],
+  "settings": {
+    "custom_setting": "value"
+  }
+}</code></pre>
+                    </div>
+
+                    <div class="alert alert-info" style="background: rgba(13, 110, 253, 0.1); border: 1px solid rgba(13, 110, 253, 0.3); color: #fff;">
+                        <i class="bi bi-info-circle"></i> <strong>Tip:</strong> You can export any existing template to see the correct structure, then modify it to create your own custom template.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

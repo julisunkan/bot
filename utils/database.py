@@ -435,6 +435,44 @@ class Database:
         conn.commit()
         conn.close()
 
+    def get_template(self, template_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM templates WHERE id = ?', (template_id,))
+        template = cursor.fetchone()
+        conn.close()
+        return dict(template) if template else None
+
+    def update_template(self, template_id, title, description, category, json_file):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE templates 
+            SET title = ?, description = ?, category = ?, json_file = ?
+            WHERE id = ?
+        ''', (title, description, category, json_file, template_id))
+        conn.commit()
+        updated = cursor.rowcount > 0
+        conn.close()
+        return updated
+
+    def delete_template(self, template_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM templates WHERE id = ?', (template_id,))
+        conn.commit()
+        deleted = cursor.rowcount > 0
+        conn.close()
+        return deleted
+
+    def apply_template_to_bot(self, bot_id, template_json_file):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM bot_commands WHERE bot_id = ?', (bot_id,))
+        conn.commit()
+        conn.close()
+        return True
+
     def add_bot_command(self, bot_id, command, response_type, response_content, url_link=None):
         conn = self.get_connection()
         cursor = conn.cursor()

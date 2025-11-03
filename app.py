@@ -216,13 +216,14 @@ def bot_detail(bot_id):
         return redirect(url_for('dashboard'))
     
     commands = db.get_bot_commands(bot_id)
+    templates = db.get_all_templates()
     
     try:
         bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
     except:
         bot_config = {}
     
-    return render_template('bot_detail.html', bot=bot, commands=commands, bot_config=bot_config)
+    return render_template('bot_detail.html', bot=bot, commands=commands, bot_config=bot_config, templates=templates)
 
 @app.route('/bot/<int:bot_id>/add-command', methods=['POST'])
 @login_required
@@ -417,6 +418,178 @@ def clone_template(template_id):
     except Exception as e:
         flash('Error loading template. Please try again.', 'danger')
         return redirect(url_for('marketplace'))
+
+@app.route('/templates/edit/<int:template_id>', methods=['GET', 'POST'])
+@login_required
+def edit_template(template_id):
+    template = db.get_template(template_id)
+    
+    if not template:
+        flash('Template not found.', 'danger')
+        return redirect(url_for('marketplace'))
+    
+    if request.method == 'POST':
+        try:
+            template_json = request.form.get('template_json', '')
+            template_data = json.loads(template_json)
+            
+            title = request.form.get('title', template['title'])
+            description = request.form.get('description', template['description'])
+            category = request.form.get('category', template['category'])
+            
+            with open(f'templates_library/{template["json_file"]}', 'w') as f:
+                json.dump(template_data, f, indent=2)
+            
+            db.update_template(template_id, title, description, category, template['json_file'])
+            
+            flash('Template updated successfully!', 'success')
+            return redirect(url_for('marketplace'))
+        except json.JSONDecodeError:
+            flash('Invalid JSON format. Please check your template.', 'danger')
+        except Exception as e:
+            flash(f'Error updating template: {str(e)}', 'danger')
+    
+    try:
+        with open(f'templates_library/{template["json_file"]}', 'r') as f:
+            template_json = json.dumps(json.load(f), indent=2)
+    except:
+        template_json = '{}'
+    
+    return render_template('edit_template.html', template=template, template_json=template_json)
+
+@app.route('/templates/export/<int:template_id>')
+@login_required
+def export_template(template_id):
+    import zipfile
+    from io import BytesIO
+    
+    template = db.get_template(template_id)
+    
+    if not template:
+        flash('Template not found.', 'danger')
+        return redirect(url_for('marketplace'))
+    
+    try:
+        memory_file = BytesIO()
+        
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            template_path = f'templates_library/{template["json_file"]}'
+            zf.write(template_path, template["json_file"])
+            
+            metadata = {
+                'title': template['title'],
+                'description': template['description'],
+                'category': template['category'],
+                'template_file': template['json_file']
+            }
+            zf.writestr('metadata.json', json.dumps(metadata, indent=2))
+        
+        memory_file.seek(0)
+        
+        filename = f'{template["title"].replace(" ", "_").lower()}_template.zip'
+        return send_file(memory_file, as_attachment=True, download_name=filename, mimetype='application/zip')
+    except Exception as e:
+        flash(f'Error exporting template: {str(e)}', 'danger')
+        return redirect(url_for('marketplace'))
+
+@app.route('/templates/import', methods=['GET', 'POST'])
+@login_required
+def import_template():
+    if request.method == 'POST':
+        import zipfile
+        from io import BytesIO
+        
+        if 'template_file' not in request.files:
+            flash('No file uploaded.', 'danger')
+            return redirect(url_for('import_template'))
+        
+        file = request.files['template_file']
+        
+        if file.filename == '':
+            flash('No file selected.', 'danger')
+            return redirect(url_for('import_template'))
+        
+        if not file.filename.endswith('.zip'):
+            flash('Please upload a .zip file.', 'danger')
+            return redirect(url_for('import_template'))
+        
+        try:
+            with zipfile.ZipFile(BytesIO(file.read()), 'r') as zf:
+                file_list = zf.namelist()
+                
+                if 'metadata.json' not in file_list:
+                    flash('Invalid template file: metadata.json not found.', 'danger')
+                    return redirect(url_for('import_template'))
+                
+                metadata = json.loads(zf.read('metadata.json').decode('utf-8'))
+                
+                template_filename = metadata.get('template_file', 'imported_template.json')
+                if template_filename not in file_list:
+                    flash(f'Template file {template_filename} not found in zip.', 'danger')
+                    return redirect(url_for('import_template'))
+                
+                template_data = json.loads(zf.read(template_filename).decode('utf-8'))
+                
+                import time
+                new_filename = f'imported_{int(time.time())}_{template_filename}'
+                
+                with open(f'templates_library/{new_filename}', 'w') as f:
+                    json.dump(template_data, f, indent=2)
+                
+                title = metadata.get('title', 'Imported Template')
+                description = metadata.get('description', 'Imported from zip file')
+                category = metadata.get('category', 'custom')
+                
+                db.add_template(title, description, category, new_filename)
+                
+                flash('Template imported successfully!', 'success')
+                return redirect(url_for('marketplace'))
+                
+        except zipfile.BadZipFile:
+            flash('Invalid zip file.', 'danger')
+        except json.JSONDecodeError:
+            flash('Invalid JSON in template file.', 'danger')
+        except Exception as e:
+            flash(f'Error importing template: {str(e)}', 'danger')
+    
+    return render_template('import_template.html')
+
+@app.route('/bots/<int:bot_id>/apply-template/<int:template_id>')
+@login_required
+def apply_template_to_bot(bot_id, template_id):
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        flash('Bot not found or access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    template = db.get_template(template_id)
+    
+    if not template:
+        flash('Template not found.', 'danger')
+        return redirect(url_for('bot_detail', bot_id=bot_id))
+    
+    try:
+        with open(f'templates_library/{template["json_file"]}', 'r') as f:
+            template_data = json.load(f)
+        
+        db.apply_template_to_bot(bot_id, template['json_file'])
+        
+        if 'commands' in template_data:
+            for cmd in template_data['commands']:
+                db.add_bot_command(
+                    bot_id,
+                    cmd.get('command', ''),
+                    cmd.get('response_type', 'text'),
+                    cmd.get('response_content', ''),
+                    cmd.get('url_link')
+                )
+        
+        flash(f'Template "{template["title"]}" applied successfully!', 'success')
+        return redirect(url_for('bot_detail', bot_id=bot_id))
+    except Exception as e:
+        flash(f'Error applying template: {str(e)}', 'danger')
+        return redirect(url_for('bot_detail', bot_id=bot_id))
 
 @app.route('/analytics')
 @login_required
