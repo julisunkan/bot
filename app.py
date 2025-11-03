@@ -993,7 +993,7 @@ def mining_boost():
             return jsonify({'success': False, 'error': 'Missing parameters'}), 400
         
         session_token = data['session_token']
-        bot_id = data['bot_id']
+        bot_id = int(data['bot_id'])
         boost_type = data['boost_type']
         
         player_id = db.validate_game_session(session_token)
@@ -1043,7 +1043,7 @@ def mining_daily_reward():
             return jsonify({'success': False, 'error': 'Missing parameters'}), 400
         
         session_token = data['session_token']
-        bot_id = data['bot_id']
+        bot_id = int(data['bot_id'])
         
         player_id = db.validate_game_session(session_token)
         if not player_id:
@@ -1114,7 +1114,7 @@ def mining_shop_purchase():
             return jsonify({'success': False, 'error': 'Missing parameters'}), 400
         
         session_token = data['session_token']
-        bot_id = data['bot_id']
+        bot_id = int(data['bot_id'])
         amount = int(data['amount'])
         
         player_id = db.validate_game_session(session_token)
