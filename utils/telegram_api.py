@@ -112,3 +112,33 @@ class TelegramAPI:
         except Exception as e:
             print(f"Error getting updates: {e}")
             return []
+
+    def set_bot_commands(self, commands):
+        """Set bot menu commands"""
+        if not self.base_url:
+            return None
+
+        try:
+            url = f"{self.base_url}/setMyCommands"
+            data = {'commands': commands}
+            response = requests.post(url, json=data, timeout=10)
+            return response.json()
+        except Exception as e:
+            print(f"Error setting bot commands: {e}")
+            return None
+
+    def answer_callback_query(self, callback_query_id, text=None):
+        """Answer callback query from inline buttons"""
+        if not self.base_url:
+            return None
+
+        try:
+            url = f"{self.base_url}/answerCallbackQuery"
+            data = {'callback_query_id': callback_query_id}
+            if text:
+                data['text'] = text
+            response = requests.post(url, json=data, timeout=10)
+            return response.json()
+        except Exception as e:
+            print(f"Error answering callback: {e}")
+            return None

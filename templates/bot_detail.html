@@ -99,6 +99,9 @@
                         <button onclick="setupWebhook({{ bot.id }})" class="btn btn-primary">
                             <i class="bi bi-cloud-arrow-up"></i> Setup Webhook
                         </button>
+                        <button onclick="setBotMenu({{ bot.id }})" class="btn btn-success">
+                            <i class="bi bi-list-ul"></i> Set Menu
+                        </button>
                     {% elif bot.bot_type == 'webapp' %}
                     <div class="alert alert-success">
                         <strong><i class="bi bi-globe"></i> Web App Ready:</strong>
@@ -145,9 +148,17 @@
                 <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.2s;">
                     <h5 class="gradient-text mb-4"><i class="bi bi-info-circle"></i> Bot Information</h5>
                     <p><strong class="text-white">Name:</strong> <span class="text-white-50">{{ bot.bot_name }}</span></p>
-                    <p><strong class="text-white">Commands:</strong> <span class="text-white-50">{{ commands|length }}</span></p>
+                    <p><strong class="text-white">Commands:</strong> <span class="text-white-50">{{ commands|length }} + 3 built-in</span></p>
                     <p><strong class="text-white">Status:</strong> <span class="badge bg-success">Active</span></p>
                     <p class="mb-0"><strong class="text-white">Created:</strong><br><span class="text-white-50">{{ bot.created_at }}</span></p>
+                    
+                    <hr style="border-color: rgba(255,255,255,0.1);">
+                    <h6 class="text-white-50 mb-2">🔧 Built-in Features:</h6>
+                    <small class="text-white-50">
+                        • /menu - Interactive command menu<br>
+                        • /profile - User profile viewer<br>
+                        • /donate - Developer support
+                    </small>
                 </div>
 
                 <div class="feature-card fade-in-up" style="animation-delay: 0.3s;">
@@ -451,6 +462,36 @@ function copyToClipboard(text) {
         alert('Bot link copied to clipboard!');
     }).catch(err => {
         console.error('Failed to copy:', err);
+    });
+}
+
+function setBotMenu(botId) {
+    const webhookStatusDiv = document.getElementById('webhook-status');
+    webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up menu...';
+
+    fetch(`/bot/${botId}/set-menu`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            webhookStatusDiv.innerHTML = `
+                <div class="alert alert-success mb-0">
+                    <strong>✅ Bot Menu Set!</strong><br>
+                    Your bot now has an interactive command menu!<br>
+                    <small>Users can tap the menu button (☰) to see all commands.</small><br><br>
+                    <strong>Built-in commands added:</strong><br>
+                    • /menu - Interactive command buttons<br>
+                    • /profile - View user details<br>
+                    • /donate - Support developer
+                </div>`;
+        } else {
+            webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
+        }
+    })
+    .catch(error => {
+        webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
+        console.error('Menu setup error:', error);
     });
 }
 </script>

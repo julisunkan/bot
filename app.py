@@ -243,6 +243,41 @@ def add_command(bot_id):
     
     return jsonify({'success': True})
 
+@app.route('/bot/<int:bot_id>/set-menu', methods=['POST'])
+@login_required
+def set_bot_menu(bot_id):
+    """Set bot menu commands"""
+    bot = db.get_bot(bot_id)
+    
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    try:
+        decrypted_token = db.decrypt_token(bot['bot_token'])
+        telegram_api = TelegramAPI(decrypted_token)
+        
+        # Get all commands for this bot
+        commands = db.get_bot_commands(bot_id)
+        
+        # Format commands for Telegram menu
+        menu_commands = []
+        for cmd in commands[:15]:  # Telegram allows max 100 commands, we'll use 15
+            menu_commands.append({
+                'command': cmd['command'],
+                'description': cmd['response_content'][:60] if cmd['response_content'] else 'Bot command'
+            })
+        
+        # Set bot commands via Telegram API
+        result = telegram_api.set_bot_commands(menu_commands)
+        
+        if result and result.get('ok'):
+            return jsonify({'success': True, 'message': 'Menu updated successfully'})
+        else:
+            return jsonify({'success': False, 'error': result.get('description', 'Failed to set menu')})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/bot/<int:bot_id>/command/<int:command_id>/edit', methods=['POST'])
 @login_required
 def edit_command(bot_id, command_id):
@@ -460,6 +495,7 @@ def webhook(bot_id):
         message = update['message']
         chat_id = message['chat']['id']
         text = message.get('text', '')
+        user_info = message.get('from', {})
         
         if not text:
             return jsonify({'ok': True})
@@ -470,6 +506,76 @@ def webhook(bot_id):
         # Get bot token
         decrypted_token = db.decrypt_token(bot['bot_token'])
         telegram_api = TelegramAPI(decrypted_token)
+        
+        # Handle built-in advanced commands
+        if command == 'profile' or command == 'me':
+            user_id = user_info.get('id', 'Unknown')
+            username = user_info.get('username', 'Not set')
+            first_name = user_info.get('first_name', 'Unknown')
+            last_name = user_info.get('last_name', '')
+            is_bot = user_info.get('is_bot', False)
+            language_code = user_info.get('language_code', 'Unknown')
+            
+            profile_text = f"""👤 Your Profile
+
+🆔 User ID: {user_id}
+👤 Name: {first_name} {last_name}
+📱 Username: @{username}
+🌐 Language: {language_code}
+🤖 Bot Account: {'Yes' if is_bot else 'No'}
+
+💬 Chat ID: {chat_id}"""
+            
+            telegram_api.send_message(chat_id, profile_text)
+            db.increment_bot_messages(bot_id)
+            return jsonify({'ok': True})
+        
+        elif command == 'menu':
+            # Send interactive menu with all commands
+            commands = db.get_bot_commands(bot_id)
+            
+            # Create inline keyboard with command buttons
+            keyboard_buttons = []
+            for i, cmd in enumerate(commands[:20]):  # Max 20 commands in menu
+                keyboard_buttons.append([{
+                    'text': f"/{cmd['command']}",
+                    'callback_data': f"cmd_{cmd['id']}"
+                }])
+            
+            keyboard = {'inline_keyboard': keyboard_buttons}
+            
+            menu_text = f"🎯 Available Commands\n\nClick any button below to execute a command:"
+            telegram_api.send_message(chat_id, menu_text, reply_markup=keyboard)
+            db.increment_bot_messages(bot_id)
+            return jsonify({'ok': True})
+        
+        elif command == 'donate':
+            # Donation information
+            donate_text = f"""💝 Support the Developer
+
+Thank you for using this bot! Your support helps keep it running.
+
+💳 Donation Options:
+
+🔹 Bitcoin (BTC)
+bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
+
+🔹 Ethereum (ETH)
+0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb
+
+🔹 TON
+UQD-fake-address-for-demo
+
+🔹 USDT (TRC20)
+TFake1234567890Address
+
+💙 Every contribution is appreciated!
+
+Created with ❤️ using BotForge Pro"""
+            
+            telegram_api.send_message(chat_id, donate_text)
+            db.increment_bot_messages(bot_id)
+            return jsonify({'ok': True})
         
         # Find matching command
         commands = db.get_bot_commands(bot_id)
@@ -501,8 +607,13 @@ def webhook(bot_id):
                 break
         
         if not response_sent and command:
-            # Send default help message
-            help_text = "Available commands:\n"
+            # Send default help message with built-in commands
+            help_text = "📋 Available Commands:\n\n"
+            help_text += "🔧 Built-in:\n"
+            help_text += "/menu - Interactive command menu\n"
+            help_text += "/profile - View your profile\n"
+            help_text += "/donate - Support the developer\n\n"
+            help_text += "⚙️ Custom Commands:\n"
             for cmd in commands:
                 help_text += f"/{cmd['command']}\n"
             telegram_api.send_message(chat_id, help_text or "No commands configured yet.")
