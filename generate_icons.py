@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 
 def create_icon(size, is_maskable=False):
-    """Create a PWA icon with the BotForge Pro logo"""
+    """Create a PWA icon with the Advanced Bots Creator logo"""
     # Create base image with gradient background
     img = Image.new('RGB', (size, size), color='#1a1a2e')
     draw = ImageDraw.Draw(img)

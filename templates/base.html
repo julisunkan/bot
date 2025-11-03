@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Create and manage Telegram bots with BotForge Pro">
+    <meta name="description" content="Create and manage Telegram bots with Advanced Bots Creator">
     <meta name="theme-color" content="#0d6efd">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="BotForge Pro">
-    <title>{% block title %}BotForge Pro{% endblock %}</title>
+    <meta name="apple-mobile-web-app-title" content="Advanced Bots Creator">
+    <title>{% block title %}Advanced Bots Creator{% endblock %}</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
@@ -30,7 +30,7 @@
         {% if session.user_id %}
         <div class="navbar-top p-3 d-flex justify-content-between align-items-center">
             <div>
-                <h5 class="mb-0"><i class="bi bi-robot text-primary"></i> BotForge Pro</h5>
+                <h5 class="mb-0"><i class="bi bi-robot text-primary"></i> Advanced Bots Creator</h5>
                 <small class="text-muted">{{ session.username }}</small>
             </div>
             <div>

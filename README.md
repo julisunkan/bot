@@ -1,4 +1,4 @@
-# BotForge Pro
+# Advanced Bots Creator
 
 A full-stack Telegram Bot Creator Platform with AI automation, cryptocurrency integration, and analytics.
 
@@ -42,7 +42,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-The app will run on http://localhost:5000
+The app will run on http://0.0.0.0:5000
 
 ## Environment Variables
 

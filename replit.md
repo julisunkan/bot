@@ -1,7 +1,7 @@
-# BotForge Pro - Telegram Bot Creator Platform
+# Advanced Bots Creator - Telegram Bot Creator Platform
 
 ## Overview
-BotForge Pro is a full-stack Flask + SQLite web application for creating and managing Telegram bots with AI automation, cryptocurrency integration, analytics, and a marketplace for bot templates.
+Advanced Bots Creator is a full-stack Flask + SQLite web application for creating and managing Telegram bots with AI automation, cryptocurrency integration, analytics, and a marketplace for bot templates.
 
 ## Project Status
 - **Status**: MVP Complete (November 3, 2025)

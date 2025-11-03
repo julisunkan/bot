@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'botforge-pro-v1';
+const CACHE_NAME = 'advanced-bots-creator-v1';
 const urlsToCache = [
   '/',
   '/static/css/style.css',

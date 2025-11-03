@@ -1,7 +1,7 @@
 
 {
-  "name": "BotForge Pro - Telegram Bot Creator",
-  "short_name": "BotForge Pro",
+  "name": "Advanced Bots Creator - Telegram Bot Creator",
+  "short_name": "Advanced Bots Creator",
   "description": "Create and manage Telegram bots with ease",
   "start_url": "/",
   "display": "standalone",
