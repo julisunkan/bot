@@ -81,6 +81,13 @@ class Database:
             cursor.execute("ALTER TABLE bots ADD COLUMN webhook_url TEXT")
             conn.commit()
 
+        # Migration: Add bot_username column if it doesn't exist
+        try:
+            cursor.execute("SELECT bot_username FROM bots LIMIT 1")
+        except sqlite3.OperationalError:
+            cursor.execute("ALTER TABLE bots ADD COLUMN bot_username TEXT")
+            conn.commit()
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS templates (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -92,3 +92,63 @@ class TONPayment:
             link += "?" + "&".join(params)
         
         return link
+class TONPayment:
+    """Utility class for generating TON payment links"""
+    
+    def __init__(self):
+        pass
+    
+    def create_payment_link(self, recipient_address, amount, comment=""):
+        """
+        Create a TON payment link
+        
+        Args:
+            recipient_address: TON wallet address (EQ... or UQ...)
+            amount: Amount in TON
+            comment: Optional payment comment
+            
+        Returns:
+            Payment link string or None if invalid
+        """
+        if not recipient_address or not isinstance(amount, (int, float)):
+            return None
+        
+        # Validate TON address format
+        if not ((recipient_address.startswith('EQ') or recipient_address.startswith('UQ')) 
+                and len(recipient_address) == 48):
+            return None
+        
+        # Generate TON payment link
+        # Format: ton://transfer/<address>?amount=<amount>&text=<comment>
+        base_url = f"ton://transfer/{recipient_address}"
+        
+        # Convert amount to nanotons (1 TON = 1,000,000,000 nanotons)
+        nanotons = int(amount * 1_000_000_000)
+        
+        params = [f"amount={nanotons}"]
+        
+        if comment:
+            # URL encode the comment
+            import urllib.parse
+            encoded_comment = urllib.parse.quote(comment)
+            params.append(f"text={encoded_comment}")
+        
+        payment_link = f"{base_url}?{'&'.join(params)}"
+        
+        return payment_link
+    
+    def validate_ton_address(self, address):
+        """
+        Validate TON wallet address format
+        
+        Args:
+            address: TON wallet address to validate
+            
+        Returns:
+            Boolean indicating if address is valid
+        """
+        if not address or not isinstance(address, str):
+            return False
+        
+        return ((address.startswith('EQ') or address.startswith('UQ')) 
+                and len(address) == 48)
