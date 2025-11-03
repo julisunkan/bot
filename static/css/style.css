@@ -1,8 +1,13 @@
 :root {
-    --bg-color: #ffffff;
+    --bg-color: #f5f7fa;
     --text-color: #212529;
     --card-bg: #ffffff;
     --border-color: #dee2e6;
+    --primary-red: #ff6b6b;
+    --primary-blue: #4ecdc4;
+    --primary-yellow: #ffd93d;
+    --primary-green: #6bcf7f;
+    --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 [data-theme="dark"] {
@@ -51,6 +56,22 @@
 
 body {
     transition: background-color 0.3s ease, color 0.3s ease;
+    background-color: var(--bg-color);
+    padding-bottom: 80px;
+}
+
+/* Mobile App Container */
+.app-container {
+    max-width: 480px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+[data-theme="dark"] .app-container {
+    background: var(--card-bg);
 }
 
 .landing-page {
@@ -218,6 +239,163 @@ code {
     min-height: 100vh;
 }
 
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: white;
+    box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    border-top: 2px solid #f0f0f0;
+}
+
+[data-theme="dark"] .bottom-nav {
+    background: var(--card-bg);
+    border-top-color: var(--border-color);
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #999;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.bottom-nav-item i {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+    transition: all 0.3s ease;
+}
+
+.bottom-nav-item span {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.bottom-nav-item.nav-red:hover,
+.bottom-nav-item.nav-red.active {
+    color: var(--primary-red);
+}
+
+.bottom-nav-item.nav-blue:hover,
+.bottom-nav-item.nav-blue.active {
+    color: var(--primary-blue);
+}
+
+.bottom-nav-item.nav-yellow:hover,
+.bottom-nav-item.nav-yellow.active {
+    color: var(--primary-yellow);
+}
+
+.bottom-nav-item.nav-green:hover,
+.bottom-nav-item.nav-green.active {
+    color: var(--primary-green);
+}
+
+.bottom-nav-item:hover i,
+.bottom-nav-item.active i {
+    transform: scale(1.2);
+}
+
+/* Colorful Cards */
+.card-red {
+    background: linear-gradient(135deg, var(--primary-red), #ff8787);
+    color: white;
+    border: none;
+}
+
+.card-blue {
+    background: linear-gradient(135deg, var(--primary-blue), #70ddd3);
+    color: white;
+    border: none;
+}
+
+.card-yellow {
+    background: linear-gradient(135deg, var(--primary-yellow), #ffe66d);
+    color: #333;
+    border: none;
+}
+
+.card-green {
+    background: linear-gradient(135deg, var(--primary-green), #8be69b);
+    color: white;
+    border: none;
+}
+
+/* Colorful Buttons */
+.btn-colorful-red {
+    background: var(--primary-red);
+    border: none;
+    color: white;
+}
+
+.btn-colorful-red:hover {
+    background: #ff8787;
+    color: white;
+}
+
+.btn-colorful-blue {
+    background: var(--primary-blue);
+    border: none;
+    color: white;
+}
+
+.btn-colorful-blue:hover {
+    background: #70ddd3;
+    color: white;
+}
+
+.btn-colorful-yellow {
+    background: var(--primary-yellow);
+    border: none;
+    color: #333;
+}
+
+.btn-colorful-yellow:hover {
+    background: #ffe66d;
+    color: #333;
+}
+
+.btn-colorful-green {
+    background: var(--primary-green);
+    border: none;
+    color: white;
+}
+
+.btn-colorful-green:hover {
+    background: #8be69b;
+    color: white;
+}
+
+/* Mobile-first adjustments */
+main {
+    padding-bottom: 80px !important;
+}
+
+.navbar-top {
+    max-width: 480px;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .navbar-top {
+    background: var(--card-bg);
+}
+
 @media (max-width: 768px) {
     .landing-page h1 {
         font-size: 2.5rem;
@@ -225,5 +403,13 @@ code {
     
     .navbar-brand {
         font-size: 1.2rem;
+    }
+    
+    .app-container {
+        max-width: 100%;
+    }
+    
+    .bottom-nav {
+        max-width: 100%;
     }
 }
