@@ -35,6 +35,7 @@
         <div class="row">
             <div class="col-md-8 fade-in-up" style="animation-delay: 0.1s;">
                 <div class="feature-card mb-4">
+                    <div id="command-status-message" class="mb-3" style="display: none;"></div>
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="gradient-text mb-0"><i class="bi bi-terminal"></i> Bot Commands</h5>
                         <button class="btn btn-primary-gradient" data-bs-toggle="modal" data-bs-target="#addCommandModal">
@@ -88,6 +89,7 @@
             </div>
 
             <div class="col-md-4">
+                <div id="bot-status-message" class="mb-3" style="display: none;"></div>
                 <div class="feature-card p-4 mb-4">
                     <h5 class="mb-3"><i class="bi bi-gear"></i> Bot Settings</h5>
                     {% if bot.bot_type == 'telegram' %}
@@ -136,11 +138,9 @@
                         <a href="{{ url_for('export_bot', bot_id=bot.id) }}" class="btn btn-outline-success">
                             <i class="bi bi-download"></i> Export Config
                         </a>
-                        <form method="POST" action="{{ url_for('delete_bot', bot_id=bot.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this bot?');">
-                            <button type="submit" class="btn btn-outline-danger">
-                                <i class="bi bi-trash"></i> Delete Bot
-                            </button>
-                        </form>
+                        <button type="button" class="btn btn-outline-danger" onclick="showDeleteBotConfirmation()">
+                            <i class="bi bi-trash"></i> Delete Bot
+                        </button>
                     </div>
                     <div id="webhook-status" class="mt-3"></div>
                 </div>
@@ -170,11 +170,9 @@
                         <a href="{{ url_for('export_bot', bot_id=bot.id) }}" class="btn btn-outline-light">
                             <i class="bi bi-download"></i> Export Bot
                         </a>
-                        <form method="POST" action="{{ url_for('delete_bot', bot_id=bot.id) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to delete this bot?')">
-                                <i class="bi bi-trash"></i> Delete Bot
-                            </button>
-                        </form>
+                        <button type="button" class="btn btn-outline-danger w-100" onclick="showDeleteBotConfirmation()">
+                            <i class="bi bi-trash"></i> Delete Bot
+                        </button>
                     </div>
                 </div>
             </div>
@@ -209,10 +207,10 @@
                     <div class="mb-3">
                         <label for="response_type" class="form-label">Response Type</label>
                         <select class="form-select" id="response_type" name="response_type" onchange="toggleUrlField()" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
-                            <option value="text">Text</option>
-                            <option value="url">External URL (Opens in Bot)</option>
-                            <option value="image">Image</option>
-                            <option value="button">Button</option>
+                            <option value="text" style="background: #2d3139; color: white;">Text</option>
+                            <option value="url" style="background: #2d3139; color: white;">External URL (Opens in Bot)</option>
+                            <option value="image" style="background: #2d3139; color: white;">Image</option>
+                            <option value="button" style="background: #2d3139; color: white;">Button</option>
                         </select>
                     </div>
                     <div class="mb-3" id="response_content_field">
@@ -277,9 +275,10 @@ document.getElementById('saveCommandBtn').addEventListener('click', function() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            showInlineMessage('command-status-message', 'Command saved successfully!', 'success');
+            setTimeout(() => location.reload(), 1500);
         } else {
-            alert('Error: ' + data.error);
+            showInlineMessage('command-status-message', 'Error: ' + data.error, 'danger');
         }
     });
 });
@@ -297,17 +296,30 @@ function editCommand(commandId, command, responseType, responseContent, urlLink)
 }
 
 function deleteCommand(commandId) {
-    if (!confirm('Are you sure you want to delete this command?')) return;
-    
+    const message = `
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Are you sure?</strong> This will permanently delete this command.
+            <div class="mt-2">
+                <button class="btn btn-sm btn-danger me-2" onclick="confirmDeleteCommand(${commandId})">Yes, Delete</button>
+                <button class="btn btn-sm btn-secondary" onclick="hideInlineMessage('command-status-message')">Cancel</button>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    showInlineMessage('command-status-message', message, '', true);
+}
+
+function confirmDeleteCommand(commandId) {
     fetch(`/bot/{{ bot.id }}/command/${commandId}/delete`, {
         method: 'POST'
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            showInlineMessage('command-status-message', 'Command deleted successfully!', 'success');
+            setTimeout(() => location.reload(), 1500);
         } else {
-            alert('Error: ' + data.error);
+            showInlineMessage('command-status-message', 'Error: ' + data.error, 'danger');
         }
     });
 }
@@ -335,8 +347,9 @@ document.getElementById('aiGenerateBtn').addEventListener('click', function() {
     .then(data => {
         if (data.success) {
             document.getElementById('response_content').value = data.response;
+            showInlineMessage('command-status-message', 'AI response generated successfully!', 'success');
         } else {
-            alert(data.error || 'AI generation failed');
+            showInlineMessage('command-status-message', data.error || 'AI generation failed', 'danger');
         }
         btn.disabled = false;
         btn.innerHTML = '<i class="bi bi-magic"></i> AI Generate Response';
@@ -459,9 +472,10 @@ function setupMining(botId) {
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-        alert('Bot link copied to clipboard!');
+        showInlineMessage('bot-status-message', 'Bot link copied to clipboard!', 'success');
     }).catch(err => {
         console.error('Failed to copy:', err);
+        showInlineMessage('bot-status-message', 'Failed to copy to clipboard', 'danger');
     });
 }
 
@@ -493,6 +507,64 @@ function setBotMenu(botId) {
         webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
         console.error('Menu setup error:', error);
     });
+}
+
+function showInlineMessage(elementId, message, type = 'info', isRaw = false) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    if (isRaw) {
+        element.innerHTML = message;
+    } else {
+        element.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
+    element.style.display = 'block';
+    
+    // Auto-hide success messages after 5 seconds
+    if (type === 'success' && !isRaw) {
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, 5000);
+    }
+}
+
+function hideInlineMessage(elementId) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.style.display = 'none';
+        element.innerHTML = '';
+    }
+}
+
+function showDeleteBotConfirmation() {
+    const message = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading">⚠️ Delete Bot</h5>
+            <p>Are you sure you want to delete <strong>{{ bot.bot_name }}</strong>?</p>
+            <p class="mb-0 small">This action cannot be undone. All commands and settings will be permanently deleted.</p>
+            <hr>
+            <div class="d-flex gap-2">
+                <form method="POST" action="{{ url_for('delete_bot', bot_id=bot.id) }}" class="flex-grow-1">
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="bi bi-trash"></i> Yes, Delete Bot
+                    </button>
+                </form>
+                <button class="btn btn-secondary" onclick="hideInlineMessage('bot-status-message')">
+                    Cancel
+                </button>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    showInlineMessage('bot-status-message', message, '', true);
+    
+    // Scroll to message
+    document.getElementById('bot-status-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 </script>
 {% endblock %}

@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Dashboard - BotForge Pro{% endblock %}
@@ -124,11 +123,9 @@
                                         <a href="{{ url_for('export_bot', bot_id=bot.id) }}" class="btn btn-sm btn-outline-light">
                                             <i class="bi bi-download"></i>
                                         </a>
-                                        <form method="POST" action="{{ url_for('delete_bot', bot_id=bot.id) }}" style="display:inline;">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this bot?')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="showDeleteConfirmation({{ bot.id }}, '{{ bot.bot_name }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -152,7 +149,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Floating Elements -->
     <div class="floating-element floating-1">
         <i class="bi bi-telegram"></i>
@@ -162,3 +159,46 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<div id="delete-confirmation-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 400px; width: 90%;">
+    <div id="delete-modal-content"></div>
+</div>
+<div id="delete-confirmation-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9998;"></div>
+
+<script>
+function showDeleteConfirmation(botId, botName) {
+    const modal = document.getElementById('delete-confirmation-modal');
+    const backdrop = document.getElementById('delete-confirmation-backdrop');
+    const content = document.getElementById('delete-modal-content');
+
+    content.innerHTML = `
+        <h5 class="mb-3">⚠️ Delete Bot</h5>
+        <p>Are you sure you want to delete <strong>${botName}</strong>?</p>
+        <p class="text-muted small">This action cannot be undone.</p>
+        <div class="d-flex gap-2 mt-4">
+            <form method="POST" action="/bot/${botId}/delete" class="flex-grow-1">
+                <button type="submit" class="btn btn-danger w-100">
+                    <i class="bi bi-trash"></i> Yes, Delete
+                </button>
+            </form>
+            <button class="btn btn-secondary" onclick="hideDeleteConfirmation()">
+                Cancel
+            </button>
+        </div>
+    `;
+
+    modal.style.display = 'block';
+    backdrop.style.display = 'block';
+}
+
+function hideDeleteConfirmation() {
+    document.getElementById('delete-confirmation-modal').style.display = 'none';
+    document.getElementById('delete-confirmation-backdrop').style.display = 'none';
+}
+
+document.getElementById('delete-confirmation-backdrop').addEventListener('click', hideDeleteConfirmation);
+</script>
+
+<script>
+</script>
