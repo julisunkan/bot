@@ -213,7 +213,7 @@ function setupWebhook(botId) {
     const webhookStatusDiv = document.getElementById('webhook-status');
     webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up webhook...';
 
-    fetch(`/api/bots/${botId}/setup-webhook`, {
+    fetch(`/bot/${botId}/setup-webhook`, {
         method: 'POST'
     })
     .then(response => response.json())
