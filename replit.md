@@ -12,7 +12,8 @@ The application is built on Flask 3.0.0 and utilizes SQLite for its database, ch
 Key technical implementations and features include:
 - **User Authentication:** Secure user authentication with anonymous account generation, username/password registration, and session management.
 - **Bot Management:** Core functionality for creating, cloning, and deleting Telegram bots, managing bot commands, and secure encryption of bot tokens using Fernet.
-- **Template System:** A robust template library with pre-built bot templates (e.g., Airdrop, Payment, Referral, AI Chatbot, Tap-to-Earn Mining Bot). Includes advanced template management features like editing via JSON editor, importing/exporting templates as ZIP files, and applying templates to existing bots.
+- **Web App Deployment:** Webhook-enabled bot deployment with web app interfaces accessible via shortened URLs. Includes automatic URL shortening via TinyURL API with graceful fallback, structured logging (INFO/WARNING/ERROR levels), and copy-friendly deployment URLs displayed as plain text with visual feedback for shortening status.
+- **Template System:** A robust template library with pre-built bot templates (e.g., Airdrop, Payment, Referral, AI Chatbot, Tap-to-Earn Mining Bot). All 8 templates include standardized webhook and web app button configurations. Includes advanced template management features like editing via JSON editor, importing/exporting templates as ZIP files, and applying templates to existing bots.
 - **AI Integration:** Integration with the Gemini API for features like auto-reply generation, AI-suggested command responses, and intent detection, with graceful fallback mechanisms.
 - **Cryptocurrency Integration:** Real-time cryptocurrency price tracking and trending coin display powered by the CoinGecko API.
 - **Analytics Dashboard:** Provides bot statistics, cryptocurrency price tracking, and visual charts for monitoring performance.
@@ -23,7 +24,7 @@ The project structure is organized with `app.py` as the main application, a `sta
 
 ## External Dependencies
 - **Flask 3.0.0**: Web framework.
-- **requests 2.31.0**: HTTP requests.
+- **requests 2.31.0**: HTTP requests and TinyURL API integration.
 - **werkzeug 3.0.1**: Password hashing.
 - **cryptography 41.0.7**: Token encryption (Fernet).
 - **openpyxl 3.1.2**: Excel export.
@@ -31,3 +32,4 @@ The project structure is organized with `app.py` as the main application, a `sta
 - **google-generativeai 0.3.2**: Gemini AI integration.
 - **CoinGecko API**: Real-time cryptocurrency prices.
 - **Telegram Bot API**: Bot token verification and interaction.
+- **TinyURL API**: Automatic URL shortening for deployed web apps.
