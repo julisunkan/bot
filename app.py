@@ -1157,6 +1157,17 @@ def mining_settings(bot_id):
 def mining_app():
     return render_template('mining_app.html')
 
+@app.route('/webapp/<int:bot_id>')
+def webapp(bot_id):
+    bot = db.get_bot(bot_id)
+    if not bot or not bot['is_active']:
+        return "Bot not found or inactive", 404
+    
+    bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+    webapp_data = bot_config.get('webapp_data', {})
+    
+    return render_template('webapp.html', bot=bot, bot_id=bot_id, webapp_data=webapp_data)
+
 @app.route('/api/mining/init')
 def mining_init():
     try:
