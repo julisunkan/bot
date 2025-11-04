@@ -197,6 +197,104 @@
             </div>
         </div>
 
+        <script>
+        // Common JavaScript functions for all bot types
+        function setupWebhook(botId) {
+            fetch(`/bot/${botId}/setup-webhook`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    BotForge.showNotification('Webhook configured successfully!', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    BotForge.showNotification(data.error || 'Failed to setup webhook', 'danger');
+                }
+            })
+            .catch(error => {
+                BotForge.showNotification('Error: ' + error.message, 'danger');
+            });
+        }
+
+        function setBotMenu(botId) {
+            fetch(`/bot/${botId}/set-menu`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    BotForge.showNotification('Bot menu updated successfully!', 'success');
+                } else {
+                    BotForge.showNotification(data.error || 'Failed to set menu', 'danger');
+                }
+            })
+            .catch(error => {
+                BotForge.showNotification('Error: ' + error.message, 'danger');
+            });
+        }
+
+        function deployWebApp(botId) {
+            fetch(`/bot/${botId}/deploy-webapp`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    BotForge.showNotification('Web app deployed successfully!', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    BotForge.showNotification(data.error || 'Failed to deploy web app', 'danger');
+                }
+            })
+            .catch(error => {
+                BotForge.showNotification('Error: ' + error.message, 'danger');
+            });
+        }
+
+        function setupGame(botId) {
+            fetch(`/bot/${botId}/setup-game`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    BotForge.showNotification('Game bot activated successfully!', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    BotForge.showNotification(data.error || 'Failed to setup game bot', 'danger');
+                }
+            })
+            .catch(error => {
+                BotForge.showNotification('Error: ' + error.message, 'danger');
+            });
+        }
+
+        function setupMining(botId) {
+            fetch(`/bot/${botId}/setup-mining`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    BotForge.showNotification('Mining bot activated successfully!', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    BotForge.showNotification(data.error || 'Failed to setup mining bot', 'danger');
+                }
+            })
+            .catch(error => {
+                BotForge.showNotification('Error: ' + error.message, 'danger');
+            });
+        }
+
+        function showDeleteBotConfirmation() {
+            if (confirm('Are you sure you want to delete this bot? This action cannot be undone.')) {
+                document.querySelector('form[action*="/delete"]').submit();
+            }
+        }
+        </script>
+
         {% if bot.bot_type == 'mining' %}
         <!-- Shop Items Management -->
         <div class="row mt-4">
@@ -781,101 +879,6 @@
                 });
             });
         });
-
-    function setupGame(botId) {
-        fetch(`/bot/${botId}/setup-game`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                BotForge.showNotification('Game bot activated successfully!', 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                BotForge.showNotification(data.error || 'Failed to setup game bot', 'danger');
-            }
-        })
-        .catch(error => {
-            BotForge.showNotification('Error: ' + error.message, 'danger');
-        });
-    }
-
-    function setupMining(botId) {
-        fetch(`/bot/${botId}/setup-mining`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                BotForge.showNotification('Mining bot activated successfully!', 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                BotForge.showNotification(data.error || 'Failed to setup mining bot', 'danger');
-            }
-        })
-        .catch(error => {
-            BotForge.showNotification('Error: ' + error.message, 'danger');
-        });
-    }
-
-    function setupWebhook(botId) {
-        fetch(`/bot/${botId}/setup-webhook`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                BotForge.showNotification('Webhook configured successfully!', 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                BotForge.showNotification(data.error || 'Failed to setup webhook', 'danger');
-            }
-        })
-        .catch(error => {
-            BotForge.showNotification('Error: ' + error.message, 'danger');
-        });
-    }
-
-    function setBotMenu(botId) {
-        fetch(`/bot/${botId}/set-menu`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                BotForge.showNotification('Bot menu updated successfully!', 'success');
-            } else {
-                BotForge.showNotification(data.error || 'Failed to set menu', 'danger');
-            }
-        })
-        .catch(error => {
-            BotForge.showNotification('Error: ' + error.message, 'danger');
-        });
-    }
-
-    function deployWebApp(botId) {
-        fetch(`/bot/${botId}/deploy-webapp`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                BotForge.showNotification('Web app deployed successfully!', 'success');
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                BotForge.showNotification(data.error || 'Failed to deploy web app', 'danger');
-            }
-        })
-        .catch(error => {
-            BotForge.showNotification('Error: ' + error.message, 'danger');
-        });
-    }
-
-    function showDeleteBotConfirmation() {
-        if (confirm('Are you sure you want to delete this bot? This action cannot be undone.')) {
-            document.querySelector('form[action*="/delete"]').submit();
-        }
-    }
         </script>
         {% endif %}
 
