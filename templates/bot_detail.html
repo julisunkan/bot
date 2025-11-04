@@ -711,10 +711,10 @@
             document.getElementById('edit_response_type').value = responseType;
             document.getElementById('edit_response_content').value = responseContent;
             document.getElementById('edit_url_link').value = urlLink || '';
-            
+
             // Show/hide URL field based on response type
             toggleUrlField('edit');
-            
+
             new bootstrap.Modal(document.getElementById('editCommandModal')).show();
         }
 
@@ -764,7 +764,7 @@
         function toggleUrlField(prefix = '') {
             const responseType = document.getElementById(prefix ? `${prefix}_response_type` : 'response_type');
             const urlField = document.getElementById(prefix ? `${prefix}_url_field` : 'url_field');
-            
+
             if (responseType && urlField) {
                 urlField.style.display = responseType.value === 'url' ? 'block' : 'none';
             }
