@@ -195,6 +195,7 @@ class Database:
                 referral_code TEXT UNIQUE,
                 referred_by INTEGER,
                 referral_earnings REAL DEFAULT 0,
+                is_banned INTEGER DEFAULT 0,
                 last_tap_time TIMESTAMP,
                 last_energy_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

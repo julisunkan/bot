@@ -1117,7 +1117,88 @@ def mining_settings(bot_id):
         return redirect(url_for('dashboard'))
 
     if bot['bot_type'] != 'mining':
+        flash('This is not a mining bot', 'warning')
+        return redirect(url_for('bot_detail', bot_id=bot_id))
 
+    if request.method == 'POST':
+        try:
+            bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+
+            # Get TON wallet address for receiving payments
+            owner_ton_wallet = request.form.get('owner_ton_wallet', '').strip()
+
+            # Validate TON wallet if provided
+            if owner_ton_wallet and not ((owner_ton_wallet.startswith('UQ') or owner_ton_wallet.startswith('EQ')) and len(owner_ton_wallet) == 48):
+                flash('Invalid TON wallet address format. Must start with UQ or EQ and be 48 characters.', 'danger')
+                return redirect(url_for('mining_settings', bot_id=bot_id))
+
+            bot_config['owner_ton_wallet'] = owner_ton_wallet
+            bot_config['mining_settings'] = {
+                'tap_reward': int(request.form.get('tap_reward', 1)),
+                'max_energy': int(request.form.get('max_energy', 1000)),
+                'energy_recharge_rate': int(request.form.get('energy_recharge_rate', 1)),
+                'referral_bonus': int(request.form.get('referral_bonus', 500)),
+                'min_withdrawal': int(request.form.get('min_withdrawal', 10000)),
+                'enable_shop': request.form.get('enable_shop') == 'on',
+                'enable_wallet': request.form.get('enable_wallet') == 'on',
+                'enable_tasks': request.form.get('enable_tasks') == 'on',
+                'enable_leaderboard': request.form.get('enable_leaderboard') == 'on',
+                'enable_daily_reward': request.form.get('enable_daily_reward') == 'on',
+                'daily_reward_amount': int(request.form.get('daily_reward_amount', 100)),
+                'boost_energy_cost': int(request.form.get('boost_energy_cost', 500)),
+                'boost_multitap_cost': int(request.form.get('boost_multitap_cost', 1000)),
+                'boost_recharge_cost': int(request.form.get('boost_recharge_cost', 750)),
+                'coin_price_usd': float(request.form.get('coin_price_usd', 0.001)),
+                'withdrawal_exchange_rate': int(request.form.get('withdrawal_exchange_rate', 1000000)),
+                # UI Customization
+                'primary_color': request.form.get('primary_color', '#667eea'),
+                'secondary_color': request.form.get('secondary_color', '#764ba2'),
+                'button_color': request.form.get('button_color', '#ffd700'),
+                'text_color': request.form.get('text_color', '#ffffff'),
+                'font_family': request.form.get('font_family', 'system'),
+                'coin_emoji': request.form.get('coin_emoji', '🪙'),
+                # Feature Visibility
+                'show_mine_tab': request.form.get('show_mine_tab') == 'on',
+                'show_boost_tab': request.form.get('show_boost_tab') == 'on',
+                'show_friends_tab': request.form.get('show_friends_tab') == 'on',
+                'show_stats_panel': request.form.get('show_stats_panel') == 'on',
+            }
+
+            conn = db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute('UPDATE bots SET bot_config = ? WHERE id = ?', (json.dumps(bot_config), bot_id))
+            conn.commit()
+            conn.close()
+
+            flash('Mining settings updated successfully!', 'success')
+            return redirect(url_for('mining_settings', bot_id=bot_id))
+        except Exception as e:
+            flash(f'Error updating settings: {str(e)}', 'danger')
+
+    bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
+    mining_settings = bot_config.get('mining_settings', {
+        'tap_reward': 1,
+        'max_energy': 1000,
+        'energy_recharge_rate': 1,
+        'referral_bonus': 500,
+        'min_withdrawal': 10000,
+        'enable_shop': True,
+        'enable_wallet': True,
+        'enable_tasks': True,
+        'enable_leaderboard': True,
+        'enable_daily_reward': True,
+        'daily_reward_amount': 100,
+        'boost_energy_cost': 500,
+        'boost_multitap_cost': 1000,
+        'boost_recharge_cost': 750,
+        'coin_price_usd': 0.001,
+    })
+    owner_ton_wallet = bot_config.get('owner_ton_wallet', '')
+
+    shop_items = db.get_bot_shop_items(bot_id)
+    tasks_config = db.get_bot_tasks_config(bot_id)
+    players = db.get_bot_players(bot_id)
+    return render_template('mining_settings.html', bot=bot, settings=mining_settings, owner_ton_wallet=owner_ton_wallet, shop_items=shop_items, tasks_config=tasks_config, players=players)
 
 @app.route('/bot/<int:bot_id>/toggle-ban', methods=['POST'])
 @login_required
