@@ -792,6 +792,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addCommandModal'));
+                    if (modal) modal.hide();
                     BotForge.showNotification('Command added successfully!', 'success');
                     setTimeout(() => location.reload(), 1000);
                 } else {
@@ -828,6 +830,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editCommandModal'));
+                    if (modal) modal.hide();
                     BotForge.showNotification('Command updated successfully!', 'success');
                     setTimeout(() => location.reload(), 1000);
                 } else {
@@ -891,7 +895,7 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="addCommandForm">
+                        <form id="addCommandForm" onsubmit="event.preventDefault(); addCommand();">
                             <div class="mb-3">
                                 <label class="form-label">Command (without /)</label>
                                 <input type="text" class="form-control" name="command" required placeholder="start">
@@ -930,7 +934,7 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <form id="editCommandForm">
+                        <form id="editCommandForm" onsubmit="event.preventDefault(); updateCommand();">
                             <input type="hidden" id="edit_command_id" name="command_id">
                             <div class="mb-3">
                                 <label class="form-label">Command (without /)</label>
