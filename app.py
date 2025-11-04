@@ -312,7 +312,8 @@ def set_bot_menu(bot_id):
         if result and result.get('ok'):
             return jsonify({'success': True, 'message': 'Menu updated successfully'})
         else:
-            return jsonify({'success': False, 'error': result.get('description', 'Failed to set menu')})
+            error_msg = result.get('description', 'Failed to set menu') if result else 'Failed to set menu'
+            return jsonify({'success': False, 'error': error_msg})
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -968,7 +969,8 @@ def setup_webhook(bot_id):
         if result and result.get('ok'):
             return jsonify({'success': True, 'webhook_url': webhook_url})
         else:
-            return jsonify({'success': False, 'error': result.get('description', 'Failed to set webhook')})
+            error_msg = result.get('description', 'Failed to set webhook') if result else 'Failed to set webhook'
+            return jsonify({'success': False, 'error': error_msg})
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -1527,7 +1529,12 @@ def mining_init():
             return jsonify({'success': False, 'error': 'Invalid user ID'}), 401
 
         player = db.get_or_create_mining_player(bot_id, telegram_user_id, username, first_name)
+        if not player:
+            return jsonify({'success': False, 'error': 'Failed to create player'}), 500
+        
         player = db.update_player_energy(player['id'])
+        if not player:
+            return jsonify({'success': False, 'error': 'Failed to update player energy'}), 500
 
         session_token = secrets.token_urlsafe(32)
         db.create_game_session(player['id'], session_token)
