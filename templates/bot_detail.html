@@ -179,20 +179,6 @@
                 </div>
 
                 <div class="feature-card fade-in-up" style="animation-delay: 0.3s;">
-                    <h5 class="gradient-text mb-4"><i class="bi bi-info-circle"></i> Bot Information</h5>
-                    <p><strong class="text-white">Name:</strong> <span class="text-white-50">{{ bot.bot_name }}</span></p>
-                    <p><strong class="text-white">Commands:</strong> <span class="text-white-50">{{ commands|length }} (all editable)</span></p>
-                    <p><strong class="text-white">Status:</strong> <span class="badge bg-success">Active</span></p>
-                    <p class="mb-0"><strong class="text-white">Created:</strong><br><span class="text-white-50">{{ bot.created_at }}</span></p>
-
-                    <hr style="border-color: rgba(255,255,255,0.1);">
-                    <h6 class="text-white-50 mb-2">ℹ️ Note:</h6>
-                    <small class="text-white-50">
-                        All commands including /menu, /profile, and /donate are fully editable and deletable. Customize them to match your bot's needs!
-                    </small>
-                </div>
-
-                <div class="feature-card fade-in-up" style="animation-delay: 0.3s;">
                     <h5 class="gradient-text mb-4"><i class="bi bi-lightbulb"></i> Quick Actions</h5>
                     <div class="d-grid gap-2">
                         <button class="btn btn-primary-gradient" data-bs-toggle="modal" data-bs-target="#addCommandModal">
@@ -208,433 +194,493 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Floating Elements -->
-    <div class="floating-element floating-1">
-        <i class="bi bi-robot"></i>
-    </div>
-    <div class="floating-element floating-2">
-        <i class="bi bi-stars"></i>
-    </div>
-</div>
-
-<div class="modal fade" id="addCommandModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content" style="background: #2d3139; color: white;">
-            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <h5 class="modal-title gradient-text"><i class="bi bi-plus-circle"></i> Add Command</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="addCommandForm">
-                    <div class="mb-3">
-                        <label for="command" class="form-label">Command Name</label>
-                        <div class="input-group">
-                            <span class="input-group-text" style="background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: white;">/</span>
-                            <input type="text" class="form-control" id="command" name="command" required placeholder="start" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
-                        </div>
+        {% if bot.bot_type == 'mining' %}
+        <!-- Shop Items Management -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="feature-card fade-in-up">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="gradient-text mb-0"><i class="bi bi-shop"></i> Shop Items</h5>
+                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addShopItemModal">
+                            <i class="bi bi-plus-circle"></i> Add Item
+                        </button>
                     </div>
-                    <div class="mb-3">
-                        <label for="response_type" class="form-label">Response Type</label>
-                        <select class="form-select" id="response_type" name="response_type" onchange="toggleUrlField()" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
-                            <option value="text" style="background: #2d3139; color: white;">Text</option>
-                            <option value="url" style="background: #2d3139; color: white;">External URL (Opens in Bot)</option>
-                            <option value="image" style="background: #2d3139; color: white;">Image</option>
-                            <option value="button" style="background: #2d3139; color: white;">Button</option>
-                        </select>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Price</th>
+                                    <th>Reward</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shopItemsList">
+                                {% for item in shop_items %}
+                                <tr>
+                                    <td>{{ item.item_name }}</td>
+                                    <td>{{ item.price }} {{ item.currency }}</td>
+                                    <td>{{ item.reward_amount }} {{ item.reward_type }}</td>
+                                    <td><span class="badge bg-{{ 'success' if item.is_active else 'secondary' }}">{{ 'Active' if item.is_active else 'Inactive' }}</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" onclick="editShopItem({{ item.id }}, '{{ item.item_name }}', '{{ item.item_description }}', {{ item.price }}, '{{ item.currency }}', '{{ item.reward_type }}', {{ item.reward_amount }}, {{ item.is_active }})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteShopItem({{ item.id }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="mb-3" id="response_content_field">
-                        <label for="response_content" class="form-label">Response Content</label>
-                        <textarea class="form-control" id="response_content" name="response_content" rows="4" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;"></textarea>
-                        <small class="text-white-50">For URL type, this will be the button text</small>
-                    </div>
-                    <div class="mb-3" id="url_link_field" style="display: none;">
-                        <label for="url_link" class="form-label">External URL</label>
-                        <input type="url" class="form-control" id="url_link" name="url_link" placeholder="https://example.com" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
-                        <small class="text-white-50">The URL will open inside the Telegram bot</small>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
-                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary-gradient" id="saveCommandBtn">
-                    <i class="bi bi-check"></i> Save Command
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-let editingCommandId = null;
-
-function toggleUrlField() {
-    const responseType = document.getElementById('response_type').value;
-    const urlField = document.getElementById('url_link_field');
-    const contentField = document.getElementById('response_content_field');
-    const contentInput = document.getElementById('response_content');
-
-    if (responseType === 'url') {
-        urlField.style.display = 'block';
-        contentInput.required = false;
-        contentInput.placeholder = 'Button text (e.g., "Open Website")';
-    } else {
-        urlField.style.display = 'none';
-        contentInput.required = true;
-        contentInput.placeholder = '';
-    }
-}
-
-document.getElementById('saveCommandBtn').addEventListener('click', function() {
-    const form = document.getElementById('addCommandForm');
-    const formData = new FormData(form);
-
-    const url = editingCommandId 
-        ? `/bot/{{ bot.id }}/command/${editingCommandId}/edit`
-        : '{{ url_for("add_command", bot_id=bot.id) }}';
-
-    fetch(url, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showInlineMessage('command-status-message', 'Command saved successfully!', 'success');
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showInlineMessage('command-status-message', 'Error: ' + data.error, 'danger');
-        }
-    });
-});
-
-function editCommand(commandId, command, responseType, responseContent, urlLink) {
-    editingCommandId = commandId;
-    document.getElementById('command').value = command;
-    document.getElementById('response_type').value = responseType;
-    document.getElementById('response_content').value = responseContent;
-    document.getElementById('url_link').value = urlLink || '';
-    toggleUrlField();
-    document.querySelector('#addCommandModal .modal-title').innerHTML = '<i class="bi bi-pencil-circle"></i> Edit Command';
-    document.getElementById('saveCommandBtn').innerHTML = '<i class="bi bi-check"></i> Update Command';
-    new bootstrap.Modal(document.getElementById('addCommandModal')).show();
-}
-
-function deleteCommand(commandId) {
-    const message = `
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <strong>Are you sure?</strong> This will permanently delete this command.
-            <div class="mt-2">
-                <button class="btn btn-sm btn-danger me-2" onclick="confirmDeleteCommand(${commandId})">Yes, Delete</button>
-                <button class="btn btn-sm btn-secondary" onclick="hideInlineMessage('command-status-message')">Cancel</button>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    `;
-    showInlineMessage('command-status-message', message, '', true);
-}
-
-function confirmDeleteCommand(commandId) {
-    fetch(`/bot/{{ bot.id }}/command/${commandId}/delete`, {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showInlineMessage('command-status-message', 'Command deleted successfully!', 'success');
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showInlineMessage('command-status-message', 'Error: ' + data.error, 'danger');
-        }
-    });
-}
-
-document.getElementById('addCommandModal').addEventListener('hidden.bs.modal', function() {
-    editingCommandId = null;
-    document.getElementById('addCommandForm').reset();
-    document.querySelector('#addCommandModal .modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> Add Command';
-    document.getElementById('saveCommandBtn').innerHTML = '<i class="bi bi-check"></i> Save Command';
-    toggleUrlField();
-});
-
-function setupWebhook(botId) {
-    const webhookStatusDiv = document.getElementById('webhook-status');
-    webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up webhook...';
-
-    fetch(`/bot/${botId}/setup-webhook`, {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            webhookStatusDiv.innerHTML = '<div class="alert alert-success mb-0">Webhook setup successful! Your bot is now live.</div>';
-        } else {
-            webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error setting up webhook: ${data.error}</div>`;
-        }
-    })
-    .catch(error => {
-        webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
-        console.error('Webhook setup error:', error);
-    });
-}
-
-function deployWebApp(botId) {
-    const webhookStatusDiv = document.getElementById('webhook-status');
-    webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Deploying web app...';
-
-    fetch(`/bot/${botId}/deploy-webapp`, {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const shortenedNote = data.shortened ? 
-                '<small class="mt-2 d-block">✨ URL shortened for easy sharing!</small>' : 
-                '<small class="mt-2 d-block text-warning">⚠️ URL shortening unavailable, using full URL</small>';
-            
-            webhookStatusDiv.innerHTML = `
-                <div class="alert alert-success mb-0">
-                    <strong>✅ Web App Deployed!</strong><br>
-                    🔗 URL: <code class="bg-dark text-white px-2 py-1 rounded" style="user-select: all;">${data.webapp_url}</code><br>
-                    <button class="btn btn-sm btn-outline-light mt-2" onclick="copyToClipboard('${data.webapp_url}')">
-                        <i class="bi bi-clipboard"></i> Copy URL
-                    </button><br>
-                    ${shortenedNote}
-                </div>`;
-        } else {
-            webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
-        }
-    })
-    .catch(error => {
-        webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
-        console.error('Deploy error:', error);
-    });
-}
-
-function setupGame(botId) {
-    const webhookStatusDiv = document.getElementById('webhook-status');
-    webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up game...';
-
-    fetch(`/bot/${botId}/setup-game`, {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            webhookStatusDiv.innerHTML = `
-                <div class="alert alert-success mb-0">
-                    <strong>🎮 Game Bot Active!</strong><br>
-                    Players can now start playing your game!<br>
-                    <small>Use /play command in Telegram to start</small>
-                </div>`;
-        } else {
-            webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
-        }
-    })
-    .catch(error => {
-        webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
-        console.error('Game setup error:', error);
-    });
-}
-
-function setupMining(botId) {
-    const webhookStatusDiv = document.getElementById('webhook-status');
-    webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up mining bot...';
-
-    fetch(`/bot/${botId}/setup-mining`, {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            let botLinkHtml = '';
-            if (data.bot_link) {
-                botLinkHtml = `
-                    <hr>
-                    <strong>🔗 Bot Link:</strong><br>
-                    <a href="${data.bot_link}" target="_blank" class="text-white fw-bold">${data.bot_link}</a><br>
-                    <button class="btn btn-sm btn-outline-light mt-2" onclick="copyToClipboard('${data.bot_link}')">
-                        <i class="bi bi-clipboard"></i> Copy Link
-                    </button>
-                `;
-            }
-
-            webhookStatusDiv.innerHTML = `
-                <div class="alert alert-success mb-0">
-                    <strong>⛏️ Mining Bot Ready!</strong><br>
-                    💎 Tap reward: 1 coin per tap<br>
-                    ⚡ Energy: 1000/1000<br>
-                    🎁 Referral bonus: 500 coins<br>
-                    ${botLinkHtml}
-                    <small class="d-block mt-2">Share your bot link to start mining!</small>
-                </div>`;
-        } else {
-            webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
-        }
-    })
-    .catch(error => {
-        webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
-        console.error('Mining setup error:', error);
-    });
-}
-
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showInlineMessage('bot-status-message', 'Bot link copied to clipboard!', 'success');
-    }).catch(err => {
-        console.error('Failed to copy:', err);
-        showInlineMessage('bot-status-message', 'Failed to copy to clipboard', 'danger');
-    });
-}
-
-function setBotMenu(botId) {
-    const webhookStatusDiv = document.getElementById('webhook-status');
-    webhookStatusDiv.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Setting up menu...';
-
-    fetch(`/bot/${botId}/set-menu`, {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            webhookStatusDiv.innerHTML = `
-                <div class="alert alert-success mb-0">
-                    <strong>✅ Bot Menu Set!</strong><br>
-                    Your bot now has an interactive command menu!<br>
-                    <small>Users can tap the menu button (☰) to see all commands.</small><br><br>
-                    <strong>Built-in commands added:</strong><br>
-                    • /menu - Interactive command buttons<br>
-                    • /profile - View user details<br>
-                    • /donate - Support developer
-                </div>`;
-        } else {
-            webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
-        }
-    })
-    .catch(error => {
-        webhookStatusDiv.innerHTML = '<div class="alert alert-danger mb-0">An unexpected error occurred. Please try again.</div>';
-        console.error('Menu setup error:', error);
-    });
-}
-
-function showInlineMessage(elementId, message, type = 'info', isRaw = false) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    if (isRaw) {
-        element.innerHTML = message;
-    } else {
-        element.innerHTML = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-    }
-    element.style.display = 'block';
-
-    // Auto-hide success messages after 5 seconds
-    if (type === 'success' && !isRaw) {
-        setTimeout(() => {
-            element.style.display = 'none';
-        }, 5000);
-    }
-}
-
-function hideInlineMessage(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) {
-        element.style.display = 'none';
-        element.innerHTML = '';
-    }
-}
-
-function showDeleteBotConfirmation() {
-    const message = `
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <h5 class="alert-heading">⚠️ Delete Bot</h5>
-            <p>Are you sure you want to delete <strong>{{ bot.bot_name }}</strong>?</p>
-            <p class="mb-0 small">This action cannot be undone. All commands and settings will be permanently deleted.</p>
-            <hr>
-            <div class="d-flex gap-2">
-                <form method="POST" action="{{ url_for('delete_bot', bot_id=bot.id) }}" class="flex-grow-1">
-                    <button type="submit" class="btn btn-danger w-100">
-                        <i class="bi bi-trash"></i> Yes, Delete Bot
-                    </button>
-                </form>
-                <button class="btn btn-secondary" onclick="hideInlineMessage('bot-status-message')">
-                    Cancel
-                </button>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    `;
-    showInlineMessage('bot-status-message', message, '', true);
-
-    // Scroll to message
-    document.getElementById('bot-status-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-</script>
-
-<!-- Apply Template Modal -->
-<div class="modal fade" id="applyTemplateModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="background: #2d3139; color: white;">
-            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <h5 class="modal-title gradient-text">Apply Template to Bot</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Select a template to apply to this bot. This will replace all current commands with the template's commands.</p>
-                <div class="alert alert-warning" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3);">
-                    <i class="bi bi-exclamation-triangle"></i> <strong>Warning:</strong> This will delete all existing commands for this bot. This action cannot be undone.
                 </div>
-                
-                <div class="row">
-                    {% for template in templates %}
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-                            <div class="card-body">
-                                <h6 class="card-title">
-                                    {% if template.category == 'crypto' %}
-                                    <i class="bi bi-currency-bitcoin"></i>
-                                    {% elif template.category == 'web3' %}
-                                    <i class="bi bi-globe"></i>
-                                    {% elif template.category == 'ai' %}
-                                    <i class="bi bi-robot"></i>
-                                    {% elif template.category == 'marketing' %}
-                                    <i class="bi bi-megaphone"></i>
-                                    {% elif template.category == 'game' %}
-                                    <i class="bi bi-controller"></i>
-                                    {% elif template.category == 'mining' %}
-                                    <i class="bi bi-coin"></i>
-                                    {% else %}
-                                    <i class="bi bi-box"></i>
-                                    {% endif %}
-                                    {{ template.title }}
-                                </h6>
-                                <span class="badge bg-primary">{{ template.category }}</span>
-                                <div class="mt-2">
-                                    <a href="{{ url_for('apply_template_to_bot', bot_id=bot.id, template_id=template.id) }}" 
-                                       class="btn btn-sm btn-primary-gradient w-100"
-                                       onclick="return confirm('Are you sure you want to apply this template? All existing commands will be deleted.')">
-                                        Apply Template
-                                    </a>
+            </div>
+        </div>
+
+        <!-- Boosts Management -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="feature-card fade-in-up">
+                    <h5 class="gradient-text mb-3"><i class="bi bi-rocket"></i> Boost Configuration</h5>
+                    <p class="text-white-50 mb-3">Configure boost costs in the <a href="{{ url_for('mining_settings', bot_id=bot.id) }}">Mining Settings</a> page.</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-dark border-secondary">
+                                <div class="card-body">
+                                    <h6>⚡ Energy Limit</h6>
+                                    <p class="mb-0">Cost: {{ bot_config.get('mining_settings', {}).get('boost_energy_cost', 500) }} coins</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-dark border-secondary">
+                                <div class="card-body">
+                                    <h6>💎 Multi-Tap</h6>
+                                    <p class="mb-0">Cost: {{ bot_config.get('mining_settings', {}).get('boost_multitap_cost', 1000) }} coins</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-dark border-secondary">
+                                <div class="card-body">
+                                    <h6>⚡ Recharge Speed</h6>
+                                    <p class="mb-0">Cost: {{ bot_config.get('mining_settings', {}).get('boost_recharge_cost', 750) }} coins</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
             </div>
-            <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
-                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+        </div>
+
+        <!-- Tasks Management -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="feature-card fade-in-up">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="gradient-text mb-0"><i class="bi bi-list-task"></i> Tasks</h5>
+                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                            <i class="bi bi-plus-circle"></i> Add Task
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Type</th>
+                                    <th>Requirement</th>
+                                    <th>Reward</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasksList">
+                                {% for task in tasks_config %}
+                                <tr>
+                                    <td>{{ task.task_name }}</td>
+                                    <td><span class="badge bg-primary">{{ task.task_type }}</span></td>
+                                    <td>{{ task.requirement_value or 'N/A' }}</td>
+                                    <td>{{ task.reward_amount }} {{ task.reward_type }}</td>
+                                    <td><span class="badge bg-{{ 'success' if task.is_active else 'secondary' }}">{{ 'Active' if task.is_active else 'Inactive' }}</span></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" onclick="editTask({{ task.id }}, '{{ task.task_name }}', '{{ task.task_description }}', '{{ task.task_type }}', {{ task.reward_amount }}, '{{ task.reward_type }}', {{ task.requirement_value or 0 }}, {{ task.is_active }})">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteTask({{ task.id }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Modals -->
+        <div class="modal fade" id="addShopItemModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Shop Item</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addShopItemForm">
+                            <div class="mb-3">
+                                <label class="form-label">Item Name</label>
+                                <input type="text" class="form-control" name="item_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="item_description" rows="2"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Price</label>
+                                    <input type="number" step="0.01" class="form-control" name="price" required>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Currency</label>
+                                    <select class="form-control" name="currency">
+                                        <option value="TON">TON</option>
+                                        <option value="USDT">USDT</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Reward Amount</label>
+                                    <input type="number" class="form-control" name="reward_amount" required>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Reward Type</label>
+                                    <select class="form-control" name="reward_type">
+                                        <option value="coins">Coins</option>
+                                        <option value="energy">Energy</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="addShopItem()">Add Item</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editShopItemModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Shop Item</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editShopItemForm">
+                            <input type="hidden" id="edit_shop_item_id" name="item_id">
+                            <div class="mb-3">
+                                <label class="form-label">Item Name</label>
+                                <input type="text" class="form-control" id="edit_item_name" name="item_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" id="edit_item_description" name="item_description" rows="2"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Price</label>
+                                    <input type="number" step="0.01" class="form-control" id="edit_price" name="price" required>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Currency</label>
+                                    <select class="form-control" id="edit_currency" name="currency">
+                                        <option value="TON">TON</option>
+                                        <option value="USDT">USDT</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Reward Amount</label>
+                                    <input type="number" class="form-control" id="edit_reward_amount" name="reward_amount" required>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Reward Type</label>
+                                    <select class="form-control" id="edit_reward_type" name="reward_type">
+                                        <option value="coins">Coins</option>
+                                        <option value="energy">Energy</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="edit_is_active" name="is_active">
+                                <label class="form-check-label" for="edit_is_active">Active</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="updateShopItem()">Update Item</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="addTaskModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Task</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addTaskForm">
+                            <div class="mb-3">
+                                <label class="form-label">Task Name</label>
+                                <input type="text" class="form-control" name="task_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="task_description" rows="2"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Task Type</label>
+                                    <select class="form-control" name="task_type">
+                                        <option value="daily">Daily</option>
+                                        <option value="mining">Mining</option>
+                                        <option value="referral">Referral</option>
+                                        <option value="streak">Streak</option>
+                                        <option value="social">Social</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Requirement</label>
+                                    <input type="number" class="form-control" name="requirement_value" placeholder="e.g., 1000">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Reward Amount</label>
+                                    <input type="number" class="form-control" name="reward_amount" required>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Reward Type</label>
+                                    <select class="form-control" name="reward_type">
+                                        <option value="coins">Coins</option>
+                                        <option value="energy">Energy</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="addTask()">Add Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editTaskModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Task</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editTaskForm">
+                            <input type="hidden" id="edit_task_id" name="task_id">
+                            <div class="mb-3">
+                                <label class="form-label">Task Name</label>
+                                <input type="text" class="form-control" id="edit_task_name" name="task_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" id="edit_task_description" name="task_description" rows="2"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Task Type</label>
+                                    <select class="form-control" id="edit_task_type" name="task_type">
+                                        <option value="daily">Daily</option>
+                                        <option value="mining">Mining</option>
+                                        <option value="referral">Referral</option>
+                                        <option value="streak">Streak</option>
+                                        <option value="social">Social</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Requirement</label>
+                                    <input type="number" class="form-control" id="edit_requirement_value" name="requirement_value">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Reward Amount</label>
+                                    <input type="number" class="form-control" id="edit_task_reward_amount" name="reward_amount" required>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Reward Type</label>
+                                    <select class="form-control" id="edit_task_reward_type" name="reward_type">
+                                        <option value="coins">Coins</option>
+                                        <option value="energy">Energy</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" id="edit_task_is_active" name="is_active">
+                                <label class="form-check-label" for="edit_task_is_active">Active</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="updateTask()">Update Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        function addShopItem() {
+            const form = document.getElementById('addShopItemForm');
+            const formData = new FormData(form);
+
+            fetch('/bot/{{ bot.id }}/shop-items', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        function editShopItem(id, name, desc, price, currency, rewardType, rewardAmount, isActive) {
+            document.getElementById('edit_shop_item_id').value = id;
+            document.getElementById('edit_item_name').value = name;
+            document.getElementById('edit_item_description').value = desc;
+            document.getElementById('edit_price').value = price;
+            document.getElementById('edit_currency').value = currency;
+            document.getElementById('edit_reward_type').value = rewardType;
+            document.getElementById('edit_reward_amount').value = rewardAmount;
+            document.getElementById('edit_is_active').checked = isActive;
+            new bootstrap.Modal(document.getElementById('editShopItemModal')).show();
+        }
+
+        function updateShopItem() {
+            const form = document.getElementById('editShopItemForm');
+            const formData = new FormData(form);
+            const itemId = document.getElementById('edit_shop_item_id').value;
+
+            fetch(`/bot/{{ bot.id }}/shop-items/${itemId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        function deleteShopItem(itemId) {
+            if (confirm('Delete this shop item?')) {
+                fetch(`/bot/{{ bot.id }}/shop-items/${itemId}/delete`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+
+        function addTask() {
+            const form = document.getElementById('addTaskForm');
+            const formData = new FormData(form);
+
+            fetch('/bot/{{ bot.id }}/tasks', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        function editTask(id, name, desc, type, rewardAmount, rewardType, requirement, isActive) {
+            document.getElementById('edit_task_id').value = id;
+            document.getElementById('edit_task_name').value = name;
+            document.getElementById('edit_task_description').value = desc;
+            document.getElementById('edit_task_type').value = type;
+            document.getElementById('edit_task_reward_amount').value = rewardAmount;
+            document.getElementById('edit_task_reward_type').value = rewardType;
+            document.getElementById('edit_requirement_value').value = requirement;
+            document.getElementById('edit_task_is_active').checked = isActive;
+            new bootstrap.Modal(document.getElementById('editTaskModal')).show();
+        }
+
+        function updateTask() {
+            const form = document.getElementById('editTaskForm');
+            const formData = new FormData(form);
+            const taskId = document.getElementById('edit_task_id').value;
+
+            fetch(`/bot/{{ bot.id }}/tasks/${taskId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('Delete this task?')) {
+                fetch(`/bot/{{ bot.id }}/tasks/${taskId}/delete`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+        </script>
+        {% endif %}
     </div>
 </div>
-
 {% endblock %}

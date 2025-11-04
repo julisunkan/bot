@@ -237,7 +237,14 @@ def bot_detail(bot_id):
     except:
         bot_config = {}
 
-    return render_template('bot_detail.html', bot=bot, commands=commands, bot_config=bot_config, templates=templates)
+    # Load shop items and tasks for mining bots
+    shop_items = []
+    tasks_config = []
+    if bot['bot_type'] == 'mining':
+        shop_items = db.get_bot_shop_items(bot_id)
+        tasks_config = db.get_bot_tasks_config(bot_id)
+
+    return render_template('bot_detail.html', bot=bot, commands=commands, bot_config=bot_config, templates=templates, shop_items=shop_items, tasks_config=tasks_config)
 
 @app.route('/bot/<int:bot_id>/add-command', methods=['POST'])
 @login_required
@@ -1142,6 +1149,7 @@ def mining_settings(bot_id):
                 'boost_multitap_cost': int(request.form.get('boost_multitap_cost', 1000)),
                 'boost_recharge_cost': int(request.form.get('boost_recharge_cost', 750)),
                 'coin_price_usd': float(request.form.get('coin_price_usd', 0.001)),
+                'withdrawal_exchange_rate': int(request.form.get('withdrawal_exchange_rate', 1000000)),
             }
 
             conn = db.get_connection()
@@ -1706,6 +1714,14 @@ def mining_wallet_withdraw():
             conn.close()
             return jsonify({'success': False, 'error': 'Player not found'}), 404
 
+        # Get bot settings for exchange rate
+        cursor.execute('SELECT bot_config FROM bots WHERE id = ?', (player['bot_id'],))
+        bot = cursor.fetchone()
+        bot_config = json.loads(bot['bot_config']) if bot and bot['bot_config'] else {}
+        mining_settings = bot_config.get('mining_settings', {})
+        exchange_rate = mining_settings.get('withdrawal_exchange_rate', 1000000)
+        min_withdrawal = mining_settings.get('min_withdrawal', 10000)
+
         cursor.execute('SELECT * FROM mining_wallets WHERE player_id = ?', (player_id,))
         wallet = cursor.fetchone()
 
@@ -1717,13 +1733,16 @@ def mining_wallet_withdraw():
             conn.close()
             return jsonify({'success': False, 'error': 'Insufficient coins'}), 400
 
-        if amount < 10000:
+        if amount < min_withdrawal:
             conn.close()
-            return jsonify({'success': False, 'error': 'Minimum withdrawal is 10,000 coins'}), 400
+            return jsonify({'success': False, 'error': f'Minimum withdrawal is {min_withdrawal:,} coins'}), 400
 
         # Calculate fee (2%)
         fee = amount * 0.02
         net_amount = amount - fee
+        
+        # Convert coins to TON using exchange rate
+        ton_amount = net_amount / exchange_rate
 
         # Deduct coins from player
         cursor.execute('UPDATE mining_players SET coins = coins - ? WHERE id = ?', (amount, player_id))
@@ -1755,6 +1774,8 @@ def mining_wallet_withdraw():
             'amount': amount,
             'fee': fee,
             'net_amount': net_amount,
+            'ton_amount': ton_amount,
+            'exchange_rate': exchange_rate,
             'wallet_address': wallet['wallet_address'],
             'player': dict(updated_player)
         })

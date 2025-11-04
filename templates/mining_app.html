@@ -771,7 +771,7 @@
             const fee = Math.floor(amount * 0.02);
             const net = amount - fee;
 
-            tg.showConfirm(`Withdraw ${amount} coins? You will receive ${net} coins after 2% fee (${fee} coins).`, async function(confirmed) {
+            tg.showConfirm(`Withdraw ${amount.toLocaleString()} coins? You will receive ${net.toLocaleString()} coins after 2% fee.`, async function(confirmed) {
                 if (confirmed) {
                     try {
                         const response = await fetch('/api/mining/wallet/withdraw', {
@@ -786,8 +786,10 @@
                         if (data.success) {
                             playerData = data.player;
                             updateUI();
-                            document.getElementById('totalWithdrawn').textContent = data.net_amount;
-                            tg.showAlert(`Withdrawal submitted! ${data.net_amount} coins will be sent to ${data.wallet_address.substring(0, 8)}...${data.wallet_address.substring(40)} within 24-48 hours.`);
+                            document.getElementById('totalWithdrawn').textContent = data.net_amount.toLocaleString();
+                            const tonAmount = data.ton_amount.toFixed(6);
+                            const exchangeRate = data.exchange_rate.toLocaleString();
+                            tg.showAlert(`✅ Withdrawal submitted!\n\n💰 ${data.net_amount.toLocaleString()} coins = ${tonAmount} TON\n📊 Rate: ${exchangeRate} coins = 1 TON\n\n💳 Sending to: ${data.wallet_address.substring(0, 8)}...${data.wallet_address.substring(40)}\n\n⏱️ Processing time: 24-48 hours`);
                         } else {
                             tg.showAlert(data.error || 'Withdrawal failed');
                         }

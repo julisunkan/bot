@@ -136,6 +136,13 @@
                                        style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
                                 <div class="form-text text-white-50">Price per coin for shop</div>
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="withdrawal_exchange_rate" class="form-label">Withdrawal Exchange Rate</label>
+                                <input type="number" class="form-control" id="withdrawal_exchange_rate" name="withdrawal_exchange_rate" 
+                                       value="{{ settings.withdrawal_exchange_rate or 1000000 }}" min="1"
+                                       style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); color: white;">
+                                <div class="form-text text-white-50">How many coins = 1 TON (e.g., 1,000,000 coins = 1 TON)</div>
+                            </div>
                         </div>
                     </div>
 
