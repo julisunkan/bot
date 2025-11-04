@@ -391,6 +391,10 @@ function deployWebApp(botId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            const shortenedNote = data.shortened ? 
+                '<small class="mt-2 d-block">✨ URL shortened for easy sharing!</small>' : 
+                '<small class="mt-2 d-block text-warning">⚠️ URL shortening unavailable, using full URL</small>';
+            
             webhookStatusDiv.innerHTML = `
                 <div class="alert alert-success mb-0">
                     <strong>✅ Web App Deployed!</strong><br>
@@ -398,7 +402,7 @@ function deployWebApp(botId) {
                     <button class="btn btn-sm btn-outline-light mt-2" onclick="copyToClipboard('${data.webapp_url}')">
                         <i class="bi bi-clipboard"></i> Copy URL
                     </button><br>
-                    <small class="mt-2 d-block">Click to copy and share this shortened link!</small>
+                    ${shortenedNote}
                 </div>`;
         } else {
             webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;

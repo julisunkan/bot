@@ -32,10 +32,14 @@ crypto_api = CryptoAPI()
 def shorten_url(long_url):
     try:
         response = requests.get(f'https://tinyurl.com/api-create.php?url={long_url}', timeout=5)
-        if response.status_code == 200:
+        if response.status_code == 200 and response.text.startswith('http'):
+            app.logger.info(f"URL shortened successfully: {long_url} → {response.text}")
             return response.text
-        return long_url
-    except:
+        else:
+            app.logger.warning(f"TinyURL returned unexpected response for {long_url}: status={response.status_code}, response={response.text[:100]}")
+            return long_url
+    except Exception as e:
+        app.logger.error(f"URL shortening failed for {long_url}: {str(e)}")
         return long_url
 
 def init_templates():
@@ -976,12 +980,14 @@ def deploy_webapp(bot_id):
         full_url = f"{base_url}w/{bot_id}"
         
         shortened_url = shorten_url(full_url)
+        url_was_shortened = shortened_url != full_url
 
         # Update bot config
         bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
         bot_config['webapp_url'] = shortened_url
         bot_config['webapp_full_url'] = full_url
         bot_config['deployed_at'] = datetime.now().isoformat()
+        bot_config['url_shortened'] = url_was_shortened
 
         conn = db.get_connection()
         cursor = conn.cursor()
@@ -990,7 +996,12 @@ def deploy_webapp(bot_id):
         conn.commit()
         conn.close()
 
-        return jsonify({'success': True, 'webapp_url': shortened_url})
+        return jsonify({
+            'success': True, 
+            'webapp_url': shortened_url,
+            'full_url': full_url,
+            'shortened': url_was_shortened
+        })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
