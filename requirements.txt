@@ -33,3 +33,10 @@ openpyxl
 reportlab
 requests
 werkzeug
+cryptography
+Flask
+google-generativeai
+openpyxl
+reportlab
+requests
+werkzeug
