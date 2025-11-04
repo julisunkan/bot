@@ -2,6 +2,36 @@
   "name": "NFT Verification Bot",
   "description": "Verify NFT ownership and grant access to exclusive communities",
   "category": "web3",
+  "bot_type": "nft_verification",
+  "webhook": {
+    "enabled": true,
+    "events": ["message", "callback_query"]
+  },
+  "webapp": {
+    "enabled": true,
+    "buttons": [
+      {
+        "text": "✨ Verify NFT",
+        "type": "web_app",
+        "action": "verify"
+      },
+      {
+        "text": "🔗 Connect Wallet",
+        "type": "web_app",
+        "action": "connect"
+      },
+      {
+        "text": "🖼️ Collections",
+        "type": "web_app",
+        "action": "collections"
+      },
+      {
+        "text": "📊 Status",
+        "type": "web_app",
+        "action": "status"
+      }
+    ]
+  },
   "commands": [
     {
       "command": "start",

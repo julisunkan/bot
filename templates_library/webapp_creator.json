@@ -1,9 +1,37 @@
-
 {
   "name": "Web App Creator Bot",
   "description": "Create and deploy interactive web applications directly from Telegram",
   "category": "webapp",
   "bot_type": "webapp",
+  "webhook": {
+    "enabled": true,
+    "events": ["message", "callback_query", "web_app_data"]
+  },
+  "webapp": {
+    "enabled": true,
+    "buttons": [
+      {
+        "text": "🎨 Create App",
+        "type": "web_app",
+        "action": "create"
+      },
+      {
+        "text": "🚀 Deploy",
+        "type": "web_app",
+        "action": "deploy"
+      },
+      {
+        "text": "📚 Templates",
+        "type": "web_app",
+        "action": "templates"
+      },
+      {
+        "text": "📱 My Apps",
+        "type": "web_app",
+        "action": "myapps"
+      }
+    ]
+  },
   "commands": [
     {
       "command": "start",

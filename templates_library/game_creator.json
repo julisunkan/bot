@@ -1,9 +1,37 @@
-
 {
   "name": "Game Creator Bot",
   "description": "Build and play interactive games directly in Telegram",
   "category": "game",
   "bot_type": "game",
+  "webhook": {
+    "enabled": true,
+    "events": ["message", "callback_query", "inline_query"]
+  },
+  "webapp": {
+    "enabled": true,
+    "buttons": [
+      {
+        "text": "🎯 Create Game",
+        "type": "web_app",
+        "action": "newgame"
+      },
+      {
+        "text": "🎮 Play Now",
+        "type": "web_app",
+        "action": "play"
+      },
+      {
+        "text": "🏆 Leaderboard",
+        "type": "web_app",
+        "action": "leaderboard"
+      },
+      {
+        "text": "📊 My Games",
+        "type": "web_app",
+        "action": "mygames"
+      }
+    ]
+  },
   "commands": [
     {
       "command": "start",

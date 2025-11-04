@@ -1,9 +1,42 @@
-
 {
   "name": "Tap-to-Earn Mining Bot",
   "description": "Create viral tap-to-earn coin mining games like Notcoin, Hamster Kombat",
   "category": "mining",
   "bot_type": "mining",
+  "webhook": {
+    "enabled": true,
+    "events": ["message", "callback_query", "web_app_data"]
+  },
+  "webapp": {
+    "enabled": true,
+    "buttons": [
+      {
+        "text": "⛏️ Start Mining",
+        "type": "web_app",
+        "action": "mine"
+      },
+      {
+        "text": "🚀 Boosts",
+        "type": "web_app",
+        "action": "boost"
+      },
+      {
+        "text": "📋 Tasks",
+        "type": "web_app",
+        "action": "tasks"
+      },
+      {
+        "text": "👥 Referrals",
+        "type": "web_app",
+        "action": "referral"
+      },
+      {
+        "text": "💸 Withdraw",
+        "type": "web_app",
+        "action": "withdraw"
+      }
+    ]
+  },
   "commands": [
     {
       "command": "start",

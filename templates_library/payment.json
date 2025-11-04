@@ -2,6 +2,31 @@
   "name": "Payment Bot",
   "description": "Cryptocurrency payment processing bot with transaction tracking",
   "category": "crypto",
+  "bot_type": "payment",
+  "webhook": {
+    "enabled": true,
+    "events": ["message", "callback_query", "pre_checkout_query"]
+  },
+  "webapp": {
+    "enabled": true,
+    "buttons": [
+      {
+        "text": "💳 Make Payment",
+        "type": "web_app",
+        "action": "pay"
+      },
+      {
+        "text": "📊 Payment Status",
+        "type": "web_app",
+        "action": "status"
+      },
+      {
+        "text": "📜 Transaction History",
+        "type": "web_app",
+        "action": "history"
+      }
+    ]
+  },
   "commands": [
     {
       "command": "start",

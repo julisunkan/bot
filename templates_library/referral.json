@@ -2,6 +2,36 @@
   "name": "Referral Bot",
   "description": "Referral tracking system with rewards and leaderboard",
   "category": "marketing",
+  "bot_type": "referral",
+  "webhook": {
+    "enabled": true,
+    "events": ["message", "callback_query"]
+  },
+  "webapp": {
+    "enabled": true,
+    "buttons": [
+      {
+        "text": "🔗 Get Invite Link",
+        "type": "web_app",
+        "action": "invite"
+      },
+      {
+        "text": "📊 My Stats",
+        "type": "web_app",
+        "action": "stats"
+      },
+      {
+        "text": "🏆 Leaderboard",
+        "type": "web_app",
+        "action": "leaderboard"
+      },
+      {
+        "text": "🎁 Rewards",
+        "type": "web_app",
+        "action": "rewards"
+      }
+    ]
+  },
   "commands": [
     {
       "command": "start",

@@ -2,6 +2,31 @@
   "name": "Airdrop Bot",
   "description": "Crypto airdrop distribution bot with claim and referral system",
   "category": "crypto",
+  "bot_type": "airdrop",
+  "webhook": {
+    "enabled": true,
+    "events": ["message", "callback_query"]
+  },
+  "webapp": {
+    "enabled": true,
+    "buttons": [
+      {
+        "text": "🎁 Claim Airdrop",
+        "type": "web_app",
+        "action": "claim"
+      },
+      {
+        "text": "💰 Check Balance",
+        "type": "web_app",
+        "action": "balance"
+      },
+      {
+        "text": "👥 Referral Link",
+        "type": "web_app",
+        "action": "referral"
+      }
+    ]
+  },
   "commands": [
     {
       "command": "start",

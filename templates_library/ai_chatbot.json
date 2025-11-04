@@ -2,6 +2,36 @@
   "name": "AI Chat Bot",
   "description": "Intelligent AI-powered chatbot for customer support and conversations",
   "category": "ai",
+  "bot_type": "ai_chatbot",
+  "webhook": {
+    "enabled": true,
+    "events": ["message", "callback_query", "inline_query"]
+  },
+  "webapp": {
+    "enabled": true,
+    "buttons": [
+      {
+        "text": "💬 Start Chat",
+        "type": "web_app",
+        "action": "chat"
+      },
+      {
+        "text": "❓ FAQ",
+        "type": "web_app",
+        "action": "faq"
+      },
+      {
+        "text": "📝 Send Feedback",
+        "type": "web_app",
+        "action": "feedback"
+      },
+      {
+        "text": "🌍 Language",
+        "type": "web_app",
+        "action": "language"
+      }
+    ]
+  },
   "commands": [
     {
       "command": "start",
