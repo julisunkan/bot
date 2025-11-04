@@ -342,6 +342,20 @@ class Database:
             )
         ''')
 
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_admin_transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                player_id INTEGER NOT NULL,
+                transaction_type TEXT NOT NULL,
+                amount REAL NOT NULL,
+                wallet_address TEXT,
+                transaction_hash TEXT,
+                note TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (player_id) REFERENCES mining_players(id) ON DELETE CASCADE
+            )
+        ''')
+
         conn.commit()
         conn.close()
 
@@ -834,3 +848,73 @@ class Database:
         deleted = cursor.rowcount > 0
         conn.close()
         return deleted
+
+    def get_bot_players(self, bot_id, limit=100):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT id, telegram_user_id, username, first_name, coins, level, 
+                   COALESCE(is_banned, 0) as is_banned
+            FROM mining_players 
+            WHERE bot_id = ?
+            ORDER BY coins DESC
+            LIMIT ?
+        ''', (bot_id, limit))
+        players = cursor.fetchall()
+        conn.close()
+        return [dict(player) for player in players]
+
+    def toggle_player_ban(self, player_id, bot_id, is_banned):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # Add is_banned column if it doesn't exist
+        try:
+            cursor.execute("SELECT is_banned FROM mining_players LIMIT 1")
+        except sqlite3.OperationalError:
+            cursor.execute("ALTER TABLE mining_players ADD COLUMN is_banned INTEGER DEFAULT 0")
+            conn.commit()
+        
+        cursor.execute('''
+            UPDATE mining_players 
+            SET is_banned = ?
+            WHERE id = ? AND bot_id = ?
+        ''', (1 if is_banned else 0, player_id, bot_id))
+        conn.commit()
+        conn.close()
+
+    def add_coins_to_player(self, player_id, bot_id, amount, note=''):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE mining_players 
+            SET coins = coins + ?
+            WHERE id = ? AND bot_id = ?
+        ''', (amount, player_id, bot_id))
+        
+        # Log the transaction
+        cursor.execute('''
+            INSERT INTO mining_admin_transactions (player_id, transaction_type, amount, note)
+            VALUES (?, 'coins_gift', ?, ?)
+        ''', (player_id, amount, note))
+        conn.commit()
+        conn.close()
+
+    def get_player_wallet(self, player_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM mining_wallets WHERE player_id = ?', (player_id,))
+        wallet = cursor.fetchone()
+        conn.close()
+        return dict(wallet) if wallet else None
+
+    def record_ton_transfer(self, player_id, bot_id, amount, wallet_address, transaction_hash, note=''):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO mining_admin_transactions 
+            (player_id, transaction_type, amount, wallet_address, transaction_hash, note)
+            VALUES (?, 'ton_gift', ?, ?, ?, ?)
+        ''', (player_id, amount, wallet_address, transaction_hash, note))
+        conn.commit()
+        conn.close()

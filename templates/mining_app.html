@@ -459,6 +459,45 @@
         const urlParams = new URLSearchParams(window.location.search);
         botId = urlParams.get('bot_id');
 
+        function applyCustomStyles(settings) {
+            if (!settings) return;
+            
+            const root = document.documentElement;
+            if (settings.primary_color) {
+                root.style.setProperty('--primary-color', settings.primary_color);
+                document.body.style.background = `linear-gradient(135deg, ${settings.primary_color} 0%, ${settings.secondary_color || '#764ba2'} 100%)`;
+            }
+            if (settings.button_color) {
+                const tapButton = document.querySelector('.tap-button');
+                if (tapButton) {
+                    tapButton.style.background = `linear-gradient(135deg, ${settings.button_color}, ${settings.button_color}dd)`;
+                }
+            }
+            if (settings.text_color) {
+                root.style.setProperty('--text-color', settings.text_color);
+            }
+            if (settings.font_family && settings.font_family !== 'system') {
+                document.body.style.fontFamily = settings.font_family;
+            }
+            if (settings.coin_emoji) {
+                document.querySelector('.coin-display').textContent = settings.coin_emoji;
+            }
+            
+            // Hide/show tabs based on settings
+            if (settings.show_mine_tab === false) {
+                document.querySelector('[onclick*="switchTab(\'mine\')"]').style.display = 'none';
+            }
+            if (settings.show_boost_tab === false) {
+                document.querySelector('[onclick*="switchTab(\'boost\')"]').style.display = 'none';
+            }
+            if (settings.show_friends_tab === false) {
+                document.querySelector('[onclick*="switchTab(\'friends\')"]').style.display = 'none';
+            }
+            if (settings.show_stats_panel === false) {
+                document.querySelector('.stats-grid').style.display = 'none';
+            }
+        }
+
         async function initGame() {
             try {
                 const initData = tg.initData || '';
@@ -469,6 +508,15 @@
                     playerData = data.player;
                     sessionToken = data.session_token;
                     const settings = data.settings || {};
+
+                    // Check if player is banned
+                    if (playerData.is_banned) {
+                        document.body.innerHTML = '<div style="text-align:center;padding:50px;color:white;"><h1>🚫 Account Banned</h1><p>Your account has been suspended. Please contact support.</p></div>';
+                        return;
+                    }
+
+                    // Apply custom UI settings
+                    applyCustomStyles(settings);
 
                     if (settings.enable_shop === false) {
                         document.querySelector('[onclick*="switchTab(\'shop\')"]').style.display = 'none';

@@ -1117,6 +1117,79 @@ def mining_settings(bot_id):
         return redirect(url_for('dashboard'))
 
     if bot['bot_type'] != 'mining':
+
+
+@app.route('/bot/<int:bot_id>/toggle-ban', methods=['POST'])
+@login_required
+def toggle_ban(bot_id):
+    bot = db.get_bot(bot_id)
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        data = request.json
+        player_id = data.get('player_id')
+        is_banned = data.get('is_banned', False)
+
+        db.toggle_player_ban(player_id, bot_id, is_banned)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/bot/<int:bot_id>/send-coins', methods=['POST'])
+@login_required
+def send_coins_to_player(bot_id):
+    bot = db.get_bot(bot_id)
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        data = request.json
+        player_id = int(data.get('player_id'))
+        amount = float(data.get('amount'))
+        note = data.get('note', '')
+
+        if amount <= 0:
+            return jsonify({'success': False, 'error': 'Invalid amount'}), 400
+
+        db.add_coins_to_player(player_id, bot_id, amount, note)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/bot/<int:bot_id>/send-ton', methods=['POST'])
+@login_required
+def send_ton_to_player(bot_id):
+    bot = db.get_bot(bot_id)
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        data = request.json
+        player_id = int(data.get('player_id'))
+        amount = float(data.get('amount'))
+        note = data.get('note', '')
+
+        if amount <= 0:
+            return jsonify({'success': False, 'error': 'Invalid amount'}), 400
+
+        # Get player's wallet
+        player_wallet = db.get_player_wallet(player_id)
+        if not player_wallet or not player_wallet.get('wallet_address'):
+            return jsonify({'success': False, 'error': 'Player has no connected wallet'}), 400
+
+        # Record TON transfer
+        transaction_hash = f"manual_{secrets.token_hex(16)}"
+        db.record_ton_transfer(player_id, bot_id, amount, player_wallet['wallet_address'], transaction_hash, note)
+
+        return jsonify({
+            'success': True,
+            'transaction_hash': transaction_hash,
+            'message': f'Recorded TON transfer. Please send {amount} TON to {player_wallet["wallet_address"]}'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
         flash('This is not a mining bot', 'warning')
         return redirect(url_for('bot_detail', bot_id=bot_id))
 
@@ -1150,6 +1223,18 @@ def mining_settings(bot_id):
                 'boost_recharge_cost': int(request.form.get('boost_recharge_cost', 750)),
                 'coin_price_usd': float(request.form.get('coin_price_usd', 0.001)),
                 'withdrawal_exchange_rate': int(request.form.get('withdrawal_exchange_rate', 1000000)),
+                # UI Customization
+                'primary_color': request.form.get('primary_color', '#667eea'),
+                'secondary_color': request.form.get('secondary_color', '#764ba2'),
+                'button_color': request.form.get('button_color', '#ffd700'),
+                'text_color': request.form.get('text_color', '#ffffff'),
+                'font_family': request.form.get('font_family', 'system'),
+                'coin_emoji': request.form.get('coin_emoji', '🪙'),
+                # Feature Visibility
+                'show_mine_tab': request.form.get('show_mine_tab') == 'on',
+                'show_boost_tab': request.form.get('show_boost_tab') == 'on',
+                'show_friends_tab': request.form.get('show_friends_tab') == 'on',
+                'show_stats_panel': request.form.get('show_stats_panel') == 'on',
             }
 
             conn = db.get_connection()
@@ -1185,7 +1270,8 @@ def mining_settings(bot_id):
 
     shop_items = db.get_bot_shop_items(bot_id)
     tasks_config = db.get_bot_tasks_config(bot_id)
-    return render_template('mining_settings.html', bot=bot, settings=mining_settings, owner_ton_wallet=owner_ton_wallet, shop_items=shop_items, tasks_config=tasks_config)
+    players = db.get_bot_players(bot_id)
+    return render_template('mining_settings.html', bot=bot, settings=mining_settings, owner_ton_wallet=owner_ton_wallet, shop_items=shop_items, tasks_config=tasks_config, players=players)
 
 @app.route('/bot/<int:bot_id>/shop-items', methods=['POST'])
 @login_required
