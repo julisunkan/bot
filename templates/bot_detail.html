@@ -394,8 +394,11 @@ function deployWebApp(botId) {
             webhookStatusDiv.innerHTML = `
                 <div class="alert alert-success mb-0">
                     <strong>✅ Web App Deployed!</strong><br>
-                    🔗 URL: <a href="${data.webapp_url}" target="_blank" class="text-white">${data.webapp_url}</a><br>
-                    <small>Share this link to let users access your app!</small>
+                    🔗 URL: <code class="bg-dark text-white px-2 py-1 rounded" style="user-select: all;">${data.webapp_url}</code><br>
+                    <button class="btn btn-sm btn-outline-light mt-2" onclick="copyToClipboard('${data.webapp_url}')">
+                        <i class="bi bi-clipboard"></i> Copy URL
+                    </button><br>
+                    <small class="mt-2 d-block">Click to copy and share this shortened link!</small>
                 </div>`;
         } else {
             webhookStatusDiv.innerHTML = `<div class="alert alert-danger mb-0">Error: ${data.error}</div>`;
