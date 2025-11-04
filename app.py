@@ -1,6 +1,7 @@
 import os
 import json
 import secrets
+import requests
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file, flash
 from werkzeug.utils import secure_filename
@@ -27,6 +28,15 @@ def from_json_filter(value):
 db = Database()
 ai_assistant = AIAssistant()
 crypto_api = CryptoAPI()
+
+def shorten_url(long_url):
+    try:
+        response = requests.get(f'https://tinyurl.com/api-create.php?url={long_url}', timeout=5)
+        if response.status_code == 200:
+            return response.text
+        return long_url
+    except:
+        return long_url
 
 def init_templates():
     templates_dir = 'templates_library'
@@ -963,11 +973,14 @@ def deploy_webapp(bot_id):
 
     try:
         base_url = request.host_url.replace('http://', 'https://')
-        webapp_url = f"{base_url}webapp/{bot_id}"
+        full_url = f"{base_url}w/{bot_id}"
+        
+        shortened_url = shorten_url(full_url)
 
         # Update bot config
         bot_config = json.loads(bot['bot_config']) if bot['bot_config'] else {}
-        bot_config['webapp_url'] = webapp_url
+        bot_config['webapp_url'] = shortened_url
+        bot_config['webapp_full_url'] = full_url
         bot_config['deployed_at'] = datetime.now().isoformat()
 
         conn = db.get_connection()
@@ -977,7 +990,7 @@ def deploy_webapp(bot_id):
         conn.commit()
         conn.close()
 
-        return jsonify({'success': True, 'webapp_url': webapp_url})
+        return jsonify({'success': True, 'webapp_url': shortened_url})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -1157,7 +1170,7 @@ def mining_settings(bot_id):
 def mining_app():
     return render_template('mining_app.html')
 
-@app.route('/webapp/<int:bot_id>')
+@app.route('/w/<int:bot_id>')
 def webapp(bot_id):
     bot = db.get_bot(bot_id)
     if not bot or not bot['is_active']:
@@ -1167,6 +1180,10 @@ def webapp(bot_id):
     webapp_data = bot_config.get('webapp_data', {})
     
     return render_template('webapp.html', bot=bot, bot_id=bot_id, webapp_data=webapp_data)
+
+@app.route('/webapp/<int:bot_id>')
+def webapp_legacy_redirect(bot_id):
+    return redirect(url_for('webapp', bot_id=bot_id), code=301)
 
 @app.route('/api/mining/init')
 def mining_init():
