@@ -200,7 +200,109 @@
                         </div>
                     </div>
 
-                    <div class="d-grid gap-2 fade-in-up" style="animation-delay: 0.5s;">
+                    <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.5s;">
+                        <h5 class="gradient-text mb-4"><i class="bi bi-shop"></i> Shop Items Configuration</h5>
+                        <p class="text-white-50 mb-3">Configure items that players can purchase with TON cryptocurrency to get in-game coins.</p>
+                        
+                        <div class="table-responsive mb-3">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Price</th>
+                                        <th>Currency</th>
+                                        <th>Reward</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="shopItemsList">
+                                    {% for item in shop_items %}
+                                    <tr data-item-id="{{ item.id }}">
+                                        <td>{{ item.item_name }}</td>
+                                        <td>{{ item.price }}</td>
+                                        <td>{{ item.currency }}</td>
+                                        <td>{{ item.reward_amount }} {{ item.reward_type }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if item.is_active else 'secondary' }}">
+                                                {{ 'Active' if item.is_active else 'Inactive' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning edit-shop-item" data-id="{{ item.id }}" 
+                                                    data-name="{{ item.item_name }}" data-desc="{{ item.item_description }}" 
+                                                    data-price="{{ item.price }}" data-currency="{{ item.currency }}" 
+                                                    data-reward-type="{{ item.reward_type }}" data-reward-amount="{{ item.reward_amount }}" 
+                                                    data-active="{{ item.is_active }}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger delete-shop-item" data-id="{{ item.id }}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addShopItemModal">
+                            <i class="bi bi-plus-circle"></i> Add Shop Item
+                        </button>
+                    </div>
+
+                    <div class="feature-card mb-4 fade-in-up" style="animation-delay: 0.6s;">
+                        <h5 class="gradient-text mb-4"><i class="bi bi-list-task"></i> Tasks Configuration</h5>
+                        <p class="text-white-50 mb-3">Configure tasks that players can complete to earn rewards.</p>
+                        
+                        <div class="table-responsive mb-3">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Task Name</th>
+                                        <th>Type</th>
+                                        <th>Requirement</th>
+                                        <th>Reward</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tasksList">
+                                    {% for task in tasks_config %}
+                                    <tr data-task-id="{{ task.id }}">
+                                        <td>{{ task.task_name }}</td>
+                                        <td><span class="badge bg-primary">{{ task.task_type }}</span></td>
+                                        <td>{{ task.requirement_value }}</td>
+                                        <td>{{ task.reward_amount }} {{ task.reward_type }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if task.is_active else 'secondary' }}">
+                                                {{ 'Active' if task.is_active else 'Inactive' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-warning edit-task" data-id="{{ task.id }}" 
+                                                    data-name="{{ task.task_name }}" data-desc="{{ task.task_description }}" 
+                                                    data-type="{{ task.task_type }}" data-reward-amount="{{ task.reward_amount }}" 
+                                                    data-reward-type="{{ task.reward_type }}" data-requirement="{{ task.requirement_value }}"
+                                                    data-active="{{ task.is_active }}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger delete-task" data-id="{{ task.id }}">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                            <i class="bi bi-plus-circle"></i> Add Task
+                        </button>
+                    </div>
+
+                    <div class="d-grid gap-2 fade-in-up" style="animation-delay: 0.7s;">
                         <button type="submit" class="btn btn-primary-gradient btn-lg">
                             <i class="bi bi-save"></i> Save Settings
                         </button>
@@ -236,4 +338,187 @@
         </form>
     </div>
 </div>
+
+<!-- Add Shop Item Modal -->
+<div class="modal fade" id="addShopItemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Shop Item</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addShopItemForm">
+                    <div class="mb-3">
+                        <label class="form-label">Item Name</label>
+                        <input type="text" class="form-control" name="item_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="item_description" rows="2"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Price</label>
+                            <input type="number" step="0.01" class="form-control" name="price" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Currency</label>
+                            <select class="form-control" name="currency">
+                                <option value="TON">TON</option>
+                                <option value="USDT">USDT</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Reward Amount</label>
+                            <input type="number" class="form-control" name="reward_amount" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Reward Type</label>
+                            <select class="form-control" name="reward_type">
+                                <option value="coins">Coins</option>
+                                <option value="energy">Energy</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addShopItem()">Add Item</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Task</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addTaskForm">
+                    <div class="mb-3">
+                        <label class="form-label">Task Name</label>
+                        <input type="text" class="form-control" name="task_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="task_description" rows="2"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Task Type</label>
+                            <select class="form-control" name="task_type">
+                                <option value="daily">Daily</option>
+                                <option value="mining">Mining</option>
+                                <option value="referral">Referral</option>
+                                <option value="streak">Streak</option>
+                                <option value="social">Social</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Requirement Value</label>
+                            <input type="number" class="form-control" name="requirement_value" placeholder="e.g., 1000 coins">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Reward Amount</label>
+                            <input type="number" class="form-control" name="reward_amount" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Reward Type</label>
+                            <select class="form-control" name="reward_type">
+                                <option value="coins">Coins</option>
+                                <option value="energy">Energy</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="addTask()">Add Task</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function addShopItem() {
+    const form = document.getElementById('addShopItemForm');
+    const formData = new FormData(form);
+    
+    fetch('/bot/{{ bot.id }}/shop-items', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function addTask() {
+    const form = document.getElementById('addTaskForm');
+    const formData = new FormData(form);
+    
+    fetch('/bot/{{ bot.id }}/tasks', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+document.querySelectorAll('.delete-shop-item').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (confirm('Delete this shop item?')) {
+            const itemId = this.dataset.id;
+            fetch(`/bot/{{ bot.id }}/shop-items/${itemId}/delete`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    });
+});
+
+document.querySelectorAll('.delete-task').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (confirm('Delete this task?')) {
+            const taskId = this.dataset.id;
+            fetch(`/bot/{{ bot.id }}/tasks/${taskId}/delete`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    });
+});
+</script>
 {% endblock %}

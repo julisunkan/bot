@@ -326,6 +326,22 @@ class Database:
             )
         ''')
 
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS mining_tasks_config (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                bot_id INTEGER NOT NULL,
+                task_name TEXT NOT NULL,
+                task_description TEXT,
+                task_type TEXT NOT NULL,
+                reward_amount INTEGER NOT NULL,
+                reward_type TEXT DEFAULT 'coins',
+                requirement_value INTEGER,
+                is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (bot_id) REFERENCES bots(id) ON DELETE CASCADE
+            )
+        ''')
+
         conn.commit()
         conn.close()
 
@@ -730,3 +746,91 @@ class Database:
         conn.close()
 
         return result['player_id'] if result else None
+
+    def get_bot_shop_items(self, bot_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM mining_shop_items WHERE bot_id = ? ORDER BY id', (bot_id,))
+        items = cursor.fetchall()
+        conn.close()
+        return [dict(item) for item in items]
+
+    def add_shop_item(self, bot_id, item_name, item_description, price, currency, reward_type, reward_amount):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO mining_shop_items 
+            (bot_id, item_type, item_name, item_description, price, currency, reward_type, reward_amount)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (bot_id, 'coins_package', item_name, item_description, price, currency, reward_type, reward_amount))
+        conn.commit()
+        item_id = cursor.lastrowid
+        conn.close()
+        return item_id
+
+    def update_shop_item(self, item_id, bot_id, item_name, item_description, price, currency, reward_type, reward_amount, is_active):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE mining_shop_items 
+            SET item_name = ?, item_description = ?, price = ?, currency = ?, 
+                reward_type = ?, reward_amount = ?, is_active = ?
+            WHERE id = ? AND bot_id = ?
+        ''', (item_name, item_description, price, currency, reward_type, reward_amount, is_active, item_id, bot_id))
+        conn.commit()
+        updated = cursor.rowcount > 0
+        conn.close()
+        return updated
+
+    def delete_shop_item(self, item_id, bot_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM mining_shop_items WHERE id = ? AND bot_id = ?', (item_id, bot_id))
+        conn.commit()
+        deleted = cursor.rowcount > 0
+        conn.close()
+        return deleted
+
+    def get_bot_tasks_config(self, bot_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM mining_tasks_config WHERE bot_id = ? ORDER BY id', (bot_id,))
+        tasks = cursor.fetchall()
+        conn.close()
+        return [dict(task) for task in tasks]
+
+    def add_task_config(self, bot_id, task_name, task_description, task_type, reward_amount, reward_type, requirement_value):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO mining_tasks_config 
+            (bot_id, task_name, task_description, task_type, reward_amount, reward_type, requirement_value)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (bot_id, task_name, task_description, task_type, reward_amount, reward_type, requirement_value))
+        conn.commit()
+        task_id = cursor.lastrowid
+        conn.close()
+        return task_id
+
+    def update_task_config(self, task_id, bot_id, task_name, task_description, task_type, reward_amount, reward_type, requirement_value, is_active):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE mining_tasks_config 
+            SET task_name = ?, task_description = ?, task_type = ?, 
+                reward_amount = ?, reward_type = ?, requirement_value = ?, is_active = ?
+            WHERE id = ? AND bot_id = ?
+        ''', (task_name, task_description, task_type, reward_amount, reward_type, requirement_value, is_active, task_id, bot_id))
+        conn.commit()
+        updated = cursor.rowcount > 0
+        conn.close()
+        return updated
+
+    def delete_task_config(self, task_id, bot_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM mining_tasks_config WHERE id = ? AND bot_id = ?', (task_id, bot_id))
+        conn.commit()
+        deleted = cursor.rowcount > 0
+        conn.close()
+        return deleted

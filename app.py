@@ -1175,7 +1175,129 @@ def mining_settings(bot_id):
     })
     owner_ton_wallet = bot_config.get('owner_ton_wallet', '')
 
-    return render_template('mining_settings.html', bot=bot, settings=mining_settings, owner_ton_wallet=owner_ton_wallet)
+    shop_items = db.get_bot_shop_items(bot_id)
+    tasks_config = db.get_bot_tasks_config(bot_id)
+    return render_template('mining_settings.html', bot=bot, settings=mining_settings, owner_ton_wallet=owner_ton_wallet, shop_items=shop_items, tasks_config=tasks_config)
+
+@app.route('/bot/<int:bot_id>/shop-items', methods=['POST'])
+@login_required
+def add_shop_item(bot_id):
+    bot = db.get_bot(bot_id)
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        item_name = request.form.get('item_name', '').strip()
+        item_description = request.form.get('item_description', '').strip()
+        price = float(request.form.get('price', 0))
+        currency = request.form.get('currency', 'TON')
+        reward_type = request.form.get('reward_type', 'coins')
+        reward_amount = int(request.form.get('reward_amount', 0))
+
+        if not item_name or price <= 0 or reward_amount <= 0:
+            return jsonify({'success': False, 'error': 'Invalid input'}), 400
+
+        item_id = db.add_shop_item(bot_id, item_name, item_description, price, currency, reward_type, reward_amount)
+        return jsonify({'success': True, 'item_id': item_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/bot/<int:bot_id>/shop-items/<int:item_id>', methods=['POST'])
+@login_required
+def update_shop_item(bot_id, item_id):
+    bot = db.get_bot(bot_id)
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        item_name = request.form.get('item_name', '').strip()
+        item_description = request.form.get('item_description', '').strip()
+        price = float(request.form.get('price', 0))
+        currency = request.form.get('currency', 'TON')
+        reward_type = request.form.get('reward_type', 'coins')
+        reward_amount = int(request.form.get('reward_amount', 0))
+        is_active = 1 if request.form.get('is_active') == 'on' else 0
+
+        if not item_name or price <= 0 or reward_amount <= 0:
+            return jsonify({'success': False, 'error': 'Invalid input'}), 400
+
+        updated = db.update_shop_item(item_id, bot_id, item_name, item_description, price, currency, reward_type, reward_amount, is_active)
+        return jsonify({'success': updated})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/bot/<int:bot_id>/shop-items/<int:item_id>/delete', methods=['POST'])
+@login_required
+def delete_shop_item(bot_id, item_id):
+    bot = db.get_bot(bot_id)
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        deleted = db.delete_shop_item(item_id, bot_id)
+        return jsonify({'success': deleted})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/bot/<int:bot_id>/tasks', methods=['POST'])
+@login_required
+def add_task_config(bot_id):
+    bot = db.get_bot(bot_id)
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        task_name = request.form.get('task_name', '').strip()
+        task_description = request.form.get('task_description', '').strip()
+        task_type = request.form.get('task_type', 'daily')
+        reward_amount = int(request.form.get('reward_amount', 0))
+        reward_type = request.form.get('reward_type', 'coins')
+        requirement_value = int(request.form.get('requirement_value', 0))
+
+        if not task_name or reward_amount <= 0:
+            return jsonify({'success': False, 'error': 'Invalid input'}), 400
+
+        task_id = db.add_task_config(bot_id, task_name, task_description, task_type, reward_amount, reward_type, requirement_value)
+        return jsonify({'success': True, 'task_id': task_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/bot/<int:bot_id>/tasks/<int:task_id>', methods=['POST'])
+@login_required
+def update_task_config(bot_id, task_id):
+    bot = db.get_bot(bot_id)
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        task_name = request.form.get('task_name', '').strip()
+        task_description = request.form.get('task_description', '').strip()
+        task_type = request.form.get('task_type', 'daily')
+        reward_amount = int(request.form.get('reward_amount', 0))
+        reward_type = request.form.get('reward_type', 'coins')
+        requirement_value = int(request.form.get('requirement_value', 0))
+        is_active = 1 if request.form.get('is_active') == 'on' else 0
+
+        if not task_name or reward_amount <= 0:
+            return jsonify({'success': False, 'error': 'Invalid input'}), 400
+
+        updated = db.update_task_config(task_id, bot_id, task_name, task_description, task_type, reward_amount, reward_type, requirement_value, is_active)
+        return jsonify({'success': updated})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/bot/<int:bot_id>/tasks/<int:task_id>/delete', methods=['POST'])
+@login_required
+def delete_task_config(bot_id, task_id):
+    bot = db.get_bot(bot_id)
+    if not bot or bot['user_id'] != session['user_id']:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+
+    try:
+        deleted = db.delete_task_config(task_id, bot_id)
+        return jsonify({'success': deleted})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/mining-app')
 def mining_app():
@@ -1246,6 +1368,28 @@ def mining_init():
     except Exception as e:
         print(f"Mining init error: {e}")
         return jsonify({'success': False, 'error': 'Authentication failed'}), 500
+
+@app.route('/api/mining/shop-and-tasks')
+def get_shop_and_tasks():
+    try:
+        bot_id = request.args.get('bot_id')
+        if not bot_id:
+            return jsonify({'success': False, 'error': 'Missing bot_id'}), 400
+
+        shop_items = db.get_bot_shop_items(bot_id)
+        active_shop_items = [item for item in shop_items if item['is_active']]
+        
+        tasks_config = db.get_bot_tasks_config(bot_id)
+        active_tasks = [task for task in tasks_config if task['is_active']]
+
+        return jsonify({
+            'success': True,
+            'shop_items': active_shop_items,
+            'tasks': active_tasks
+        })
+    except Exception as e:
+        print(f"Error fetching shop and tasks: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/mining/tap', methods=['POST'])
 def mining_tap():
@@ -1407,13 +1551,34 @@ def mining_daily_reward():
 def mining_shop_purchase():
     try:
         data = request.json
-        if not data or 'session_token' not in data or 'bot_id' not in data or 'amount' not in data or 'price' not in data:
+        if not data or 'session_token' not in data or 'bot_id' not in data:
             return jsonify({'success': False, 'error': 'Missing parameters'}), 400
 
         session_token = data['session_token']
         bot_id = int(data['bot_id'])
-        amount = int(data['amount'])
-        price = float(data['price'])
+        shop_item_id = data.get('shop_item_id')
+        
+        # Support legacy API (amount/price) or new API (shop_item_id)
+        if shop_item_id:
+            # Get shop item from database
+            shop_items = db.get_bot_shop_items(bot_id)
+            shop_item = next((item for item in shop_items if item['id'] == shop_item_id and item['is_active']), None)
+            
+            if not shop_item:
+                return jsonify({'success': False, 'error': 'Shop item not found or inactive'}), 404
+            
+            amount = shop_item['reward_amount']
+            price = shop_item['price']
+            currency = shop_item['currency']
+            item_name = shop_item['item_name']
+        else:
+            # Legacy support
+            if 'amount' not in data or 'price' not in data:
+                return jsonify({'success': False, 'error': 'Missing amount or price parameters'}), 400
+            amount = int(data['amount'])
+            price = float(data['price'])
+            currency = 'TON'
+            item_name = f"{amount} coins"
 
         player_id = db.validate_game_session(session_token)
         if not player_id:
@@ -1457,7 +1622,7 @@ def mining_shop_purchase():
         payment_link = ton_payment.create_payment_link(
             owner_ton_wallet, 
             price, 
-            f"BotForge Mining - {amount} coins"
+            f"BotForge Mining - {item_name}"
         )
 
         if not payment_link:
