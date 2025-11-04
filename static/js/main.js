@@ -129,9 +129,17 @@ function showNotification(message, type = 'info') {
         messageContainer.style.cssText = 'margin: 20px 0;';
         
         // Insert at the top of main content
-        const mainContent = document.querySelector('main') || document.querySelector('.container') || document.body;
-        mainContent.insertBefore(messageContainer, mainContent.firstChild);
+        const mainContent = document.querySelector('main') || document.querySelector('.container') || document.querySelector('.container-fluid') || document.body;
+        const firstChild = mainContent.querySelector('.row, .feature-card, h2, h1') || mainContent.firstChild;
+        if (firstChild) {
+            mainContent.insertBefore(messageContainer, firstChild);
+        } else {
+            mainContent.appendChild(messageContainer);
+        }
     }
+    
+    // Scroll to top to show the message
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
@@ -145,7 +153,7 @@ function showNotification(message, type = 'info') {
     
     setTimeout(() => {
         alertDiv.classList.remove('show');
-        setTimeout(() => alertDiv.remove(), 150);
+        setTimeout(() => alertDiv.remove(), 5000);
     }, 5000);
 }
 

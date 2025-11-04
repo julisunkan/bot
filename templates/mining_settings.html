@@ -5,6 +5,17 @@
 {% block content %}
 <div class="landing-page-v2 min-vh-100">
     <div class="container px-3 py-4">
+        <div id="inline-message-container"></div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <div class="row mb-4 fade-in-up">
             <div class="col">
                 <h2 class="gradient-text display-5 fw-bold"><i class="bi bi-coin"></i> Mining Bot Settings</h2>
@@ -689,13 +700,36 @@ function sendCoins() {
     })
     .then(response => response.json())
     .then(data => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('sendCoinsModal'));
+        if (modal) modal.hide();
         if (data.success) {
-            alert('Coins sent successfully!');
-            location.reload();
+            showInlineMessage('Coins sent successfully!', 'success');
+            setTimeout(() => location.reload(), 1500);
         } else {
-            alert('Error: ' + data.error);
+            showInlineMessage('Error: ' + data.error, 'danger');
         }
     });
+}
+
+function showInlineMessage(message, type = 'info') {
+    let messageContainer = document.getElementById('inline-message-container');
+    if (!messageContainer) {
+        messageContainer = document.createElement('div');
+        messageContainer.id = 'inline-message-container';
+        messageContainer.style.cssText = 'margin: 20px 0;';
+        const container = document.querySelector('.container');
+        container.insertBefore(messageContainer, container.firstChild);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    messageContainer.innerHTML = '';
+    messageContainer.appendChild(alertDiv);
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => alertDiv.remove(), 150);
+    }, 5000);
 }
 
 function sendTON() {
@@ -710,11 +744,13 @@ function sendTON() {
     })
     .then(response => response.json())
     .then(data => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('sendTONModal'));
+        if (modal) modal.hide();
         if (data.success) {
-            alert('TON sent successfully! Transaction: ' + data.transaction_hash);
-            location.reload();
+            showInlineMessage('TON sent successfully! Transaction: ' + data.transaction_hash, 'success');
+            setTimeout(() => location.reload(), 1500);
         } else {
-            alert('Error: ' + data.error);
+            showInlineMessage('Error: ' + data.error, 'danger');
         }
     });
 }
@@ -730,9 +766,10 @@ function toggleBan(playerId, shouldBan) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload();
+                showInlineMessage(`User ${action}ned successfully!`, 'success');
+                setTimeout(() => location.reload(), 1500);
             } else {
-                alert('Error: ' + data.error);
+                showInlineMessage('Error: ' + data.error, 'danger');
             }
         });
     }
@@ -784,7 +821,10 @@ document.querySelectorAll('.delete-shop-item').forEach(btn => {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    location.reload();
+                    showInlineMessage('Shop item deleted successfully!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showInlineMessage('Error deleting shop item', 'danger');
                 }
             });
         }
@@ -801,7 +841,10 @@ document.querySelectorAll('.delete-task').forEach(btn => {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    location.reload();
+                    showInlineMessage('Task deleted successfully!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showInlineMessage('Error deleting task', 'danger');
                 }
             });
         }
