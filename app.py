@@ -1503,16 +1503,19 @@ def mining_init():
             return jsonify({'success': False, 'error': 'Missing required parameters'}), 400
 
         bot = db.get_bot(bot_id)
-        if not bot or not bot['is_active']:
-            return jsonify({'success': False, 'error': 'Bot not found or inactive'}), 404
+        if not bot:
+            return jsonify({'success': False, 'error': 'Bot not found'}), 404
+            
+        if not bot.get('is_active'):
+            return jsonify({'success': False, 'error': 'Bot is not active'}), 404
 
         decrypted_token = db.decrypt_token(bot['bot_token'])
         auth_result = validate_telegram_webapp_data(init_data, decrypted_token)
 
-        if not auth_result or not auth_result['valid']:
+        if not auth_result or not auth_result.get('valid'):
             return jsonify({'success': False, 'error': 'Invalid authentication'}), 401
 
-        user_data = auth_result['user']
+        user_data = auth_result.get('user')
         if not user_data:
             return jsonify({'success': False, 'error': 'User data not found'}), 401
 
@@ -1542,6 +1545,8 @@ def mining_init():
         })
     except Exception as e:
         print(f"Mining init error: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': 'Authentication failed'}), 500
 
 @app.route('/api/mining/shop-and-tasks')

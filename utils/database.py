@@ -204,6 +204,13 @@ class Database:
             )
         ''')
 
+        # Migration: Add is_banned column to mining_players if it doesn't exist
+        try:
+            cursor.execute("SELECT is_banned FROM mining_players LIMIT 1")
+        except sqlite3.OperationalError:
+            cursor.execute("ALTER TABLE mining_players ADD COLUMN is_banned INTEGER DEFAULT 0")
+            conn.commit()
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS mining_boosts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -853,6 +860,17 @@ class Database:
     def get_bot_players(self, bot_id, limit=100):
         conn = self.get_connection()
         cursor = conn.cursor()
+        
+        # Check if is_banned column exists
+        try:
+            cursor.execute("SELECT is_banned FROM mining_players LIMIT 1")
+            has_is_banned = True
+        except sqlite3.OperationalError:
+            has_is_banned = False
+            # Add the column if it doesn't exist
+            cursor.execute("ALTER TABLE mining_players ADD COLUMN is_banned INTEGER DEFAULT 0")
+            conn.commit()
+        
         cursor.execute('''
             SELECT id, telegram_user_id, username, first_name, coins, level, 
                    COALESCE(is_banned, 0) as is_banned
@@ -869,7 +887,7 @@ class Database:
         conn = self.get_connection()
         cursor = conn.cursor()
         
-        # Add is_banned column if it doesn't exist
+        # Ensure is_banned column exists
         try:
             cursor.execute("SELECT is_banned FROM mining_players LIMIT 1")
         except sqlite3.OperationalError:
