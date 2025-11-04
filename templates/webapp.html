@@ -15,15 +15,78 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--bg-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+            color: var(--text-color, white);
             min-height: 100vh;
             overflow-x: hidden;
+            display: flex;
+        }
+
+        /* Left Sidebar Menu */
+        .sidebar {
+            width: 250px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.2);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .menu-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: rgba(255,255,255,0.5);
+        }
+
+        .menu-item.active {
+            background: rgba(255,255,255,0.15);
+            border-left-color: white;
+        }
+
+        .menu-item i {
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
             padding: 20px;
+            overflow-y: auto;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
@@ -33,9 +96,10 @@
         }
 
         .header h1 {
-            font-size: 32px;
+            font-size: var(--title-size, 32px);
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-family: var(--title-font, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
         }
 
         .header p {
@@ -110,6 +174,45 @@
             font-size: 14px;
         }
 
+        /* Inline Message Styles */
+        .inline-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .inline-message.show {
+            display: block;
+        }
+
+        .inline-message.success {
+            background: rgba(76, 175, 80, 0.3);
+            border-left: 4px solid #4CAF50;
+        }
+
+        .inline-message.error {
+            background: rgba(244, 67, 54, 0.3);
+            border-left: 4px solid #f44336;
+        }
+
+        .inline-message.info {
+            background: rgba(33, 150, 243, 0.3);
+            border-left: 4px solid #2196F3;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .footer {
             text-align: center;
             margin-top: 40px;
@@ -117,65 +220,231 @@
             font-size: 14px;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
+        /* Settings Panel */
+        .settings-panel {
+            display: none;
         }
 
-        .spinner {
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+        .settings-panel.active {
+            display: block;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .setting-group {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .setting-group input,
+        .setting-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .setting-group input[type="color"] {
+            height: 50px;
+            cursor: pointer;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main-content {
+                margin-left: 200px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.2);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-item {
+                display: inline-block;
+                width: auto;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🌐 {{ bot.bot_name }}</h1>
+    <!-- Left Sidebar Menu -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🌐 {{ bot.bot_name }}</h2>
             <p>Web Application</p>
         </div>
-
-        <div class="content-card">
-            <div class="welcome-message">
-                <h2>Welcome to your Web App! 👋</h2>
-                <p>This is your deployed Telegram Web App. You can customize this page to create any interactive web application.</p>
-            </div>
-
-            <div class="info-box">
-                <strong>Bot ID:</strong> {{ bot_id }}<br>
-                <strong>Status:</strong> Active ✅
-            </div>
-
-            <ul class="feature-list">
-                <li>Integrated with Telegram</li>
-                <li>Secure user authentication</li>
-                <li>Responsive design</li>
-                <li>Ready to customize</li>
-            </ul>
-
-            <div style="text-align: center; margin-top: 30px;">
-                <button class="action-button" onclick="showUserInfo()">Show User Info</button>
-                <button class="action-button" onclick="sendData()">Send Data to Bot</button>
-            </div>
+        <div class="menu-item active" data-section="home">
+            <span>🏠</span>
+            <span>Home</span>
         </div>
-
-        <div class="content-card" id="user-info" style="display: none;">
-            <h3>User Information</h3>
-            <div id="user-details" class="info-box"></div>
+        <div class="menu-item" data-section="features">
+            <span>✨</span>
+            <span>Features</span>
         </div>
+        <div class="menu-item" data-section="userinfo">
+            <span>👤</span>
+            <span>User Info</span>
+        </div>
+        <div class="menu-item" data-section="settings">
+            <span>⚙️</span>
+            <span>Customize</span>
+        </div>
+        <div class="menu-item" data-section="about">
+            <span>ℹ️</span>
+            <span>About</span>
+        </div>
+    </div>
 
-        <div class="footer">
-            <p>Powered by BotForge Pro</p>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div id="inline-messages"></div>
+
+            <!-- Home Section -->
+            <div class="content-section" id="home-section">
+                <div class="header">
+                    <h1 id="app-title">🌐 {{ bot.bot_name }}</h1>
+                    <p id="app-subtitle">Web Application</p>
+                </div>
+
+                <div class="content-card">
+                    <div class="welcome-message">
+                        <h2>Welcome to your Web App! 👋</h2>
+                        <p>This is your deployed Telegram Web App. You can customize this page to create any interactive web application.</p>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>Bot ID:</strong> {{ bot_id }}<br>
+                        <strong>Status:</strong> Active ✅
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="action-button" onclick="sendData()">Send Data to Bot</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="content-section" id="features-section" style="display: none;">
+                <div class="content-card">
+                    <h2>✨ Features</h2>
+                    <ul class="feature-list">
+                        <li>Integrated with Telegram</li>
+                        <li>Secure user authentication</li>
+                        <li>Responsive design</li>
+                        <li>Ready to customize</li>
+                        <li>Inline notifications</li>
+                        <li>Customizable appearance</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- User Info Section -->
+            <div class="content-section" id="userinfo-section" style="display: none;">
+                <div class="content-card">
+                    <h2>👤 User Information</h2>
+                    <div id="user-details" class="info-box">
+                        <p>Click "Show User Info" to load your information</p>
+                    </div>
+                    <button class="action-button" onclick="showUserInfo()">Show User Info</button>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="content-section settings-panel" id="settings-section">
+                <div class="content-card">
+                    <h2>⚙️ Customize Your Web App</h2>
+                    
+                    <div class="setting-group">
+                        <label>Background Gradient Start:</label>
+                        <input type="color" id="bg-color-1" value="#667eea">
+                    </div>
+
+                    <div class="setting-group">
+                        <label>Background Gradient End:</label>
+                        <input type="color" id="bg-color-2" value="#764ba2">
+                    </div>
+
+                    <div class="setting-group">
+                        <label>Text Color:</label>
+                        <input type="color" id="text-color" value="#ffffff">
+                    </div>
+
+                    <div class="setting-group">
+                        <label>Title Font Size (px):</label>
+                        <input type="number" id="title-size" value="32" min="16" max="64">
+                    </div>
+
+                    <div class="setting-group">
+                        <label>Font Family:</label>
+                        <select id="font-family">
+                            <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">System Default</option>
+                            <option value="'Arial', sans-serif">Arial</option>
+                            <option value="'Georgia', serif">Georgia</option>
+                            <option value="'Courier New', monospace">Courier New</option>
+                            <option value="'Verdana', sans-serif">Verdana</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="enable-features" checked> Enable Features Section
+                        </label>
+                    </div>
+
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="enable-userinfo" checked> Enable User Info Section
+                        </label>
+                    </div>
+
+                    <button class="action-button" onclick="applySettings()">Apply Changes</button>
+                    <button class="action-button" onclick="resetSettings()">Reset to Default</button>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="content-section" id="about-section" style="display: none;">
+                <div class="content-card">
+                    <h2>ℹ️ About</h2>
+                    <p style="line-height: 1.8;">
+                        This web app is powered by BotForge Pro, the ultimate Telegram bot creator platform.
+                        You can customize colors, fonts, and enable/disable features to match your brand.
+                    </p>
+                    <div class="info-box" style="margin-top: 20px;">
+                        <strong>Version:</strong> 1.0<br>
+                        <strong>Bot ID:</strong> {{ bot_id }}<br>
+                        <strong>Platform:</strong> Telegram Web Apps
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p>Powered by BotForge Pro</p>
+            </div>
         </div>
     </div>
 
@@ -185,10 +454,42 @@
         tg.ready();
         tg.expand();
 
+        // Menu navigation
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const section = this.dataset.section;
+                
+                // Update active menu item
+                document.querySelectorAll('.menu-item').forEach(mi => mi.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show corresponding section
+                document.querySelectorAll('.content-section').forEach(cs => cs.style.display = 'none');
+                document.getElementById(section + '-section').style.display = 'block';
+            });
+        });
+
+        // Inline message function
+        function showInlineMessage(message, type = 'info') {
+            const messagesContainer = document.getElementById('inline-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `inline-message ${type} show`;
+            messageDiv.innerHTML = `
+                <strong>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</strong> ${message}
+            `;
+            
+            messagesContainer.innerHTML = '';
+            messagesContainer.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+                setTimeout(() => messageDiv.remove(), 300);
+            }, 5000);
+        }
+
         function showUserInfo() {
             const userInfo = tg.initDataUnsafe.user;
             const userDetails = document.getElementById('user-details');
-            const userInfoCard = document.getElementById('user-info');
             
             if (userInfo) {
                 userDetails.innerHTML = `
@@ -197,10 +498,10 @@
                     <strong>User ID:</strong> ${userInfo.id}<br>
                     <strong>Language:</strong> ${userInfo.language_code || 'N/A'}
                 `;
-                userInfoCard.style.display = 'block';
+                showInlineMessage('User information loaded successfully', 'success');
             } else {
                 userDetails.innerHTML = '<p>No user information available. Make sure this app is opened from Telegram.</p>';
-                userInfoCard.style.display = 'block';
+                showInlineMessage('Unable to load user information', 'error');
             }
         }
 
@@ -210,9 +511,83 @@
                 timestamp: new Date().toISOString()
             };
             
-            tg.sendData(JSON.stringify(data));
-            tg.showAlert('Data sent to bot!');
+            try {
+                tg.sendData(JSON.stringify(data));
+                showInlineMessage('Data sent to bot successfully!', 'success');
+            } catch (error) {
+                showInlineMessage('Failed to send data to bot', 'error');
+            }
         }
+
+        // Settings functions
+        function applySettings() {
+            const bgColor1 = document.getElementById('bg-color-1').value;
+            const bgColor2 = document.getElementById('bg-color-2').value;
+            const textColor = document.getElementById('text-color').value;
+            const titleSize = document.getElementById('title-size').value;
+            const fontFamily = document.getElementById('font-family').value;
+            const enableFeatures = document.getElementById('enable-features').checked;
+            const enableUserinfo = document.getElementById('enable-userinfo').checked;
+
+            // Apply styles
+            document.body.style.setProperty('--bg-gradient', `linear-gradient(135deg, ${bgColor1} 0%, ${bgColor2} 100%)`);
+            document.body.style.setProperty('--text-color', textColor);
+            document.body.style.setProperty('--title-size', titleSize + 'px');
+            document.body.style.setProperty('--title-font', fontFamily);
+
+            // Toggle sections
+            if (!enableFeatures) {
+                document.querySelector('[data-section="features"]').style.display = 'none';
+            } else {
+                document.querySelector('[data-section="features"]').style.display = 'flex';
+            }
+
+            if (!enableUserinfo) {
+                document.querySelector('[data-section="userinfo"]').style.display = 'none';
+            } else {
+                document.querySelector('[data-section="userinfo"]').style.display = 'flex';
+            }
+
+            // Save to localStorage
+            localStorage.setItem('webAppSettings', JSON.stringify({
+                bgColor1, bgColor2, textColor, titleSize, fontFamily, enableFeatures, enableUserinfo
+            }));
+
+            showInlineMessage('Settings applied successfully!', 'success');
+        }
+
+        function resetSettings() {
+            document.getElementById('bg-color-1').value = '#667eea';
+            document.getElementById('bg-color-2').value = '#764ba2';
+            document.getElementById('text-color').value = '#ffffff';
+            document.getElementById('title-size').value = '32';
+            document.getElementById('font-family').value = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+            document.getElementById('enable-features').checked = true;
+            document.getElementById('enable-userinfo').checked = true;
+
+            localStorage.removeItem('webAppSettings');
+            applySettings();
+            showInlineMessage('Settings reset to default', 'info');
+        }
+
+        // Load saved settings
+        function loadSettings() {
+            const saved = localStorage.getItem('webAppSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                document.getElementById('bg-color-1').value = settings.bgColor1;
+                document.getElementById('bg-color-2').value = settings.bgColor2;
+                document.getElementById('text-color').value = settings.textColor;
+                document.getElementById('title-size').value = settings.titleSize;
+                document.getElementById('font-family').value = settings.fontFamily;
+                document.getElementById('enable-features').checked = settings.enableFeatures;
+                document.getElementById('enable-userinfo').checked = settings.enableUserinfo;
+                applySettings();
+            }
+        }
+
+        // Initialize
+        loadSettings();
 
         tg.MainButton.text = "Close Web App";
         tg.MainButton.show();

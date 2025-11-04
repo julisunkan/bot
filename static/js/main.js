@@ -121,20 +121,32 @@ function copyToClipboard(text) {
 }
 
 function showNotification(message, type = 'info') {
+    // Find or create inline message container
+    let messageContainer = document.getElementById('inline-message-container');
+    if (!messageContainer) {
+        messageContainer = document.createElement('div');
+        messageContainer.id = 'inline-message-container';
+        messageContainer.style.cssText = 'margin: 20px 0;';
+        
+        // Insert at the top of main content
+        const mainContent = document.querySelector('main') || document.querySelector('.container') || document.body;
+        mainContent.insertBefore(messageContainer, mainContent.firstChild);
+    }
+    
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
-    alertDiv.style.zIndex = '9999';
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
     alertDiv.innerHTML = `
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     
-    document.body.appendChild(alertDiv);
+    messageContainer.innerHTML = '';
+    messageContainer.appendChild(alertDiv);
     
     setTimeout(() => {
         alertDiv.classList.remove('show');
         setTimeout(() => alertDiv.remove(), 150);
-    }, 3000);
+    }, 5000);
 }
 
 function formatNumber(num) {
